@@ -3,13 +3,10 @@ const bodyParser = require('body-parser');
 const jsonld = require('jsonld');
 const N3 = require('n3');
 const { DataFactory } = N3;
-const { namedNode, literal, defaultGraph, quad } = DataFactory;
+const { namedNode } = DataFactory;
 const store = new N3.Store();
 
 const app = express();
-
-// just use this in the browser with the provided bundle
-var db = levelgraph(level("yourdb"));
 
 app.use(bodyParser.json());
 
@@ -55,18 +52,12 @@ app.get('/', async (req,res,next) => {
     const rdf = await jsonld.toRDF(myJsonLD, {format: 'application/n-quads'});
 
     const parser = new N3.Parser();
-    //read about parser and parse method in detail
-    parser.parse(rdf, (error, quad, prefixes) => {
-            if (quad) {
-                //console.log(quad.subject.value + " " + quad.predicate.value + " " + quad.object.value)
-                //add quad to store
-                store.addQuad(quad);
-            }
-            else {
-                const mickey = store.getQuads(namedNode('http://data/bluesB'), null, null);
-                mickey.forEach(x => console.log(x.object.value));
-            }
-    });
+    const quads = parser.parse(rdf);
+    quads.forEach( quad => store.addQuad(quad))
+
+
+    const mickey = store.getQuads(namedNode('http://data/bluesB'), null, null);
+    mickey.forEach(data => console.log(data.object.value));
 })
 
 app.listen(3000);
