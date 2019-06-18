@@ -1,0 +1,89 @@
+{
+    "types": [
+        {
+            "name": "Organization",
+            "uri": "http://schema.org/Organization",
+            "type": "ObjectType",
+            "fields": [
+                {
+                    "name": "_id"
+                },
+                {
+                    "name": "_type",
+                    "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                },
+                {
+                    "name": "legalName",
+                    "uri": "http://schema.org/legalName"
+                },
+                {
+                    "name": "address",
+                    "uri": "http://schema.org/address"
+                },
+                {
+                    "name": "department",
+                    "uri": "http://schema.org/department"
+                },
+                {
+                    "name": "employee",
+                    "uri": "http://schema.org/employee"
+                },
+                {
+                    "name": "email",
+                    "uri": "http://schema.org/email"
+                },
+                {
+                    "name": "numberOfEmployees",
+                    "uri": "http://schema.org/numberOfEmployees"
+                }
+            ]
+        },
+        {
+            "name": "Person",
+            "type": "ObjectType",
+            "fields": [
+                {
+                    "name": "_id"
+                },
+                {
+                    "name": "_type",
+                    "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                },
+                {
+                    "name": "name",
+                    "uri": "http://schema.org/name"
+                },
+                {
+                    "name": "affiliation",
+                    "uri": "http://schema.org/affiliation"
+                }
+            ]
+        },
+        {
+            "name": "Text",
+            "type": "DataType",
+            "fields": [
+                {
+                    "name": "_value"
+                },
+                {
+                    "name": "_type",
+                    "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                }
+            ]
+        },
+        {
+            "name": "Integer",
+            "type": "DataType",
+            "fields": [
+                {
+                    "name": "_value"
+                },
+                {
+                    "name": "_type",
+                    "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                }
+            ]
+        }
+    ]
+}
