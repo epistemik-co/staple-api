@@ -33,6 +33,7 @@
     "fresh": "^0.5.2",
     "graphql": "^14.3.1",
     "graphql-tools": "^4.0.4",
+    "graphy": "^3.2.2",
     "http-errors": "^1.7.2",
     "iconv-lite": "^0.4.24",
     "inherits": "^2.0.3",
