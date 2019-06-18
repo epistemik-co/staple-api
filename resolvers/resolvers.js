@@ -12,17 +12,24 @@ class rootResolver{
                     return this.database.getSubs("http://schema.org/Organization");
                 }
             },
-            Person: {
-                _id: (parent) => {return parent},
-                name: (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/name") },
-                affiliation: (parent) => { return this.database.getObjs(parent, "http://schema.org/affiliation") }
-            },
             Organization: {
                 _id: (parent) => {return parent},
                 legalName: (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/legalName") },
                 employee: (parent) => { return this.database.getObjs(parent, "http://schema.org/employee") }
             }
         }
+
+        let newResolver = "Person"
+        let newResolverBody = {}
+        newResolverBody['_id'] = (parent) => {return parent}
+        newResolverBody['name'] = (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/name") }
+        newResolverBody['affiliation'] = (parent) => { return this.database.getObjs(parent, "http://schema.org/affiliation") }
+
+
+        this.rootResolver[newResolver] = newResolverBody
+
+
+        
     }
 }
 

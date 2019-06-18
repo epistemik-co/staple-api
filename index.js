@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const jsonld = require('jsonld');
 const graphqlHttp = require('express-graphql');
 const { makeExecutableSchema } = require('graphql-tools');
+
 const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema');
 const Resolver = require('./resolvers/resolvers');
