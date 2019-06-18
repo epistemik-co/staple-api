@@ -1,13 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const jsonld = require('jsonld');
-const N3 = require('n3');
 const graphqlHttp = require('express-graphql');
 const { makeExecutableSchema } = require('graphql-tools');
-
-const { DataFactory } = N3;
-const { namedNode } = DataFactory;
-const store = new N3.Store();
+const read = require('graphy').content.nt.read;
+const dataset_tree = require('graphy').util.dataset.tree
+const factory = require('@graphy/core.data.factory');
 
 const app = express();
 
@@ -17,55 +15,51 @@ app.use(bodyParser.urlencoded({limit: '4000mb', extended: true}))
 function showMemUsage(){
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
     console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
-
     return Math.round(used * 100) / 100;
 }
 
+let y_tree = dataset_tree();
+
 async function getObjs(sub, pred) {
-    //showMemUsage()
-    const res = await store.getQuads(namedNode(sub), namedNode(pred), null);
-    return await res.map(data => data.object.value);
-    // const list = await res.map(data => data.object.value);
-    // // console.log("getObjs")
-    // // console.log(list);
-    // if(list === []){
-    //     return null;
-    // }
-    // return list;
+    // showMemUsage()
+    const temp = y_tree.match(factory.namedNode( sub ) ,factory.namedNode( pred ) , null);
+    data = [];
+    var itr = temp.quads();
+    var x = itr.next();
+    while(!x.done){
+        data.push(x.value.object.value);
+        x = itr.next();
+    }
+    return data;
 };
 
 async function getSingleStringValue(sub, pred) {
-    //showMemUsage()
-    const res = await store.getQuads(namedNode(sub), namedNode(pred), null);
-    // console.log("getSingleStringValue")
-    // console.log(list);
-    const quoted_val = res[0].object.value;
-    const val = quoted_val.replace('"', '').replace('"', '');
-    if(val === ''){
-        return null;
-    }
-    return val;
+    // showMemUsage()
+    const temp = y_tree.match(factory.namedNode( sub ) ,factory.namedNode( pred ) , null);
+    data = [];
+    var itr = temp.quads();
+    var x = itr.next();
+    return x.value.object.value;
 };
 
 
 async function getSubs(type) {
-    //showMemUsage()
+    // showMemUsage()
     const predicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-        const res = await store.getQuads(null, namedNode(predicate), namedNode(type));
-        return await res.map(data => data.subject.value);
-        // const list = await res.map(data => data.subject.value);
-        // // console.log("getSubs")
-        // // console.log(list);
-        // if(list === []){
-        //     return null;
-        // }
-        // return list;
+
+    const temp = y_tree.match(null,factory.namedNode( predicate ) , factory.namedNode( type ));
+
+    data = [];
+    var itr = temp.quads();
+    var x = itr.next();
+    while(!x.done){
+        data.push(x.value.subject.value);
+        x = itr.next();
+    }
+    return data;
 };
 
-
 // resolvers
-
-
 var rootResolver = {
     Query: {
         Person_GET: () =>{
@@ -89,7 +83,6 @@ var rootResolver = {
 
 
 // schema
-
 schemaString = `
         type Query {
             Person_GET: [Person]
@@ -109,7 +102,6 @@ schemaString = `
 
 //initGraphQL server with makeExecutableSchema() which is the critical bit 
 //istnieja pewnie inne sposoby inicjalizacji serwera i moze bedziemy szukac innych, ale ten dziala jak na chwilowe potrzeby ;)
-
 const schema = makeExecutableSchema({
   typeDefs:schemaString,
   resolvers:rootResolver,
@@ -121,29 +113,24 @@ app.use('/graphql', graphqlHttp({
 }));
 
 
-
 app.get('/', async (req,res,next) => {
-    const mickey = await store.getQuads(namedNode('http://data/bluesB'), null, null);
-    const list = await mickey.map(data => data.object.value);
-
-    res.send("FOUND: " + list.length + " records<br><br>" + JSON.stringify(list))
+    res.send("HELLO WORLD!")
 })
 
 
 app.post('/api/upload',async (req, res) => {
     var start = new Date().getTime();
-
     try {
-        console.log("Before:")
-        await showMemUsage();
         const todo = req.body;
         const rdf = await jsonld.toRDF(todo, {format: 'application/n-quads'});
-        const parser = new N3.Parser();
-        const quads = parser.parse(rdf);
-        console.log(quads);
-        await quads.forEach( quad => store.addQuad(quad))
-        console.log("After:")
-        await showMemUsage();
+        await read(rdf, {
+            data(y_quad) {
+                y_tree.add(y_quad)
+            },
+            eof(h_prefixes) {
+                
+            },
+        })
     } catch (error) {
         return res.status(500).send({
             success: 'false',
