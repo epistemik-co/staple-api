@@ -16,6 +16,8 @@ numberOfEmployees: Integer
 
 }
 
+
+
 type Person {
 _id: ID!
 _type: [String]
