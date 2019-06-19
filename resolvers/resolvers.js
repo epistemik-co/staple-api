@@ -14,71 +14,92 @@ class rootResolver {
                     return this.database.getSubs("http://schema.org/Organization");
                 }
             },
-            Organization: {
-                _id: (parent) => { return parent },
-                legalName: (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/legalName") },
-                employee: (parent) => { return this.database.getObjs(parent, "http://schema.org/employee") }
-            }
+            // Organization: {
+            //     _id: (parent) => { return parent },
+            //     legalName: (parent) => { return this.database.getSingleLiteral(parent, "http://schema.org/legalName") },
+            //     employee: (parent) => { return this.database.getObjs(parent, "http://schema.org/employee") }
+            // },
+            // Person: {
+
+            // },
+            // Text: {
+            //     _type: (parent) => {return [parent.datatype.value] },
+            //     _value: (parent) => {return parent.value},
+            // },
+            // Integer: {
+            //     _type: (parent) => { return this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") },
+            //     _value: (parent) => {return parent},
+            // }
         }
 
-        let newResolver = "Person"
-        let newResolverBody = {}
-        newResolverBody['_id'] = (parent) => { return parent }
-        newResolverBody['name'] = (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/name") }
-        newResolverBody['affiliation'] = (parent) => { return this.database.getObjs(parent, "http://schema.org/affiliation") }
+        // let newResolver = "Person"
+        // let newResolverBody = {}
+        // newResolverBody['_id'] = (parent) => { return parent }
+        // newResolverBody['name'] = (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/name") }
+        // newResolverBody['affiliation'] = (parent) => { return this.database.getObjs(parent, "http://schema.org/affiliation") }
 
 
-        this.rootResolver[newResolver] = newResolverBody
+        // this.rootResolver[newResolver] = newResolverBody
 
 
-        let objects = []
+        let objectsFromSchemaMapping = []
 
         for (var property in json.types) {
-            if (json.types.hasOwnProperty(property)) {
-                objects.push(json.types[property]);
-            }
+            objectsFromSchemaMapping.push( json.types[property] );
         }
 
-        objects.forEach(element => {
+        objectsFromSchemaMapping.forEach(async object => {
             console.log("\nNEW OBJECT\n")
 
-            if (element.type  !== 'ObjectType') {
+            
+            if (object.type  !== 'ObjectType') {
                 // TYPE
+                console.log(object)
 
-                let newResolver = element.name
+                let newResolver = object.name
                 let newResolverBody = {}
 
-                for (var property in element.fields) {
-                    if(element.fields[property]['name']  === '_value'){
-                        newResolverBody['_value'] = (parent) => { return parent }
+                for (var property in object.fields) {
+                    if(object.fields[property]['name']  === '_value'){
+                        newResolverBody['_value'] = async (parent) => {return parent.value}
                     }
-                    newResolverBody[element.fields[property]['name']] = (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/"+element.fields[property]['name']) }
+                    else if(object.fields[property]['name']  === '_type'){
+                        newResolverBody['_type'] = (parent) => {return [parent.datatype.value] }
+                    }
                 }
 
                 this.rootResolver[newResolver] = newResolverBody
+                
 
 
             } else {
                 // OBJECT
 
-                let newResolver = element.name
+                let newResolver = object.name 
                 let newResolverBody = {}
 
-                for (var property in element.fields) {
-                    if(element.fields[property]['name']  === '_id'){
-                        newResolverBody['_id'] = (parent) => { return parent }
+                for (var property in object.fields) {
+                    if(object.fields[property]['name']  === '_id'){
+                        newResolverBody['_id'] = async (parent) => { return await parent }
                     }
-                    else if(element.fields[property]['name']  === '_type'){
-                        newResolverBody[element.fields[property]['name']] = (parent) => { return this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }
+                    else if(object.fields[property]['name']  === '_type'){
+                        newResolverBody[object.fields[property]['name']] = async (parent) => { return await this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }
                     }
                     else{
-                        if(json.types[element.fields[property]['name']] !== undefined){
-                            newResolverBody[element.fields[property]['name']] = (parent) => { return this.database.getObjs(parent, "http://schema.org/"+element.fields[property]['name']) }
+                        if(json.types[object.fields[property]['name']] !== undefined){
+
+                            const name = "http://schema.org/"+object.fields[property]['name'];
+                            let constr = (name) => { return (parent) => { return this.database.getObjs(parent, name) } };
+                            newResolverBody[object.fields[property]['name']] =  constr(name);
                         }
                         else{
-                            newResolverBody[element.fields[property]['name']] = (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/"+element.fields[property]['name']) }
+                            
+                            const name = "http://schema.org/" + object.fields[property]['name'];
+                            let constr = (name) => { return  ((parent) => {return this.database.getSingleLiteral(parent, name) })};
+                            newResolverBody[object.fields[property]['name']] = constr(name);
                         }
                     }
+                    
                 }
 
                 this.rootResolver[newResolver] = newResolverBody
@@ -87,7 +108,7 @@ class rootResolver {
 
         });
 
-        console.log("\n\n\n\n\n\n\n\n\n\n")
+        console.log("\n\n")
         console.dir(this.rootResolver);
 
 

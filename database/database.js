@@ -56,6 +56,15 @@ class Database{
         var x = itr.next();
         return x.value.object.value;
     };
+
+
+    async getSingleLiteral(sub, pred){
+        const temp = this.y_tree.match(factory.namedNode( sub ) ,factory.namedNode( pred ) , null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        return x.value.object;
+    };
     
     
     async getSubs(type){
