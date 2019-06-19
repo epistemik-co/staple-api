@@ -5,7 +5,7 @@ type Query {
 }
 
 type Organization {
-_id: ID!
+_id: [ID!]!
 _type: [String]
 legalName: Text
 address: Text
@@ -15,8 +15,6 @@ email: Text
 numberOfEmployees: Integer
 
 }
-
-
 
 type Person {
 _id: ID!

@@ -59,40 +59,68 @@ class rootResolver {
             '__InputValue',
             '__EnumValue',
             '__Directive',
-            '__DirectiveLocation'
+            '__DirectiveLocation',
+            'Int',
+            'Float',
+            'Boolean',
         ];
 
 
         // chodzenie po drzewie
 
         var treeFromSchema = {}
+        let objectsFromSchemaMapping = []
 
-        // console.log(schema.getTypeMap()['Organization'].astNode.fields[0])
+        for (var property in json.types) {
+            objectsFromSchemaMapping.push( json.types[property] );
+        }
+
 
         for(let schemaTypeName in schema.getTypeMap()){
             // skip system types
             if(systemTypes.indexOf(schemaTypeName) > -1){
                 continue;
             }
+
             let newNode = {};
             newNode['name'] = schema.getTypeMap()[schemaTypeName]['name'];
+            let newNodeFromMappingTree = {};
+
+            objectsFromSchemaMapping.forEach(object => {
+                if(object['name'] === schema.getTypeMap()[schemaTypeName]['name']){
+                    newNode['uri'] = object['uri'];
+                    newNode['type'] = object['type'];
+                    newNodeFromMappingTree = object.fields;
+                }
+            });
+
             let newNodeData = {};
-            
-            // console.log(schema.getTypeMap()[schemaTypeName].astNode)
             schema.getTypeMap()[schemaTypeName].astNode.fields.map(object => {
                 newNodeData[object.name.value] = {};
                 let copyOfNewNode = newNodeData[object.name.value];
-                
                 let prop = object['type'];
+
                 while(prop !== undefined){
-                    //console.log(prop);
-                    copyOfNewNode['kind'] = prop['kind']
-                    if(prop['kind'] === 'NamedType'){
-                        copyOfNewNode['data'] = {}
-                        // console.log(prop)
-                        copyOfNewNode['data']['Name'] = prop['name']['value']
+                    // save information if it is mandatory and skip
+                    if(prop['kind'] === 'NonNullType'){
+                        copyOfNewNode['mandatory'] = true;
+                        prop = prop['type'];
                     }
                     else{
+                        copyOfNewNode['mandatory'] = false;
+                    }
+                    // this is the root where we get the value
+                    if(prop['kind'] === 'NamedType'){
+                        // console.log(prop)
+                        copyOfNewNode['name'] = prop['name']['value']
+                        newNodeFromMappingTree.forEach(object2 => {
+                            if(object2['name'] === object.name.value){
+                                copyOfNewNode['uri'] = object2['uri'];
+                            }
+                        });
+                    }
+                    else{
+                        copyOfNewNode['kind'] = prop['kind']
                         copyOfNewNode['data'] = {}
                     }
                     prop = prop['type'];
@@ -102,45 +130,20 @@ class rootResolver {
 
             newNode['data'] = newNodeData;
             treeFromSchema[schema.getTypeMap()[schemaTypeName]['name']] = newNode;
-            // console.log(newNode);
-
         }
 
-        // console.log(treeFromSchema['Organization']['data']['_id']['data']['data'])
+        // SAVE TO FILE
 
-        var jsonContent = JSON.stringify(treeFromSchema)
-        const fs = require('fs');
-        fs.writeFile("output.json", jsonContent, 'utf8', function (err) {
-            if (err) {
-                console.log("An error occured while writing JSON Object to File.");
-                return console.log(err);
-            }
+        // var jsonContent = JSON.stringify(treeFromSchema)
+        // const fs = require('fs');
+        // fs.writeFile("output.json", jsonContent, 'utf8', function (err) {
+        //     if (err) {
+        //         console.log("An error occured while writing JSON Object to File.");
+        //         return console.log(err);
+        //     }
          
-            console.log("JSON file has been saved.");
-        });
-
-
-        for(let schemaTypeName in schema.getTypeMap()){
-            // skip system types
-            if(systemTypes.indexOf(schemaTypeName) > -1){
-                continue;
-            }
-            const schemaTypeObject = schema.getTypeMap()[schemaTypeName].astNode;
-
-            // console.log("\nschemaTypeName = " + schemaTypeName + " schemaTypeObject['name']['value'] = " + schemaTypeObject['name']['value'] + " \n")
-
-            const arrayOfFieldsKind = schemaTypeObject.fields.map(x => x['type']['kind']);
-
-            const arrayOfFields = schemaTypeObject.fields.map(x => {
-               if( x['type']['kind'] === 'NamedType' ) { return x['type']['name']} else { return  x['type']['type'] }
-            });
-
-
-            // console.log(arrayOfFields.map(x => {
-            //     if( x['kind'] === 'Name' ) { return x['value']} else { return  "[" + x['name']['value'] + "]" }
-            //  }));
-
-        }
+        //     console.log("JSON file has been saved.");
+        // });
 
 
 
@@ -148,7 +151,27 @@ class rootResolver {
 
 
 
+        // for(let schemaTypeName in schema.getTypeMap()){
+        //     // skip system types
+        //     if(systemTypes.indexOf(schemaTypeName) > -1){
+        //         continue;
+        //     }
+        //     const schemaTypeObject = schema.getTypeMap()[schemaTypeName].astNode;
 
+        //     // console.log("\nschemaTypeName = " + schemaTypeName + " schemaTypeObject['name']['value'] = " + schemaTypeObject['name']['value'] + " \n")
+
+        //     const arrayOfFieldsKind = schemaTypeObject.fields.map(x => x['type']['kind']);
+
+        //     const arrayOfFields = schemaTypeObject.fields.map(x => {
+        //        if( x['type']['kind'] === 'NamedType' ) { return x['type']['name']} else { return  x['type']['type'] }
+        //     });
+
+
+        //     // console.log(arrayOfFields.map(x => {
+        //     //     if( x['kind'] === 'Name' ) { return x['value']} else { return  "[" + x['name']['value'] + "]" }
+        //     //  }));
+
+        // }
 
 
 
@@ -171,11 +194,15 @@ class rootResolver {
 
 
 
-        let objectsFromSchemaMapping = []
 
-        for (var property in json.types) {
-            objectsFromSchemaMapping.push( json.types[property] );
-        }
+
+
+
+
+
+
+
+        
 
         objectsFromSchemaMapping.forEach(async object => {
             // console.log("\nNEW OBJECT\n")
