@@ -1,4 +1,8 @@
 schemaString = `
+type Mutation {
+    setMessage(message: String): String
+}
+
 type Query {
     Organization_GET: [Organization]
     Person_GET: [Person]

@@ -60,6 +60,8 @@ class Database{
 
     async getSingleLiteral(sub, pred){
         const temp = this.y_tree.match(factory.namedNode( sub ) ,factory.namedNode( pred ) , null);
+        
+        console.log("Asked for subject: " + sub + " predicat: " + pred  );
         let data = [];
         var itr = temp.quads();
         var x = itr.next();

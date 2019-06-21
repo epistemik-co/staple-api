@@ -9,6 +9,7 @@ createTree = () => {
 
     const systemTypes = [
         'Query',
+        'Mutation',
         'ID',
         'String',
         '__Schema',
@@ -32,12 +33,12 @@ createTree = () => {
     for (let schemaTypeName in schema.getTypeMap()) {
         let newNode = {}; // object that will be added to tree
         let newNodeFromMappingTree = {}; // node that contain data from schema-mapping for specyfic object
-        let newNodeData = {}; // data that will be added as a field to newNode
-
+        let newNodeData = {}; // data that will be added as a field
         // skip system types
         if (systemTypes.indexOf(schemaTypeName) > -1) {
             continue;
         }
+        // console.log(schemaTypeName)
 
         // create field for type field from schema
         newNode['name'] = schema.getTypeMap()[schemaTypeName]['name'];
@@ -52,6 +53,7 @@ createTree = () => {
         });
 
         schema.getTypeMap()[schemaTypeName].astNode.fields.map(object => {
+            // console.log(object)
             newNodeData[object.name.value] = {};
             let copyOfNewNode = newNodeData[object.name.value];
             let prop = object['type'];
@@ -67,7 +69,8 @@ createTree = () => {
                 }
                 // this is the root where we get the value
                 if(prop['kind'] === 'NamedType'){
-                    copyOfNewNode['name'] = prop['name']['value']
+                    // console.log(prop)
+                    copyOfNewNode['name'] = prop['name']['value'];
                     newNodeFromMappingTree.forEach(object2 => {
                         if(object2['name'] === object.name.value){
                             copyOfNewNode['uri'] = object2['uri'];
@@ -84,6 +87,7 @@ createTree = () => {
         });
 
         newNode['data'] = newNodeData;
+
         treeFromSchema[schema.getTypeMap()[schemaTypeName]['name']] = newNode;
     }
 

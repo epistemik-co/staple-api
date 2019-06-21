@@ -20,7 +20,7 @@ class rootResolver {
                 Organization_GET: () => {
                     return this.database.getSubs("http://schema.org/Organization");
                 }
-            },
+            }
             // Organization: {
             //     _id: (parent) => { return parent },
             //     legalName: (parent) => { return this.database.getSingleLiteral(parent, "http://schema.org/legalName") },
@@ -77,75 +77,82 @@ class rootResolver {
 
 
         // -------------------------------------------------- CREATE RESOLVERS
+        let objectsFromSchemaTree = []
+        for (var property in schemaTree) { objectsFromSchemaTree.push(schemaTree[property]); };
+        // console.log(objectsFromSchemaTree)
 
-        // objectsFromSchemaMapping.forEach(async object => {
-        //     // console.log("\nNEW OBJECT\n")
-        //     // const schemaForObject = schema.getTypeMap()[object['name']];
-        //     // console.log(schemaForObject.astNode.fields.map(x => x['name']['value']))
+        for (var object in schemaTree) {
+            console.log("\nNEW OBJECT\n")
+            // console.log(object)
+            // const schemaForObject = schema.getTypeMap()[object['name']];
+            // console.log(schemaForObject.astNode.fields.map(x => x['name']['value']))
             
-        //     if (object.type  !== 'ObjectType') {
-        //         // TYPE
-        //         // console.log(object)
+            if (schemaTree[object].type  !== 'ObjectType') {
+                // TYPE
+                // console.log(object)
 
-        //         let newResolver = object.name
-        //         let newResolverBody = {}
+                // let newResolver = object.name
+                // let newResolverBody = {}
 
-        //         for (var property in object.fields) {
-        //             if(object.fields[property]['name']  === '_value'){
-        //                 newResolverBody['_value'] = async (parent) => {return parent.value}
-        //             }
-        //             else if(object.fields[property]['name']  === '_type'){
-        //                 newResolverBody['_type'] = (parent) => {return [parent.datatype.value] }
-        //             }
-        //         }
+                // for (var property in object.data) {
+                //     if(object.data[property]['name']  === '_value'){
+                //         newResolverBody['_value'] = async (parent) => {return parent.value}
+                //     }
+                //     else if(object.data[property]['name']  === '_type'){
+                //         newResolverBody['_type'] = (parent) => {return [parent.datatype.value] }
+                //     }
+                // }
 
-        //         this.rootResolver[newResolver] = newResolverBody
+                // this.rootResolver[newResolver] = newResolverBody
                 
 
 
-        //     } else {
-        //         // OBJECT
-        //         // console.log(object)
+            } else if(schemaTree[object].type === 'ObjectType') {
+                //OBJECT
+                // console.log(schemaTree[object])
 
-        //         let newResolver = object.name 
-        //         let newResolverBody = {}
+                let newResolver = schemaTree[object].name 
+                let newResolverBody = {}
 
-        //         for (var property in object.fields) {
-        //             if(object.fields[property]['name']  === '_id'){
-        //                 newResolverBody['_id'] = async (parent) => { return await parent }
-        //             }
-        //             else if(object.fields[property]['name']  === '_type'){
-        //                 newResolverBody[object.fields[property]['name']] = async (parent) => { return await this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }
-        //             }
-        //             else{
-        //                 // console.log("object.fields[property]")
-        //                 // console.log(object.fields[property]);
-        //                 // console.log()
-        //                 if(schema.getTypeMap()[object.fields[property]['name']] !== undefined){ // this is bad
-                            
-                            
-        //                     const name = "http://schema.org/"+object.fields[property]['name'];
-        //                     let constr = (name) => { return (parent) => { return this.database.getObjs(parent, name) } };
-        //                     newResolverBody[object.fields[property]['name']] =  constr(name);
-        //                 }
-        //                 else{
-                            
-        //                     const name = "http://schema.org/" + object.fields[property]['name'];
-        //                     let constr = (name) => { return  ((parent) => {return this.database.getSingleLiteral(parent, name) })};
-        //                     newResolverBody[object.fields[property]['name']] = constr(name);
-        //                 }
-        //             }
+                
+                for (var property in schemaTree[object].data) {
+                    let currentObject = schemaTree[object].data[property];
+                    let isItList = false;
+
+                    if(currentObject.kind == 'ListType'){
+                        currentObject = currentObject.data;
+                        isItList = true;
+                    }
+
+                    if(property === '_id'){
+                        newResolverBody['_id'] = async (parent) => { return await parent }
+                    }
+                    else if(property === '_type'){
+                        newResolverBody['_type'] = async (parent) => { return await this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }
+                    }
+                    else{
+                        if(isItList){ // this is bad
+                            const name = "http://schema.org/" + currentObject['name'];
+                            let constr = (name) => { return (parent) => { return this.database.getObjs(parent, name) } };
+                            newResolverBody[property] =  constr(name);
+                        }
+                        else{
+                            const name = "http://schema.org/" + property;
+                            let constr = (name) => { return  (async (parent) => {console.log(parent); return await this.database.getSingleLiteral(parent, name) })};
+                            newResolverBody[property] = constr(name);
+                        }
+                    }
                     
-        //         }
+                }
 
-        //         this.rootResolver[newResolver] = newResolverBody
+                this.rootResolver[newResolver] = newResolverBody
 
-        //     }
+            }
 
-        // });
+        }
 
-        // console.log("\n\n")
-        // console.dir(this.rootResolver);
+        console.log("\n\n")
+        console.dir(this.rootResolver);
 
 
     }
