@@ -82,30 +82,30 @@ class rootResolver {
         // console.log(objectsFromSchemaTree)
 
         for (var object in schemaTree) {
-            console.log("\nNEW OBJECT\n")
+            // console.log("\nNEW OBJECT\n")
             // console.log(object)
             // const schemaForObject = schema.getTypeMap()[object['name']];
             // console.log(schemaForObject.astNode.fields.map(x => x['name']['value']))
             
             if (schemaTree[object].type  !== 'ObjectType') {
                 // TYPE
-                // console.log(object)
+                // console.log(schemaTree[object])
 
-                // let newResolver = object.name
-                // let newResolverBody = {}
-
-                // for (var property in object.data) {
-                //     if(object.data[property]['name']  === '_value'){
-                //         newResolverBody['_value'] = async (parent) => {return parent.value}
-                //     }
-                //     else if(object.data[property]['name']  === '_type'){
-                //         newResolverBody['_type'] = (parent) => {return [parent.datatype.value] }
-                //     }
-                // }
-
-                // this.rootResolver[newResolver] = newResolverBody
+                let newResolver = schemaTree[object].name
                 
+                let newResolverBody = {}
 
+                for (var property in schemaTree[object].data) {
+                    // console.log(property )
+                    if(property === '_value'){
+                        newResolverBody['_value'] = async (parent) => {return parent.value}
+                    }
+                    else if(property  === '_type'){
+                        newResolverBody['_type'] = (parent) => {return [parent.datatype.value] }
+                    }
+                }
+                
+                this.rootResolver[newResolver] = newResolverBody;
 
             } else if(schemaTree[object].type === 'ObjectType') {
                 //OBJECT
@@ -125,34 +125,33 @@ class rootResolver {
                     }
 
                     if(property === '_id'){
-                        newResolverBody['_id'] = async (parent) => { return await parent }
+                        newResolverBody['_id'] = async (parent) => { return await parent };
                     }
                     else if(property === '_type'){
-                        newResolverBody['_type'] = async (parent) => { return await this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }
+                        newResolverBody['_type'] = async (parent) => { return await this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") };
                     }
                     else{
-                        if(isItList){ // this is bad
-                            const name = "http://schema.org/" + currentObject['name'];
-                            let constr = (name) => { return (parent) => { return this.database.getObjs(parent, name) } };
+                        if(isItList){ 
+                            const name = currentObject['uri'];
+                            let constr = (name) => { return (parent) => {return this.database.getObjs(parent, name) } };
                             newResolverBody[property] =  constr(name);
                         }
                         else{
                             const name = "http://schema.org/" + property;
-                            let constr = (name) => { return  (async (parent) => {console.log(parent); return await this.database.getSingleLiteral(parent, name) })};
+                            let constr = (name) => { return  ( (parent) => {return this.database.getSingleLiteral(parent, name) })};
                             newResolverBody[property] = constr(name);
                         }
                     }
                     
                 }
-
-                this.rootResolver[newResolver] = newResolverBody
-
+                
+                this.rootResolver[newResolver] = newResolverBody;
             }
 
         }
 
-        console.log("\n\n")
-        console.dir(this.rootResolver);
+        // console.log("\n\n")
+        // console.dir(this.rootResolver);
 
 
     }

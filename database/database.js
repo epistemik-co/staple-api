@@ -51,7 +51,6 @@ class Database{
 
     async getSingleStringValue(sub, pred){
         const temp = this.y_tree.match(factory.namedNode( sub ) ,factory.namedNode( pred ) , null);
-        let data = [];
         var itr = temp.quads();
         var x = itr.next();
         return x.value.object.value;
@@ -60,11 +59,12 @@ class Database{
 
     async getSingleLiteral(sub, pred){
         const temp = this.y_tree.match(factory.namedNode( sub ) ,factory.namedNode( pred ) , null);
-        
-        console.log("Asked for subject: " + sub + " predicat: " + pred  );
-        let data = [];
+        // console.log("Asked for subject: " + sub + " predicat: " + pred  );
         var itr = temp.quads();
         var x = itr.next();
+        if(x.value.object.constructor.name === "NamedNode"){
+            return x.value.object.value;
+        }
         return x.value.object;
     };
     
