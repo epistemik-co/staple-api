@@ -55,7 +55,7 @@ class rootResolver {
         
         const schemaTree = createTree();
 
-        
+        console.log(schemaTree)
         // console.dir(schemaTree);
         // -------------------------------------------------- SAVE TO FILE
 
