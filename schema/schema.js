@@ -9,7 +9,6 @@ Organization_UPSERT(input: Organization_INPUT): Boolean
 Organization_DELETE(input: Organization_INPUT): Boolean
 Person_UPSERT(input: Person_INPUT): Boolean
 Person_DELETE(input: Person_INPUT): Boolean
-
 }
 
 input Organization_INPUT {

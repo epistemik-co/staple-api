@@ -19,7 +19,15 @@ class rootResolver {
                 },
                 Organization_GET: () => {
                     return this.database.getSubs("http://schema.org/Organization");
-                }
+                },
+                // Mutation: {
+
+                //     Organization_UPSERT(input: Organization_INPUT): Boolean
+                //     Organization_DELETE(input: Organization_INPUT): Boolean
+                //     Person_UPSERT(input: Person_INPUT): Boolean
+                //     Person_DELETE(input: Person_INPUT): Boolean
+                // }
+
             }
             // Organization: {
             //     _id: (parent) => { return parent },
@@ -52,23 +60,12 @@ class rootResolver {
 
 
         // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
-        
+
         const schemaTree = createTree();
 
         console.log(schemaTree)
         // console.dir(schemaTree);
-        // -------------------------------------------------- SAVE TO FILE
-
-        // var jsonContent = JSON.stringify(schemaTree)
-        // const fs = require('fs');
-        // fs.writeFile("output.json", jsonContent, 'utf8', function (err) {
-        //     if (err) {
-        //         console.log("An error occured while writing JSON Object to File.");
-        //         return console.log(err);
-        //     }
-         
-        //     console.log("JSON file has been saved.");
-        // });
+        
 
 
 
@@ -86,65 +83,65 @@ class rootResolver {
             // console.log(object)
             // const schemaForObject = schema.getTypeMap()[object['name']];
             // console.log(schemaForObject.astNode.fields.map(x => x['name']['value']))
-            
-            if (schemaTree[object].type  !== 'ObjectType') {
+
+            if (schemaTree[object].type !== 'ObjectType') {
                 // TYPE
                 // console.log(schemaTree[object])
 
                 let newResolver = schemaTree[object].name
-                
+
                 let newResolverBody = {}
 
                 for (var property in schemaTree[object].data) {
                     // console.log(property )
-                    if(property === '_value'){
-                        newResolverBody['_value'] = async (parent) => {return parent.value}
+                    if (property === '_value') {
+                        newResolverBody['_value'] = async (parent) => { return parent.value }
                     }
-                    else if(property  === '_type'){
-                        newResolverBody['_type'] = (parent) => {return [parent.datatype.value] }
+                    else if (property === '_type') {
+                        newResolverBody['_type'] = (parent) => { return [parent.datatype.value] }
                     }
                 }
-                
+
                 this.rootResolver[newResolver] = newResolverBody;
 
-            } else if(schemaTree[object].type === 'ObjectType') {
+            } else if (schemaTree[object].type === 'ObjectType') {
                 //OBJECT
                 // console.log(schemaTree[object])
 
-                let newResolver = schemaTree[object].name 
+                let newResolver = schemaTree[object].name
                 let newResolverBody = {}
 
-                
+
                 for (var property in schemaTree[object].data) {
                     let currentObject = schemaTree[object].data[property];
                     let isItList = false;
 
-                    if(currentObject.kind == 'ListType'){
+                    if (currentObject.kind == 'ListType') {
                         currentObject = currentObject.data;
                         isItList = true;
                     }
 
-                    if(property === '_id'){
+                    if (property === '_id') {
                         newResolverBody['_id'] = async (parent) => { return await parent };
                     }
-                    else if(property === '_type'){
+                    else if (property === '_type') {
                         newResolverBody['_type'] = async (parent) => { return await this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") };
                     }
-                    else{
-                        if(isItList){ 
+                    else {
+                        if (isItList) {
                             const name = currentObject['uri'];
-                            let constr = (name) => { return (parent) => {return this.database.getObjs(parent, name) } };
-                            newResolverBody[property] =  constr(name);
+                            let constr = (name) => { return (parent) => { return this.database.getObjs(parent, name) } };
+                            newResolverBody[property] = constr(name);
                         }
-                        else{
+                        else {
                             const name = "http://schema.org/" + property;
-                            let constr = (name) => { return  ( (parent) => {return this.database.getSingleLiteral(parent, name) })};
+                            let constr = (name) => { return ((parent) => { return this.database.getSingleLiteral(parent, name) }) };
                             newResolverBody[property] = constr(name);
                         }
                     }
-                    
+
                 }
-                
+
                 this.rootResolver[newResolver] = newResolverBody;
             }
 

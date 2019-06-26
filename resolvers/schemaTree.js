@@ -30,14 +30,15 @@ createTree = () => {
 
     for (var property in schemaMapping.types) { objectsFromSchemaMapping.push(schemaMapping.types[property]); };
 
-    // console.log(objectsFromSchemaMapping);
+    console.log(objectsFromSchemaMapping);
 
     for (let schemaTypeName in schema.getTypeMap()) {
         let newNode = {}; // object that will be added to tree
         let newNodeFromMappingTree = {}; // node that contain data from schema-mapping for specyfic object
         let newNodeData = {}; // data that will be added as a field
-        // skip system types
-        if (systemTypes.indexOf(schemaTypeName) > -1) {
+       
+        // skip system types and inputs
+        if (systemTypes.indexOf(schemaTypeName) > -1 || schema.getTypeMap()[schemaTypeName].astNode.kind === "InputObjectTypeDefinition") {
             continue;
         }
         // console.log(schemaTypeName)
@@ -50,8 +51,7 @@ createTree = () => {
         // console.log(schema.getTypeMap()[schemaTypeName]['name'])
 
         objectsFromSchemaMapping.forEach(object => {
-            if (object['name'] === schema.getTypeMap()[schemaTypeName]['name'] ||
-                object['name'] + "_INPUT" === schema.getTypeMap()[schemaTypeName]['name']) {
+            if (object['name'] === schema.getTypeMap()[schemaTypeName]['name']) {
                 newNode['uri'] = object['uri'];
                 newNode['type'] = object['type'];
                 newNodeFromMappingTree = object.fields;
@@ -64,6 +64,7 @@ createTree = () => {
 
 
         schema.getTypeMap()[schemaTypeName].astNode.fields.map(object => {
+            
             // console.log(object)
             newNodeData[object.name.value] = {};
             let copyOfNewNode = newNodeData[object.name.value];
@@ -104,14 +105,23 @@ createTree = () => {
             }
         });
 
-
-
-
-
         newNode['data'] = newNodeData;
 
         treeFromSchema[schema.getTypeMap()[schemaTypeName]['name']] = newNode;
     }
+
+    // -------------------------------------------------- SAVE TO FILE
+
+    // var jsonContent = JSON.stringify(treeFromSchema)
+    // const fs = require('fs');
+    // fs.writeFile("output.json", jsonContent, 'utf8', function (err) {
+    //     if (err) {
+    //         console.log("An error occured while writing JSON Object to File.");
+    //         return console.log(err);
+    //     }
+
+    //     console.log("JSON file has been saved.");
+    // });
 
     return treeFromSchema;
 }

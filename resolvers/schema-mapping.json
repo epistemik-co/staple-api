@@ -84,22 +84,6 @@
                     "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
                 }
             ]
-        },
-        {
-            "name": "_InputNode",
-            "type": "DataType",
-            "fields": [
-                {
-                    "name": "_id"
-                },
-                {
-                    "name": "_value"
-                },
-                {
-                    "name": "_type",
-                    "uri": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                }
-            ]
         }
     ]
 }
