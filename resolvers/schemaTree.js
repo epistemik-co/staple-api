@@ -30,7 +30,7 @@ createTree = () => {
 
     for (var property in schemaMapping.types) { objectsFromSchemaMapping.push(schemaMapping.types[property]); };
 
-    console.log(objectsFromSchemaMapping);
+    // console.log(objectsFromSchemaMapping);
 
     for (let schemaTypeName in schema.getTypeMap()) {
         let newNode = {}; // object that will be added to tree

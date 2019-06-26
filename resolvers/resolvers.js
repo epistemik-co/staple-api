@@ -1,15 +1,8 @@
-const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
-const schemaString = require('../schema/schema');
-const schemaTreeClass = require('./schemaTree')
 const createTree = require('./schemaTree')
 
 class rootResolver {
     constructor(db) {
         this.database = db;
-
-        const schema = buildSchemaFromTypeDefinitions(schemaString);
-
-
         // console.log(schema.getTypeMap()["Person"]);
 
         this.rootResolver = {
@@ -29,22 +22,6 @@ class rootResolver {
                 // }
 
             }
-            // Organization: {
-            //     _id: (parent) => { return parent },
-            //     legalName: (parent) => { return this.database.getSingleLiteral(parent, "http://schema.org/legalName") },
-            //     employee: (parent) => { return this.database.getObjs(parent, "http://schema.org/employee") }
-            // },
-            // Person: {
-
-            // },
-            // Text: {
-            //     _type: (parent) => {return [parent.datatype.value] },
-            //     _value: (parent) => {return parent.value},
-            // },
-            // Integer: {
-            //     _type: (parent) => { return this.database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") },
-            //     _value: (parent) => {return parent},
-            // }
         }
 
         // let newResolver = "Person"
@@ -52,25 +29,29 @@ class rootResolver {
         // newResolverBody['_id'] = (parent) => { return parent }
         // newResolverBody['name'] = (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/name") }
         // newResolverBody['affiliation'] = (parent) => { return this.database.getObjs(parent, "http://schema.org/affiliation") }
-
-
         // this.rootResolver[newResolver] = newResolverBody
 
 
+        // -------------------------------------------------- Create Query resolvers
+        this.createQueryResolvers();
+        this.createMutationResolvers();
 
 
+    }
+
+    createMutationResolvers(){
+        console.log("createMutationResolvers");
+        this.database.create("a","b","c");
+    }
+
+    // Query resolvers are based on schemaTree
+    createQueryResolvers(){
         // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
 
         const schemaTree = createTree();
 
-        console.log(schemaTree)
+        // console.log(schemaTree)
         // console.dir(schemaTree);
-        
-
-
-
-
-
 
 
         // -------------------------------------------------- CREATE RESOLVERS
@@ -83,8 +64,9 @@ class rootResolver {
             // console.log(object)
             // const schemaForObject = schema.getTypeMap()[object['name']];
             // console.log(schemaForObject.astNode.fields.map(x => x['name']['value']))
+            // console.log(schemaTree[object].type)
 
-            if (schemaTree[object].type !== 'ObjectType') {
+            if (schemaTree[object].type === 'DataType') {
                 // TYPE
                 // console.log(schemaTree[object])
 
@@ -144,13 +126,7 @@ class rootResolver {
 
                 this.rootResolver[newResolver] = newResolverBody;
             }
-
         }
-
-        // console.log("\n\n")
-        // console.dir(this.rootResolver);
-
-
     }
 }
 
