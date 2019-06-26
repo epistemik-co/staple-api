@@ -33,8 +33,10 @@ class Database {
     }
 
 
-    async delete() {
-        console.log("delete");
+    async delete(sub, pred = null, obj = null, gra = null) {
+        let quad = factory.quad(factory.namedNode(sub), factory.namedNode(pred), factory.namedNode(obj), gra)
+        await this.y_tree.delete(quad);
+        // console.log(await this.getObjs(sub,pred));
     }
 
 

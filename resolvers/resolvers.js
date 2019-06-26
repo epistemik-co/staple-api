@@ -45,6 +45,7 @@ class rootResolver {
     }
 
     createMutationResolvers() {
+        // console.log("createMutationResolvers");
         const schema = buildSchemaFromTypeDefinitions(schemaString);
 
         let objectsFromSchemaMapping = [];
@@ -52,29 +53,59 @@ class rootResolver {
 
         // console.log(schemaMapping)
         // console.log(schema)
-        console.log("createMutationResolvers");
-
-        // Add triple to database
-        // this.database.create("a","b","c");
-
 
         // ADD ROOT MUTATION
-        let newResolver = "Mutation"
-        let newResolverBody = {}
+        let newResolver = "Mutation";
+        let newResolverBody = {};
 
         // find mutation 
         const mutation = schema.getTypeMap()['Mutation'].astNode;
         for(let field in mutation.fields){
             // console.log(mutation.fields[field].name.value);
-            newResolverBody[mutation.fields[field].name.value] = () => {return false;};
+
+            newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
+                // assign fields 
+                console.dir(req.input)
+
+                // Object ID
+                const objectID = req.input['_id'];
+                console.log(objectID)
+
+                // UPSERT or DELETE
+                if(mutation.fields[field].name.value.indexOf("_UPSERT") > -1 ){
+                    console.log("_UPSERT")
+
+                    // Add | Update triple to database
+                    // this.database.create("a","b","c");
+                }
+                else if(mutation.fields[field].name.value.indexOf("_DELETE") > -1 ){
+                    console.log("_DELETE")
+
+                    // remove triple to database
+                    // this.database.create("a","b","c");
+                    // this.database.create("a","b","d");
+                    // this.database.delete("a","b","c");
+                }
+
+                // Is Property an object ?  
+                for(let prop in req.input){
+                    let typeOfField = typeof( req.input[prop]) 
+                    if(typeOfField === 'object'){
+                        console.log("Need to dig deeper");
+                    }
+                    else {
+                        console.log("Just add it");
+                    }
+                }
+
+                return false;
+            };
         }
 
         // Fill Body
         // newResolverBody['_id'] = (parent) => { return parent }
 
-        this.rootResolver[newResolver] = newResolverBody
-
-       
+        this.rootResolver[newResolver] = newResolverBody;
 
     }
 
@@ -89,7 +120,7 @@ class rootResolver {
 
 
         // -------------------------------------------------- CREATE RESOLVERS
-        let objectsFromSchemaTree = []
+        let objectsFromSchemaTree = [];
         for (var property in schemaTree) { objectsFromSchemaTree.push(schemaTree[property]); };
         // console.log(objectsFromSchemaTree)
 

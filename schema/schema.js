@@ -31,8 +31,7 @@ input _InputNode {
     _type: String
     _value: String
     _id: String
- }
-
+}
 
 type Organization {
 _id: ID!
@@ -65,7 +64,6 @@ _baseType: [String]
 _type: [String]
 _value: Int
 }
-
 `
 
 module.exports = schemaString
