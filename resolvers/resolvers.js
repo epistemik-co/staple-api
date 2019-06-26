@@ -1,4 +1,7 @@
 const createTree = require('./schemaTree')
+const schemaString = require('../schema/schema');
+const schemaMapping = require('./schema-mapping');
+const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 
 class rootResolver {
     constructor(db) {
@@ -33,19 +36,50 @@ class rootResolver {
 
 
         // -------------------------------------------------- Create Query resolvers
-        this.createQueryResolvers();
         this.createMutationResolvers();
+        this.createQueryResolvers();
+
+        console.log(this.rootResolver)
 
 
     }
 
-    createMutationResolvers(){
+    createMutationResolvers() {
+        const schema = buildSchemaFromTypeDefinitions(schemaString);
+
+        let objectsFromSchemaMapping = [];
+        for (var property in schemaMapping.types) { objectsFromSchemaMapping.push(schemaMapping.types[property]); };
+
+        // console.log(schemaMapping)
+        // console.log(schema)
         console.log("createMutationResolvers");
-        this.database.create("a","b","c");
+
+        // Add triple to database
+        // this.database.create("a","b","c");
+
+
+        // ADD ROOT MUTATION
+        let newResolver = "Mutation"
+        let newResolverBody = {}
+
+        // find mutation 
+        const mutation = schema.getTypeMap()['Mutation'].astNode;
+        for(let field in mutation.fields){
+            // console.log(mutation.fields[field].name.value);
+            newResolverBody[mutation.fields[field].name.value] = () => {return false;};
+        }
+
+        // Fill Body
+        // newResolverBody['_id'] = (parent) => { return parent }
+
+        this.rootResolver[newResolver] = newResolverBody
+
+       
+
     }
 
     // Query resolvers are based on schemaTree
-    createQueryResolvers(){
+    createQueryResolvers() {
         // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
 
         const schemaTree = createTree();

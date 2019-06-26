@@ -8,10 +8,10 @@ class Database {
     }
 
 
-    async create(sub, pred, obj) {
-        let quad = factory.quad(factory.namedNode(sub), factory.namedNode(pred), factory.namedNode(obj), null)
+    async create(sub, pred, obj, gra = null) {
+        let quad = factory.quad(factory.namedNode(sub), factory.namedNode(pred), factory.namedNode(obj), gra)
         await this.y_tree.add(quad);
-        console.log(await this.getSingleStringValue(sub,pred));
+        // console.log(await this.getObjs(sub,pred));
     }
 
 
