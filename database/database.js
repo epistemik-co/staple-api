@@ -9,9 +9,10 @@ class Database {
 
 
     async create(sub, pred, obj, gra = null) {
-        let quad = factory.quad(factory.namedNode(sub), factory.namedNode(pred), factory.namedNode(obj), gra)
+
+        let quad = factory.quad(sub, pred, obj, gra)
         await this.y_tree.add(quad);
-        // console.log(await this.getObjs(sub,pred));
+        // console.log("DONE")
     }
 
 
@@ -34,9 +35,9 @@ class Database {
 
 
     async delete(sub, pred = null, obj = null, gra = null) {
-        let quad = factory.quad(factory.namedNode(sub), factory.namedNode(pred), factory.namedNode(obj), gra)
+        let quad = factory.quad(factory.namedNode(sub), factory.namedNode(pred), factory.namedNode(obj), gra);
         await this.y_tree.delete(quad);
-        // console.log(await this.getObjs(sub,pred));
+        // console.log(await this.getObjs('a','b'));
     }
 
 
@@ -47,6 +48,18 @@ class Database {
         var x = itr.next();
         while (!x.done) {
             data.push(x.value.object.value);
+            x = itr.next();
+        }
+        return data;
+    };
+
+    async getTriplesBySubject(sub) {
+        const temp = this.y_tree.match(factory.namedNode(sub), null, null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value);
             x = itr.next();
         }
         return data;

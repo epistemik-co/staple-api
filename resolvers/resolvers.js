@@ -2,6 +2,7 @@ const createTree = require('./schemaTree')
 const schemaString = require('../schema/schema');
 const schemaMapping = require('./schema-mapping');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
+const factory = require('@graphy/core.data.factory');
 
 class rootResolver {
     constructor(db) {
@@ -60,43 +61,80 @@ class rootResolver {
 
         // find mutation 
         const mutation = schema.getTypeMap()['Mutation'].astNode;
-        for(let field in mutation.fields){
+        for (let field in mutation.fields) {
             // console.log(mutation.fields[field].name.value);
 
             newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
                 // assign fields 
-                console.dir(req.input)
+                // console.dir(req.input)
 
                 // Object ID
                 const objectID = req.input['_id'];
-                console.log(objectID)
+
+                // console.log(objectID)
 
                 // UPSERT or DELETE
-                if(mutation.fields[field].name.value.indexOf("_UPSERT") > -1 ){
-                    console.log("_UPSERT")
+                if (mutation.fields[field].name.value.indexOf("_UPSERT") > -1) {
+                    // console.log("_UPSERT")
 
-                    // Add | Update triple to database
-                    // this.database.create("a","b","c");
+                    // objectID -> predicate -> object
+                    // find field in schema-mapping and assign predicate = uri;
+                    // object = req.input[xxx]....
+                    let fieldName = mutation.fields[field].name.value.split("_UPSERT")[0];
+
+                    let fieldFromMapping = objectsFromSchemaMapping.filter(x => x.name === fieldName);
+                    fieldFromMapping = fieldFromMapping[0];
+
+                    // console.log(fieldFromMapping.fields)
+
+                    // add Id and Type
+                    for (let fieldNumber in fieldFromMapping.fields) {
+                        if (fieldFromMapping.fields[fieldNumber].name === '_id') {
+                            continue;
+                        }
+                        else if (fieldFromMapping.fields[fieldNumber].name === '_type') {
+                            this.database.create(factory.namedNode(objectID), factory.namedNode(fieldFromMapping.fields[fieldNumber].uri), factory.namedNode(fieldFromMapping.uri));
+                        }
+                        else {
+                            let uri = fieldFromMapping.fields[fieldNumber].uri;
+                            let objectFromInput = req.input[fieldFromMapping.fields[fieldNumber].name];
+                            //add triple
+                            if (objectFromInput !== undefined) {
+                                if (objectFromInput['_value'] === undefined) {
+                                    this.database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                                }
+                                else {
+                                    this.database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.literal(objectFromInput['_value'], "http://schema.org/Text"));
+                                }
+                            }
+                            else{
+                                this.database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(null));
+                            }
+                        }
+                    }
                 }
-                else if(mutation.fields[field].name.value.indexOf("_DELETE") > -1 ){
+                else if (mutation.fields[field].name.value.indexOf("_DELETE") > -1) {
                     console.log("_DELETE")
 
                     // remove triple to database
+                    // this.database.create("e","b","c");
                     // this.database.create("a","b","c");
                     // this.database.create("a","b","d");
-                    // this.database.delete("a","b","c");
+                    // this.database.delete("a");
                 }
 
-                // Is Property an object ?  
-                for(let prop in req.input){
-                    let typeOfField = typeof( req.input[prop]) 
-                    if(typeOfField === 'object'){
-                        console.log("Need to dig deeper");
-                    }
-                    else {
-                        console.log("Just add it");
-                    }
-                }
+                // // Is Property an object ?  
+                // for(let prop in req.input){
+                //     let typeOfField = typeof( req.input[prop]) 
+                //     if(typeOfField === 'object'){
+                //         // console.log("Need to dig deeper");
+                //     }
+                //     else {
+                //         // console.log("Just add it");
+                //     }
+                // }
+
+                // console.log(await this.database.getTriplesBySubject(objectID));
 
                 return false;
             };

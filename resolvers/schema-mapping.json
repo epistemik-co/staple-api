@@ -41,6 +41,7 @@
         {
             "name": "Person",
             "type": "ObjectType",
+            "uri": "http://schema.org/Person",
             "fields": [
                 {
                     "name": "_id"
