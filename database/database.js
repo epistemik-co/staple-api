@@ -12,9 +12,9 @@ class Database {
 
         let quad = factory.quad(sub, pred, obj, gra)
         await this.y_tree.add(quad);
-        if(quad.object.datatype !== undefined){
-            console.log(quad)
-        }
+        // if(quad.object.datatype !== undefined){
+        //     console.log(quad)
+        // }
         // console.log("DONE")
     }
 
@@ -41,6 +41,25 @@ class Database {
         let quad = factory.quad(sub, pred, obj, gra)
         await this.y_tree.delete(quad);
         // console.log(await this.getObjs('a','b'));
+    }
+
+    
+    async deleteID(id) {
+        var temp = this.y_tree.match(factory.namedNode(id), null, null);
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            await this.y_tree.delete(x.value);
+            x = itr.next();
+        }
+
+        temp = this.y_tree.match(null, null, factory.namedNode(id));
+        itr = temp.quads();
+        x = itr.next();
+        while (!x.done) {
+            await this.y_tree.delete(x.value);
+            x = itr.next();
+        }
     }
 
 

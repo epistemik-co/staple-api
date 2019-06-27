@@ -70,6 +70,9 @@ class rootResolver {
 
                 // Object ID
                 const objectID = req.input['_id'];
+                if(objectID === undefined){
+                    return false;
+                }
 
                 // console.log(objectID)
 
@@ -135,7 +138,15 @@ class rootResolver {
                             continue;
                         }
                         else if (fieldFromMapping.fields[fieldNumber].name === '_type') {
-                            this.database.delete(factory.namedNode(objectID), factory.namedNode(fieldFromMapping.fields[fieldNumber].uri), factory.namedNode(fieldFromMapping.uri));
+                            // if id is only value
+                            if(Object.keys(req.input).length === 1 ){
+                                // this.database.delete(factory.namedNode(objectID), factory.namedNode(fieldFromMapping.fields[fieldNumber].uri), factory.namedNode(fieldFromMapping.uri));
+                                // remove all
+                                this.database.deleteID(objectID);
+                            }
+                            else{
+                                continue;
+                            }
                         }
                         else {
                             let uri = fieldFromMapping.fields[fieldNumber].uri;
