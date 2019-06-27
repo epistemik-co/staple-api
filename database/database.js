@@ -12,6 +12,9 @@ class Database {
 
         let quad = factory.quad(sub, pred, obj, gra)
         await this.y_tree.add(quad);
+        if(quad.object.datatype !== undefined){
+            console.log(quad)
+        }
         // console.log("DONE")
     }
 
@@ -34,8 +37,8 @@ class Database {
     }
 
 
-    async delete(sub, pred = null, obj = null, gra = null) {
-        let quad = factory.quad(factory.namedNode(sub), factory.namedNode(pred), factory.namedNode(obj), gra);
+    async delete(sub, pred, obj, gra = null) {
+        let quad = factory.quad(sub, pred, obj, gra)
         await this.y_tree.delete(quad);
         // console.log(await this.getObjs('a','b'));
     }

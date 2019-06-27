@@ -104,7 +104,9 @@ class rootResolver {
                                     this.database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
                                 }
                                 else {
-                                    this.database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.literal(objectFromInput['_value'], "http://schema.org/Text"));
+                                    let objForQuery = factory.literal(objectFromInput['_value']);
+                                    objForQuery.datatype = factory.namedNode("http://schema.org/Text");
+                                    this.database.create(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
                                 }
                             }
                             else{
@@ -112,15 +114,55 @@ class rootResolver {
                             }
                         }
                     }
+
+                    return true;
                 }
                 else if (mutation.fields[field].name.value.indexOf("_DELETE") > -1) {
-                    console.log("_DELETE")
+                    // console.log("_DELETE")
+
+                    // objectID -> predicate -> object
+                    // find field in schema-mapping and assign predicate = uri;
+                    // object = req.input[xxx]....
+                    let fieldName = mutation.fields[field].name.value.split("_DELETE")[0];
+
+                    let fieldFromMapping = objectsFromSchemaMapping.filter(x => x.name === fieldName);
+                    fieldFromMapping = fieldFromMapping[0];
+
+                    // console.log(fieldFromMapping.fields)
+
+                    for (let fieldNumber in fieldFromMapping.fields) {
+                        if (fieldFromMapping.fields[fieldNumber].name === '_id') {
+                            continue;
+                        }
+                        else if (fieldFromMapping.fields[fieldNumber].name === '_type') {
+                            this.database.delete(factory.namedNode(objectID), factory.namedNode(fieldFromMapping.fields[fieldNumber].uri), factory.namedNode(fieldFromMapping.uri));
+                        }
+                        else {
+                            let uri = fieldFromMapping.fields[fieldNumber].uri;
+                            let objectFromInput = req.input[fieldFromMapping.fields[fieldNumber].name];
+                            //add triple
+                            if (objectFromInput !== undefined) {
+                                if (objectFromInput['_value'] === undefined) {
+                                    this.database.delete(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                                }
+                                else {
+                                    let objForQuery = factory.literal(objectFromInput['_value']);
+                                    objForQuery.datatype = factory.namedNode("http://schema.org/Text");
+                                    this.database.delete(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
+                                }
+                            }
+                            else{
+                                continue;
+                            }
+                        }
+                    }
 
                     // remove triple to database
                     // this.database.create("e","b","c");
                     // this.database.create("a","b","c");
                     // this.database.create("a","b","d");
                     // this.database.delete("a");
+                    return true;
                 }
 
                 // // Is Property an object ?  
