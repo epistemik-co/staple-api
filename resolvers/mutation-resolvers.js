@@ -29,7 +29,6 @@ createMutationResolvers = (database, tree) => {
             fieldFromMapping = fieldFromMapping[0];
 
             if (req.type === "CREATE") {
-
                 if (database.getTriplesBySubject(objectID).length > 0) {
                     return false;
                 }
@@ -55,11 +54,6 @@ createMutationResolvers = (database, tree) => {
                                 database.create(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
                             }
                         }
-                        else {
-                            // database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(null));
-                            continue;
-                        }
-
                     }
                 }
 
@@ -67,10 +61,7 @@ createMutationResolvers = (database, tree) => {
             }
             else if (req.type === "UPDATE") {
                 for (let fieldNumber in fieldFromMapping.fields) {
-                    if (fieldFromMapping.fields[fieldNumber].name === '_id' || fieldFromMapping.fields[fieldNumber].name === '_type') {
-                        continue;
-                    }
-                    else {
+                    if (fieldFromMapping.fields[fieldNumber].name !== '_id' && fieldFromMapping.fields[fieldNumber].name !== '_type') {
                         let uri = fieldFromMapping.fields[fieldNumber].uri;
                         let objectFromInput = req.input[fieldFromMapping.fields[fieldNumber].name];
 
@@ -94,33 +85,24 @@ createMutationResolvers = (database, tree) => {
                 // validation
                 for (let fieldNumber in fieldFromMapping.fields) {
                     const currentField = fieldFromMapping.fields[fieldNumber];
-                    if (currentField.name === '_id' || currentField.name === '_type') {
-                        continue;
-                    }
-                    else {
-                        let uri = currentField.uri;
-                        let objectFromInput = req.input[currentField.name];
-                        if (objectFromInput !== undefined) {
+                    if (currentField.name !== '_id' && currentField.name !== '_type') {
+                        if (req.input[currentField.name] !== undefined) {
                             // if it is a list, then it is ok
                             if (tree[fieldName].data[currentField.name].kind !== undefined && tree[fieldName].data[currentField.name].kind === "ListType") {
                                 continue;
                             }
                             else {
-                                let search = database.getObjs(objectID, uri);
+                                let search = database.getObjs(objectID, currentField.uri);
                                 if (search.length > 0) {
                                     return false;
                                 }
                             }
-
                         }
                     }
                 }
 
                 for (let fieldNumber in fieldFromMapping.fields) {
-                    if (fieldFromMapping.fields[fieldNumber].name === '_id' || fieldFromMapping.fields[fieldNumber].name === '_type') {
-                        continue;
-                    }
-                    else {
+                    if (fieldFromMapping.fields[fieldNumber].name !== '_id' && fieldFromMapping.fields[fieldNumber].name !== '_type') {
                         let uri = fieldFromMapping.fields[fieldNumber].uri;
                         let objectFromInput = req.input[fieldFromMapping.fields[fieldNumber].name];
 
