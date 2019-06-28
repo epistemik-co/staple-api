@@ -1,5 +1,5 @@
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
-const schemaString = require('../schema/schema');
+const schemaString = require('./schema');
 const schemaMapping = require('./schema-mapping');
 
 // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
@@ -34,12 +34,8 @@ createTree = () => {
     // console.log(objectsFromSchemaMapping);
 
     for (let schemaTypeName in schema.getTypeMap()) {
-        // if (schemaTypeName === "_Prov") {
-        //     console.log(schemaTypeName)
-        //     console.log(schema.getTypeMap()[schemaTypeName].astNode.kind)
-        // }
         let newNode = {}; // object that will be added to tree
-        let newNodeFromMappingTree = {}; // node that contain data from schema-mapping for specyfic object
+        let newNodeFromMappingTree = false; // node that contain data from schema-mapping for specyfic object
         let newNodeData = {}; // data that will be added as a field
 
         // skip system types and inputs
@@ -51,34 +47,35 @@ createTree = () => {
         // create field for type field from schema
         newNode['name'] = schema.getTypeMap()[schemaTypeName]['name'];
 
-        // console.log("newNodeFromMappingTree for " + schema.getTypeMap()[schemaTypeName]['name'] )
-        // console.log(newNodeFromMappingTree)
-
-
-
         if (schema.getTypeMap()[schemaTypeName].astNode.kind === "EnumTypeDefinition") {
-            console.log(schema.getTypeMap()[schemaTypeName].astNode.name.value)
             newNode['type'] = "EnumType";
             newNode['values'] = schema.getTypeMap()[schemaTypeName].astNode.values.map(x => {
                 return x.name.value;
             })
-            console.log(newNode)
-            console.log('\n')
-
             treeFromSchema[schema.getTypeMap()[schemaTypeName]['name']] = newNode;
+            
         }
         else if (schema.getTypeMap()[schemaTypeName].astNode.kind === "UnionTypeDefinition") {
-
+            newNode['type'] = "UnionType";
+            newNode['values'] = schema.getTypeMap()[schemaTypeName].astNode.types.map(x => {
+                return x.name.value;
+            })
+            treeFromSchema[schema.getTypeMap()[schemaTypeName]['name']] = newNode;
         }
         else if (schema.getTypeMap()[schemaTypeName].astNode.kind === "InputObjectTypeDefinition") {
-
+            // Skip input ??
+            // newNode['type'] = "InputObjectType";
+            // console.log("\n");
+            // newNode['values'] = schema.getTypeMap()[schemaTypeName].astNode.fields.map(x => {
+            //     console.log(x)
+            //     return x
+            // })
+            //treeFromSchema[schema.getTypeMap()[schemaTypeName]['name']] = newNode;
         }
         else if (schema.getTypeMap()[schemaTypeName].astNode.kind === "ObjectTypeDefinition") {
             newNode['type'] = "ObjectType";
+
             // find uri and type of the type field from schema
-            // console.log(objectsFromSchemaMapping)
-            // console.log(schema.getTypeMap()[schemaTypeName]['name'])
-    
             objectsFromSchemaMapping.forEach(object => {
                 if (object['name'] === schema.getTypeMap()[schemaTypeName]['name']) {
                     newNode['uri'] = object['uri'];
@@ -89,13 +86,9 @@ createTree = () => {
             });
 
             schema.getTypeMap()[schemaTypeName].astNode.fields.map(object => {
-
-                // console.log(object)
                 newNodeData[object.name.value] = {};
                 let copyOfNewNode = newNodeData[object.name.value];
                 let prop = object['type'];
-                // console.log("object\n")
-                // console.log(object)
 
                 while (prop !== undefined) {
                     // save information if it is mandatory and skip
@@ -112,10 +105,7 @@ createTree = () => {
                         // console.log(prop)
                         copyOfNewNode['name'] = prop['name']['value'];
 
-                        // console.log("schema.getTypeMap()[schemaTypeName].astNode")
-                        // console.log(schema.getTypeMap()[schemaTypeName].astNode)
-
-                        if (Object.entries(newNodeFromMappingTree).length !== 0 || newNodeFromMappingTree.constructor !== Object){
+                        if (newNodeFromMappingTree){
                             newNodeFromMappingTree.forEach(object2 => {
                                 if (object2['name'] === object.name.value) {
                                     copyOfNewNode['uri'] = object2['uri'];
@@ -140,10 +130,6 @@ createTree = () => {
             console.log("---------------- NEW NODE KIND ----------------")
             console.log(schema.getTypeMap()[schemaTypeName].astNode.kind);
         }
-
-
-
-        
 
     }
 

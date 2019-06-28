@@ -1,6 +1,6 @@
-const createTree = require('./schemaTree')
+const createTree = require('../schema/schema-tree')
 const schemaString = require('../schema/schema');
-const schemaMapping = require('./schema-mapping');
+const schemaMapping = require('../schema/schema-mapping');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const factory = require('@graphy/core.data.factory');
 
@@ -10,22 +10,22 @@ class rootResolver {
         // console.log(schema.getTypeMap()["Person"]);
 
         this.rootResolver = {
-            Query: {
-                // Person_GET: () => {
-                //     return this.database.getSubs("http://schema.org/Person");
-                // },
-                // Organization_GET: () => {
-                //     return this.database.getSubs("http://schema.org/Organization");
-                // },
-                // Mutation: {
+            // Query: {
+            //     // Person_GET: () => {
+            //     //     return this.database.getSubs("http://schema.org/Person");
+            //     // },
+            //     // Organization_GET: () => {
+            //     //     return this.database.getSubs("http://schema.org/Organization");
+            //     // },
+            //     // Mutation: {
 
-                //     Organization_UPSERT(input: Organization_INPUT): Boolean
-                //     Organization_DELETE(input: Organization_INPUT): Boolean
-                //     Person_UPSERT(input: Person_INPUT): Boolean
-                //     Person_DELETE(input: Person_INPUT): Boolean
-                // }
+            //     //     Organization_UPSERT(input: Organization_INPUT): Boolean
+            //     //     Organization_DELETE(input: Organization_INPUT): Boolean
+            //     //     Person_UPSERT(input: Person_INPUT): Boolean
+            //     //     Person_DELETE(input: Person_INPUT): Boolean
+            //     // }
 
-            }
+            // }
         }
 
         const treee = createTree();
