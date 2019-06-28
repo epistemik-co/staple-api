@@ -8,18 +8,13 @@ class Database {
     }
 
 
-    async create(sub, pred, obj, gra = null) {
-
+    create(sub, pred, obj, gra = null) {
         let quad = factory.quad(sub, pred, obj, gra)
-        await this.y_tree.add(quad);
-        // if(quad.object.datatype !== undefined){
-        //     console.log(quad)
-        // }
-        // console.log("DONE")
+        this.y_tree.add(quad);
     }
 
 
-    async read(rdf) {
+    read(rdf) {
         let y_tree2 = this.y_tree
         read_graphy(rdf, {
             data(y_quad) {
@@ -32,38 +27,49 @@ class Database {
     }
 
 
-    async update() {
-        console.log("update");
+    delete(sub, pred, obj, gra = null) {
+        // remove all objects of specyfic type
+        if (obj === undefined) {
+            const temp = this.y_tree.match(sub, pred, null);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                this.y_tree.delete(x.value);
+                x = itr.next();
+            }
+        }
+        // remove one specyfic object of specyfic type
+        else {
+            let quad = factory.quad(sub, pred, obj, gra)
+            this.y_tree.delete(quad);
+        }
     }
 
 
-    async delete(sub, pred, obj, gra = null) {
-        let quad = factory.quad(sub, pred, obj, gra)
-        await this.y_tree.delete(quad);
-        // console.log(await this.getObjs('a','b'));
-    }
-
-    
-    async deleteID(id) {
-        var temp = this.y_tree.match(factory.namedNode(id), null, null);
+    deleteID(id) {
+        let removed = false;
+        var temp = this.y_tree.match(id, null, null);
         var itr = temp.quads();
         var x = itr.next();
         while (!x.done) {
-            await this.y_tree.delete(x.value);
+            this.y_tree.delete(x.value);
+            removed = true;
             x = itr.next();
         }
 
-        temp = this.y_tree.match(null, null, factory.namedNode(id));
+        temp = this.y_tree.match(null, null, id);
         itr = temp.quads();
         x = itr.next();
         while (!x.done) {
-            await this.y_tree.delete(x.value);
+            this.y_tree.delete(x.value);
+            removed = true;
             x = itr.next();
         }
+        return removed;
     }
 
 
-    async getObjs(sub, pred) {
+    getObjs(sub, pred) {
         const temp = this.y_tree.match(factory.namedNode(sub), factory.namedNode(pred), null);
         let data = [];
         var itr = temp.quads();
@@ -75,7 +81,7 @@ class Database {
         return data;
     };
 
-    async getTriplesBySubject(sub) {
+    getTriplesBySubject(sub) {
         const temp = this.y_tree.match(factory.namedNode(sub), null, null);
         let data = [];
         var itr = temp.quads();
@@ -88,7 +94,7 @@ class Database {
     };
 
 
-    async getSingleStringValue(sub, pred) {
+    getSingleStringValue(sub, pred) {
         const temp = this.y_tree.match(factory.namedNode(sub), factory.namedNode(pred), null);
         var itr = temp.quads();
         var x = itr.next();

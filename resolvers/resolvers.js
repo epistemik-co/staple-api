@@ -1,4 +1,5 @@
-const createTree = require('../schema/schema-tree')
+const createTree = require('../schema/schema-tree');
+const createMutationResolvers = require('./mutation-resolvers');
 const schemaString = require('../schema/schema');
 const schemaMapping = require('../schema/schema-mapping');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
@@ -28,7 +29,7 @@ class rootResolver {
             // }
         }
 
-        const treee = createTree();
+        this.tree = createTree();
         console.log("\nDONE\n");
 
         // let newResolver = "Person"
@@ -40,7 +41,9 @@ class rootResolver {
 
 
         // -------------------------------------------------- Create Query resolvers
-        // this.createMutationResolvers();
+        const mutationResolvers = createMutationResolvers(this.database, this.tree);
+        this.rootResolver['Mutation'] = mutationResolvers;
+        
         // this.createQueryResolvers();
 
         console.log(this.rootResolver)
@@ -48,6 +51,7 @@ class rootResolver {
 
     }
 
+    // Mutation resolvers are based on schemaTree
     createMutationResolvers() {
         // console.log("createMutationResolvers");
         const schema = buildSchemaFromTypeDefinitions(schemaString);
