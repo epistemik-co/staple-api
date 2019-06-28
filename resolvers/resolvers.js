@@ -11,12 +11,12 @@ class rootResolver {
 
         this.rootResolver = {
             Query: {
-                Person_GET: () => {
-                    return this.database.getSubs("http://schema.org/Person");
-                },
-                Organization_GET: () => {
-                    return this.database.getSubs("http://schema.org/Organization");
-                },
+                // Person_GET: () => {
+                //     return this.database.getSubs("http://schema.org/Person");
+                // },
+                // Organization_GET: () => {
+                //     return this.database.getSubs("http://schema.org/Organization");
+                // },
                 // Mutation: {
 
                 //     Organization_UPSERT(input: Organization_INPUT): Boolean
@@ -28,6 +28,9 @@ class rootResolver {
             }
         }
 
+        const treee = createTree();
+        console.log("\nDONE\n");
+
         // let newResolver = "Person"
         // let newResolverBody = {}
         // newResolverBody['_id'] = (parent) => { return parent }
@@ -37,8 +40,8 @@ class rootResolver {
 
 
         // -------------------------------------------------- Create Query resolvers
-        this.createMutationResolvers();
-        this.createQueryResolvers();
+        // this.createMutationResolvers();
+        // this.createQueryResolvers();
 
         console.log(this.rootResolver)
 

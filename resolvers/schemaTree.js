@@ -10,6 +10,7 @@ createTree = () => {
     const systemTypes = [
         'Query',
         'Mutation',
+        "_Context",
         'ID',
         'String',
         '__Schema',
@@ -33,12 +34,16 @@ createTree = () => {
     // console.log(objectsFromSchemaMapping);
 
     for (let schemaTypeName in schema.getTypeMap()) {
+        // if (schemaTypeName === "_Prov") {
+        //     console.log(schemaTypeName)
+        //     console.log(schema.getTypeMap()[schemaTypeName].astNode.kind)
+        // }
         let newNode = {}; // object that will be added to tree
         let newNodeFromMappingTree = {}; // node that contain data from schema-mapping for specyfic object
         let newNodeData = {}; // data that will be added as a field
-       
+
         // skip system types and inputs
-        if (systemTypes.indexOf(schemaTypeName) > -1 || schema.getTypeMap()[schemaTypeName].astNode.kind === "InputObjectTypeDefinition") {
+        if (systemTypes.indexOf(schemaTypeName) > -1) {
             continue;
         }
         // console.log(schemaTypeName)
@@ -63,47 +68,73 @@ createTree = () => {
 
 
 
-        schema.getTypeMap()[schemaTypeName].astNode.fields.map(object => {
-            
-            // console.log(object)
-            newNodeData[object.name.value] = {};
-            let copyOfNewNode = newNodeData[object.name.value];
-            let prop = object['type'];
-            // console.log("object\n")
-            // console.log(object)
+        if (schema.getTypeMap()[schemaTypeName].astNode.kind === "EnumTypeDefinition") {
+            console.log(schema.getTypeMap()[schemaTypeName].astNode.name.value)
+            newNodeData['data'] = schema.getTypeMap()[schemaTypeName].astNode.values.map(x => {
+                return x.name.value;
+            })
+            console.log(newNodeData)
+            console.log('\n')
+        }
+        else if (schema.getTypeMap()[schemaTypeName].astNode.kind === "UnionTypeDefinition") {
 
-            while (prop !== undefined) {
-                // save information if it is mandatory and skip
-                if (prop['kind'] === 'NonNullType') {
-                    copyOfNewNode['mandatory'] = true;
-                    prop = prop['type'];
-                }
-                else {
-                    copyOfNewNode['mandatory'] = false;
-                }
-                // this is the root where we get the value
-                if (prop['kind'] === 'NamedType') {
-                    // console.log("PROP\n")
-                    // console.log(prop)
-                    copyOfNewNode['name'] = prop['name']['value'];
+        }
+        else if (schema.getTypeMap()[schemaTypeName].astNode.kind === "InputObjectTypeDefinition") {
 
-                    // console.log("schema.getTypeMap()[schemaTypeName].astNode")
-                    // console.log(schema.getTypeMap()[schemaTypeName].astNode)
+        }
+        else if (schema.getTypeMap()[schemaTypeName].astNode.kind === "ObjectTypeDefinition") {
 
-                    newNodeFromMappingTree.forEach(object2 => {
-                        if (object2['name'] === object.name.value) {
-                            copyOfNewNode['uri'] = object2['uri'];
+            schema.getTypeMap()[schemaTypeName].astNode.fields.map(object => {
+
+                // console.log(object)
+                newNodeData[object.name.value] = {};
+                let copyOfNewNode = newNodeData[object.name.value];
+                let prop = object['type'];
+                // console.log("object\n")
+                // console.log(object)
+
+                while (prop !== undefined) {
+                    // save information if it is mandatory and skip
+                    if (prop['kind'] === 'NonNullType') {
+                        copyOfNewNode['mandatory'] = true;
+                        prop = prop['type'];
+                    }
+                    else {
+                        copyOfNewNode['mandatory'] = false;
+                    }
+                    // this is the root where we get the value
+                    if (prop['kind'] === 'NamedType') {
+                        // console.log("PROP\n")
+                        // console.log(prop)
+                        copyOfNewNode['name'] = prop['name']['value'];
+
+                        // console.log("schema.getTypeMap()[schemaTypeName].astNode")
+                        // console.log(schema.getTypeMap()[schemaTypeName].astNode)
+
+                        if (Object.entries(newNodeFromMappingTree).length !== 0 || newNodeFromMappingTree.constructor !== Object){
+                            newNodeFromMappingTree.forEach(object2 => {
+                                if (object2['name'] === object.name.value) {
+                                    copyOfNewNode['uri'] = object2['uri'];
+                                }
+                            });
                         }
-                    });
+
+                    }
+                    else {
+                        copyOfNewNode['kind'] = prop['kind']
+                        copyOfNewNode['data'] = {}
+                    }
+                    prop = prop['type'];
+                    copyOfNewNode = copyOfNewNode['data'];
                 }
-                else {
-                    copyOfNewNode['kind'] = prop['kind']
-                    copyOfNewNode['data'] = {}
-                }
-                prop = prop['type'];
-                copyOfNewNode = copyOfNewNode['data'];
-            }
-        });
+            });
+        }
+        else{
+            console.log("---------------- NEW NODE KIND ----------------")
+            console.log(schema.getTypeMap()[schemaTypeName].astNode.kind);
+        }
+
+
 
         newNode['data'] = newNodeData;
 
