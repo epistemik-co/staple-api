@@ -23,7 +23,6 @@ createMutationResolvers = (database, tree) => {
 
         newResolverBody[mutation.fields[field].name.value] = (args, req) => {
             // Object ID
-            console.log("1")
             const objectID = req.input['_id'];
             if (objectID === undefined) {
                 return false;
@@ -33,36 +32,36 @@ createMutationResolvers = (database, tree) => {
             let fieldFromSchema = objectsFromSchemaMapping.filter(x => x.name === fieldName);
             // console.log(fieldFromSchema)
             fieldFromSchema = fieldFromSchema[0];
-            console.log("2")
 
             if (req.type === "CREATE") {
                 if (database.getTriplesBySubject(objectID).length > 0) {
                     return false;
                 }
-                console.log("3")
-                console.log(fieldFromSchema)
                 
                 for (let propertyName in fieldFromSchema.data) {
                     if (propertyName === '_id') {
-                        console.log("4")
                         continue;
                     }
                     else if (propertyName === '_type') {
-                        console.log("5")
-                        database.create(factory.namedNode(objectID), factory.namedNode(fieldFromSchema.data[propertyName].uri), factory.namedNode(fieldFromSchema.uri));
+                        database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchema.uri));
                     }
                     else {
-                        console.log("6")
                         let uri = fieldFromSchema.data[propertyName].uri;
-                        let objectFromInput = req.input[fieldFromSchema.data[propertyName].name];
+                        if(uri === undefined){
+                            uri = fieldFromSchema.data[propertyName].data.uri;
+                        }
+                         
+                        let objectFromInput = req.input[propertyName];
                         //add triple
                         if (objectFromInput !== undefined) {
+                            for( let temp in objectFromInput){
+                                objectFromInput = objectFromInput[temp];
+                            }
+                            
                             if (objectFromInput['_value'] === undefined) {
-                                console.log("7")
-                                database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                                database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id'])); // uri jest zle
                             }
                             else {
-                                console.log("8")
                                 let objForQuery = factory.literal(objectFromInput['_value']);
                                 objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
                                 database.create(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
@@ -70,14 +69,16 @@ createMutationResolvers = (database, tree) => {
                         }
                     }
                 }
-
+                const asada = database.getTriplesBySubject("http://www.id.org");
+                console.log("\n\n")
+                console.log(asada)
                 return true;
             }
             else if (req.type === "UPDATE") {
-                for (let fieldNumber in fieldFromSchema.fields) {
-                    if (fieldFromSchema.fields[fieldNumber].name !== '_id' && fieldFromSchema.fields[fieldNumber].name !== '_type') {
-                        let uri = fieldFromSchema.fields[fieldNumber].uri;
-                        let objectFromInput = req.input[fieldFromSchema.fields[fieldNumber].name];
+                for (let propertyName in fieldFromSchema.data) {
+                    if (fieldFromSchema.data[propertyName].name !== '_id' && fieldFromSchema.data[propertyName].name !== '_type') {
+                        let uri = fieldFromSchema.data[propertyName].uri;
+                        let objectFromInput = req.input[fieldFromSchema.data[propertyName].name];
 
                         database.delete(factory.namedNode(objectID), factory.namedNode(uri), undefined);
 
@@ -97,8 +98,8 @@ createMutationResolvers = (database, tree) => {
             }
             else if (req.type === "INSERT") {
                 // validation
-                for (let fieldNumber in fieldFromSchema.fields) {
-                    const currentField = fieldFromSchema.fields[fieldNumber];
+                for (let propertyName in fieldFromSchema.data) {
+                    const currentField = fieldFromSchema.data[propertyName];
                     if (currentField.name !== '_id' && currentField.name !== '_type') {
                         if (req.input[currentField.name] !== undefined) {
                             // if it is a list, then it is ok
@@ -115,10 +116,10 @@ createMutationResolvers = (database, tree) => {
                     }
                 }
 
-                for (let fieldNumber in fieldFromSchema.fields) {
-                    if (fieldFromSchema.fields[fieldNumber].name !== '_id' && fieldFromSchema.fields[fieldNumber].name !== '_type') {
-                        let uri = fieldFromSchema.fields[fieldNumber].uri;
-                        let objectFromInput = req.input[fieldFromSchema.fields[fieldNumber].name];
+                for (let propertyName in fieldFromSchema.data) {
+                    if (fieldFromSchema.data[propertyName].name !== '_id' && fieldFromSchema.data[propertyName].name !== '_type') {
+                        let uri = fieldFromSchema.data[propertyName].uri;
+                        let objectFromInput = req.input[fieldFromSchema.data[propertyName].name];
 
                         if (objectFromInput !== undefined) {
                             if (objectFromInput['_value'] === undefined) {
@@ -135,10 +136,18 @@ createMutationResolvers = (database, tree) => {
                 return true;
             }
             else if (req.type === "REMOVE") {
-                for (let fieldNumber in fieldFromSchema.fields) {
-                    if (fieldFromSchema.fields[fieldNumber].name !== '_id' && fieldFromSchema.fields[fieldNumber].name !== '_type') {
-                        let uri = fieldFromSchema.fields[fieldNumber].uri;
-                        let objectFromInput = req.input[fieldFromSchema.fields[fieldNumber].name];
+                for (let propertyName in fieldFromSchema.data) {
+                    if (fieldFromSchema.data[propertyName].name !== '_id' && fieldFromSchema.data[propertyName].name !== '_type') {
+                        let uri = fieldFromSchema.data[propertyName].uri;
+                        console.log("\n");
+                        if(uri === undefined ){
+                            uri = fieldFromSchema.data[propertyName].data.uri;
+                        }
+
+                        if(uri === "@id"){
+                            //console.log(fieldFromSchema.data);
+                        }
+                        let objectFromInput = req.input[fieldFromSchema.data[propertyName].name];
                         if (objectFromInput !== undefined) {
                             if (objectFromInput['_value'] === undefined) {
                                 database.delete(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
@@ -158,7 +167,7 @@ createMutationResolvers = (database, tree) => {
         };
     }
 
-    newResolverBody['Delete'] = (args, req) => {
+    newResolverBody['DELETE'] = (args, req) => {
         const objectID = req.id;
         if (objectID === undefined) {
             return false;
