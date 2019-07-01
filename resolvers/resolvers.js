@@ -39,8 +39,8 @@ class rootResolver {
         // for (const [key, value] of Object.entries(queryResolvers['Data'])) {
         //     this.rootResolver[key] = queryResolvers['Data'][key];
         // }
-        //const mutationResolvers = createMutationResolvers(this.database, this.tree);
-        //this.rootResolver['Mutation'] = mutationResolvers;
+        // const mutationResolvers = createMutationResolvers(this.database, this.tree);
+        // this.rootResolver['Mutation'] = mutationResolvers;
         // console.log(this.rootResolver)
 
     }
