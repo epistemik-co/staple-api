@@ -1,5 +1,6 @@
 const createTree = require('../schema/schema-tree');
 const createMutationResolvers = require('./mutation-resolvers');
+const createQueryResolvers = require('./query-resolvers');
 const schemaString = require('../schema/schema');
 const schemaMapping = require('../schema/schema-mapping');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
@@ -30,24 +31,17 @@ class rootResolver {
         }
 
         this.tree = createTree();
-        console.log("\nDONE\n");
-
-        // let newResolver = "Person"
-        // let newResolverBody = {}
-        // newResolverBody['_id'] = (parent) => { return parent }
-        // newResolverBody['name'] = (parent) => { return this.database.getSingleStringValue(parent, "http://schema.org/name") }
-        // newResolverBody['affiliation'] = (parent) => { return this.database.getObjs(parent, "http://schema.org/affiliation") }
-        // this.rootResolver[newResolver] = newResolverBody
-
 
         // -------------------------------------------------- Create Query resolvers
-        const mutationResolvers = createMutationResolvers(this.database, this.tree);
-        this.rootResolver['Mutation'] = mutationResolvers;
         
-        // this.createQueryResolvers();
-
-        console.log(this.rootResolver)
-
+        // const queryResolvers = createQueryResolvers(this.database, this.tree);
+        // this.rootResolver['Query'] = queryResolvers["Query"];
+        // for (const [key, value] of Object.entries(queryResolvers['Data'])) {
+        //     this.rootResolver[key] = queryResolvers['Data'][key];
+        // }
+        //const mutationResolvers = createMutationResolvers(this.database, this.tree);
+        //this.rootResolver['Mutation'] = mutationResolvers;
+        // console.log(this.rootResolver)
 
     }
 

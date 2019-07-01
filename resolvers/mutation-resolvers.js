@@ -122,10 +122,7 @@ createMutationResolvers = (database, tree) => {
             }
             else if (req.type === "REMOVE") {
                 for (let fieldNumber in fieldFromMapping.fields) {
-                    if (fieldFromMapping.fields[fieldNumber].name === '_id' || fieldFromMapping.fields[fieldNumber].name === '_type') {
-                        continue;
-                    }
-                    else {
+                    if (fieldFromMapping.fields[fieldNumber].name !== '_id' && fieldFromMapping.fields[fieldNumber].name !== '_type') {
                         let uri = fieldFromMapping.fields[fieldNumber].uri;
                         let objectFromInput = req.input[fieldFromMapping.fields[fieldNumber].name];
                         if (objectFromInput !== undefined) {
@@ -142,7 +139,6 @@ createMutationResolvers = (database, tree) => {
                 }
                 return true;
             }
-
 
             return false;
         };

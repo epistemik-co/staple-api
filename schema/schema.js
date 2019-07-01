@@ -27,7 +27,6 @@ _id: ID!
 _type: [OBJECT_TYPES]
 name: name_INPUT
 affiliation: affiliation_INPUT
-prov: [_Prov_INPUT]
 }
 
 input Organization_INPUT {
@@ -40,12 +39,6 @@ employee: [employee_INPUT]
 email: email_INPUT
 numberOfEmployees: numberOfEmployees_INPUT
 shareholder: [shareholder_INPUT]
-prov: [_Prov_INPUT]
-}
-
-input _Prov_INPUT {
-_source: String!
-_datetime: String!
 }
 
 input name_INPUT {
@@ -144,7 +137,6 @@ type Organization {
 _id (only: [String]) : ID!
 _baseType: [String]
 _type: [String]
-_prov: [_Prov]
 legalName: Text
 address: Text
 department: [Organization]
@@ -160,7 +152,6 @@ type Person {
 _id (only: [String]): ID!
 _baseType: [String]
 _type: [String]
-_prov: [_Prov]
 name: Text
 affiliation: Organization
 }
@@ -169,20 +160,14 @@ type Text {
 _baseType: [String]
 _type: [String]
 _value (only: [String], contains:String, lang:String): String
-_prov: [_Prov]
 }
 
 type Integer {
 _baseType: [String]
 _type: [String]
 _value (only: [String]): Int
-_prov: [_Prov]
 }
 
-type _Prov {
-_source: String
-_datetime: String
-}
 
 type _Context {
 _id: String
