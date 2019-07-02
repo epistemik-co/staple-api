@@ -11,7 +11,17 @@ class Database {
 
     create(sub, pred, obj, gra = null) {
         let quad = factory.quad(sub, pred, obj, gra);
-        this.y_tree.add(quad);
+
+        const iterable1 = new Object();
+        iterable1[Symbol.iterator] = function* () {
+            yield quad;
+        };
+
+        // console.log(this.y_tree.has(quad));
+        // console.log(this.y_tree.size);
+        this.y_tree.addQuads([...iterable1]);
+        // console.log(this.y_tree.size);
+        console.log(this.getAllQuads())
     }
 
 
@@ -84,6 +94,18 @@ class Database {
 
     getTriplesBySubject(sub) {
         const temp = this.y_tree.match(factory.namedNode(sub), null, null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value);
+            x = itr.next();
+        }
+        return data;
+    };
+
+    getAllQuads() {
+        const temp = this.y_tree.match(null, null, null);
         let data = [];
         var itr = temp.quads();
         var x = itr.next();

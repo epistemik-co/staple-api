@@ -28,14 +28,15 @@ createMutationResolvers = (database, tree) => {
                 return false;
             }
 
-            let asada = database.getTriplesBySubject("http://subject");
+            let testQuads = database.getTriplesBySubject("http://subject");
             console.log("\n\n")
-            console.log(asada)
+            // console.log(testQuads)
 
             let fieldName = mutation.fields[field].name.value;
             let fieldFromSchemaTree = objectsFromSchemaObjectTree.filter(x => x.name === fieldName);
             // console.log(fieldFromSchema)
             fieldFromSchemaTree = fieldFromSchemaTree[0];
+
 
             if (req.type === "CREATE") {
                 if (database.getTriplesBySubject(objectID).length > 0) {
@@ -49,93 +50,14 @@ createMutationResolvers = (database, tree) => {
                     else if (propertyName === '_type') {
                         database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchemaTree.uri));
                     }
-                    else {
-                        let uri = schemaMapping["@context"][propertyName];
-                        if (uri === undefined) {
-                            uri = "http://schema.org/" + propertyName;
-                        }
-
-                        let objectFromInput = req.input[propertyName];
-                        if (objectFromInput !== undefined) {
-                            objectFromInput = objectFromInput[0];
-
-                            let returnType = "";
-                            if (fieldFromSchemaTree.data[propertyName].kind === "ListType") {
-                                returnType = fieldFromSchemaTree.data[propertyName].data.name;
-                            }
-                            else {
-                                returnType = fieldFromSchemaTree.data[propertyName].name;
-                            }
-                            returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
-
-
-                            if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
-                                database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
-                            }
-                            else if (returnType.type === "UnionType") {
-                                uriFromInput = schemaMapping["@context"][objectFromInput['_type']];
-                                if (uri.includes(uriFromInput)) {
-                                    database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
-                                }
-                            }
-                            else if (returnType.type === "http://schema.org/DataType") {
-                                let objForQuery = factory.literal(objectFromInput['_value']);
-                                objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
-                                database.create(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
-                            }
-                            else {
-                                console.log("UNHANDLED TYPE")
-                            }
-                        }
-                    }
                 }
-                asada = database.getTriplesBySubject("http://subject");
-                console.log("\n\n")
-                console.log(asada)
-                return true;
             }
-            else {
+            else if (req.type === "UPDATE") {
                 // Need to be created
                 if (database.getTriplesBySubject(objectID).length === 0) {
                     return false;
                 }
-
-                if (req.type === "UPDATE") {
-                    // Remove old fields
-                    for (let propertyName in fieldFromSchemaTree.data) {
-                        if (propertyName !== '_id' && propertyName !== '_type') {
-                            let uri = schemaMapping["@context"][propertyName];
-                            if (uri === undefined) {
-                                uri = "http://schema.org/" + propertyName;
-                            }
-
-                            database.delete(factory.namedNode(objectID), factory.namedNode(uri), undefined);
-                        }
-                    }
-                }
-                else if (req.type === "INSERT") {
-                    // Validation 
-                    for (let propertyName in fieldFromSchemaTree.data) {
-                        if (propertyName !== '_id' && propertyName !== '_type') {
-                            if (req.input[propertyName] !== undefined) {
-                                if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
-                                    continue;
-                                }
-                                else {
-                                    let uri = schemaMapping["@context"][propertyName];
-                                    if (uri === undefined) {
-                                        uri = "http://schema.org/" + propertyName;
-                                    }
-                                    let search = database.getObjs(objectID, uri);
-                                    if (search.length > 0) {
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
+                // Remove old fields
                 for (let propertyName in fieldFromSchemaTree.data) {
                     if (propertyName !== '_id' && propertyName !== '_type') {
                         let uri = schemaMapping["@context"][propertyName];
@@ -143,64 +65,103 @@ createMutationResolvers = (database, tree) => {
                             uri = "http://schema.org/" + propertyName;
                         }
 
-                        let objectFromInput = req.input[propertyName];
-                        if (objectFromInput !== undefined) {
-                            objectFromInput = objectFromInput[0]
-
-                            let returnType = "";
-                            if (fieldFromSchemaTree.data[propertyName].kind === "ListType") {
-                                returnType = fieldFromSchemaTree.data[propertyName].data.name;
+                        database.delete(factory.namedNode(objectID), factory.namedNode(uri), undefined);
+                    }
+                }
+            }
+            else if (req.type === "INSERT") {
+                // Need to be created
+                if (database.getTriplesBySubject(objectID).length === 0) {
+                    return false;
+                }
+                // Validation 
+                for (let propertyName in fieldFromSchemaTree.data) {
+                    if (propertyName !== '_id' && propertyName !== '_type') {
+                        if (req.input[propertyName] !== undefined) {
+                            if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
+                                continue;
                             }
                             else {
-                                returnType = fieldFromSchemaTree.data[propertyName].name;
-                            }
-                            returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
-
-                            if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
-
-                                if (req.type === "REMOVE") {
-                                    database.delete(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                                let uri = schemaMapping["@context"][propertyName];
+                                if (uri === undefined) {
+                                    uri = "http://schema.org/" + propertyName;
                                 }
-                                else {
-                                    database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                                let search = database.getObjs(objectID, uri);
+                                if (search.length > 0) {
+                                    return false;
                                 }
-                            }
-                            else if (returnType.type === "UnionType") {
-                                uriFromInput = schemaMapping["@context"][objectFromInput['_type']];
-
-                                if (uri.includes(uriFromInput)) {
-                                    if (req.type === "REMOVE") {
-                                        database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
-                                    }
-                                    else {
-                                        database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
-                                    }
-
-                                }
-                            }
-                            else if (returnType.type === "http://schema.org/DataType") {
-                                let objForQuery = factory.literal(objectFromInput['_value']);
-                                objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
-
-                                if (req.type === "REMOVE") {
-                                    database.delete(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
-                                }
-                                else {
-                                    database.create(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
-                                }
-                            }
-                            else {
-                                console.log("UNHANDLED TYPE")
                             }
                         }
                     }
                 }
-                asada = database.getTriplesBySubject("http://subject");
-                console.log("\n\n")
-                console.log(asada)
-                return true;
             }
-            return false;
+
+            for (let propertyName in fieldFromSchemaTree.data) {
+                if (propertyName !== '_id' && propertyName !== '_type') {
+                    let uri = schemaMapping["@context"][propertyName];
+                    if (uri === undefined) {
+                        uri = "http://schema.org/" + propertyName;
+                    }
+
+                    let objectFromInput = req.input[propertyName];
+                    if (objectFromInput !== undefined) {
+                        objectFromInput = objectFromInput[0]
+
+                        let returnType = "";
+                        if (fieldFromSchemaTree.data[propertyName].kind === "ListType") {
+                            returnType = fieldFromSchemaTree.data[propertyName].data.name;
+                        }
+                        else {
+                            returnType = fieldFromSchemaTree.data[propertyName].name;
+                        }
+                        returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
+
+                        if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
+
+                            if (req.type === "REMOVE") {
+                                database.delete(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                            }
+                            else {
+                                database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                            }
+                        }
+                        else if (returnType.type === "UnionType") {
+                            uriFromInput = schemaMapping["@context"][objectFromInput['_type']];
+
+                            if (uri.includes(uriFromInput)) {
+                                if (req.type === "REMOVE") {
+                                    database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
+                                }
+                                else {
+                                    database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
+                                }
+
+                            }
+                        }
+                        else if (returnType.type === "http://schema.org/DataType") {
+                            let objForQuery = factory.literal(objectFromInput['_value']);
+                            objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
+
+                            if (req.type === "REMOVE") {
+                                database.delete(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
+                            }
+                            else {
+                                database.create(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
+                            }
+                        }
+                        else {
+                            console.log("UNHANDLED TYPE")
+                        }
+                    }
+                }
+            }
+
+            testQuads = database.getTriplesBySubject("http://subject");
+            console.log("\n\n")
+            // console.log(testQuads)
+            return true;
+
+
         };
     }
 
