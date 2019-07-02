@@ -141,7 +141,7 @@ type Organization {
   """
   The official name of the organization, e.g. the registered company name.
   """
-  legalName: [Text]
+  legalName: Text
 
   """
   The official name of the organization, e.g. the registered company name.

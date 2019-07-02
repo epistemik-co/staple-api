@@ -8,8 +8,9 @@ class Database {
     }
 
 
+
     create(sub, pred, obj, gra = null) {
-        let quad = factory.quad(sub, pred, obj, gra)
+        let quad = factory.quad(sub, pred, obj, gra);
         this.y_tree.add(quad);
     }
 
