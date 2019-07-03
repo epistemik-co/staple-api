@@ -2,6 +2,7 @@ const schemaString = require('../schema/schema');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const schemaMapping = require('../schema/schema-mapping');
 const factory = require('@graphy/core.data.factory');
+const { GraphQLError } = require( 'graphql' );
 
 createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
@@ -41,14 +42,14 @@ createMutationResolvers = (database, tree) => {
 
             if (req.type === "CREATE") {
                 if (database.getTriplesBySubject(objectID).length > 0) {
-                    return false;
+                    throw new GraphQLError({ key: 'Duplicate', message: 'Object with given ID is already deffined in database' });
                 }
                 database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchemaTree.uri));
             }
             else if (req.type === "UPDATE") {
                 // Need to be created
                 if (database.getTriplesBySubject(objectID).length === 0) {
-                    return false;
+                    throw new GraphQLError({ key: 'Object not found', message: 'Object with given ID is not deffined in database' });
                 }
                 // Remove old fields
                 for (let propertyName in fieldFromSchemaTree.data) {
@@ -81,7 +82,7 @@ createMutationResolvers = (database, tree) => {
                                 }
                                 let search = database.getObjs(objectID, uri);
                                 if (search.length > 0) {
-                                    return false;
+                                    throw new GraphQLError({ key: 'Can not override field: ' + propertyName, message: 'Field already defined in object' });
                                 }
                             }
                         }

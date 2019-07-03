@@ -1,7 +1,5 @@
-const schemaString = require('../schema/schema');
-const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const schemaMapping = require('../schema/schema-mapping');
-const factory = require('@graphy/core.data.factory');
+const { GraphQLError } = require( 'graphql' );
 
 createQueryResolvers = (database, tree) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
@@ -126,6 +124,7 @@ createQueryResolvers = (database, tree) => {
             let newResolverBody = {}
             newResolverBody['__resolveType'] = (parent) => { 
                 // ????
+                throw new GraphQLError({ key: 'Union', message: 'Need to be implemented... soon' });
                 console.log(parent);
                 return database.getTriplesBySubject(parent.value) 
             };

@@ -26,6 +26,10 @@ function showMemUsage(){
 const schema = makeExecutableSchema({
   typeDefs:schemaString,
   resolvers:rootResolver,
+  customFormatErrorFn: error => {
+    const { code, message } = error.originalError;
+    return { code, message };
+  },
 //   resolverValidationOptions: {
 //     requireResolversForResolveType: false,
 //   }
