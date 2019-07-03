@@ -28,8 +28,8 @@ createMutationResolvers = (database, tree) => {
                 return false;
             }
 
-            let testQuads = database.getTriplesBySubject("http://subject");
-            console.log("\n\n")
+            // let testQuads = database.getTriplesBySubject("http://subject");
+            // console.log("\n\n")
             // console.log(testQuads)
 
             let fieldName = mutation.fields[field].name.value;
@@ -43,14 +43,7 @@ createMutationResolvers = (database, tree) => {
                     return false;
                 }
 
-                for (let propertyName in fieldFromSchemaTree.data) {
-                    if (propertyName === '_id') {
-                        continue;
-                    }
-                    else if (propertyName === '_type') {
-                        database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchemaTree.uri));
-                    }
-                }
+                database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchemaTree.uri));
             }
             else if (req.type === "UPDATE") {
                 // Need to be created
@@ -156,8 +149,8 @@ createMutationResolvers = (database, tree) => {
                 }
             }
 
-            testQuads = database.getTriplesBySubject("http://subject");
-            console.log("\n\n")
+            // testQuads = database.getTriplesBySubject("http://subject");
+            // console.log("\n\n")
             // console.log(testQuads)
             return true;
 
