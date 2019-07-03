@@ -92,6 +92,18 @@ class Database {
         return data;
     };
 
+    getObjsforResolver(sub, pred) {
+        const temp = this.y_tree.match(factory.namedNode(sub), factory.namedNode(pred), null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value.object);
+            x = itr.next();
+        }
+        return data;
+    };
+
     getTriplesBySubject(sub) {
         const temp = this.y_tree.match(factory.namedNode(sub), null, null);
         let data = [];

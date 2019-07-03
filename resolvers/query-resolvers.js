@@ -17,7 +17,7 @@ createQueryResolvers = (database, tree) => {
 
     // -------------------------------------------------- CREATE RESOLVERS
     let objectsFromSchemaObjectTree = [];
-    for (var property in tree) { objectsFromSchemaObjectTree.push(tree[property]); };
+    for (var propertyName in tree) { objectsFromSchemaObjectTree.push(tree[propertyName]); };
     // console.log(objectsFromSchemaTree)
 
     for (var object in tree) {
@@ -34,12 +34,12 @@ createQueryResolvers = (database, tree) => {
             let newResolver = tree[object].name
             let newResolverBody = {}
 
-            for (var property in tree[object].data) {
-                if (property === '_value') {
-                    newResolverBody['_value'] = async (parent) => {console.log(parent); return parent.value }
+            for (var propertyName in tree[object].data) {
+                if (propertyName === '_value') {
+                    newResolverBody['_value'] = async (parent) => { return parent.value } // OK
                 }
-                else if (property === '_type') {
-                    newResolverBody['_type'] = (parent) => { console.log(parent); return [parent.datatype.value] }
+                else if (propertyName === '_type') {
+                    newResolverBody['_type'] = (parent) => { return [parent.datatype.value] } // OK
                 }
             }
 
@@ -48,17 +48,17 @@ createQueryResolvers = (database, tree) => {
         } else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
             // Core Query
             let uri = tree[object]['uri'];
-            let constr = (uri) => { return (parent) => {console.log(uri); return database.getSubs(uri) } };
+            let constr = (uri) => { return (parent) => {return database.getSubs(uri) } }; // OK
             queryResolverBody['Query'][tree[object].name] = constr(uri);
-            
+
             //OBJECT
             // console.log(tree[object])
             let newResolver = tree[object].name
             let newResolverBody = {}
 
 
-            for (var property in tree[object].data) {
-                let currentObject = tree[object].data[property];
+            for (var propertyName in tree[object].data) {
+                let currentObject = tree[object].data[propertyName];
                 let isItList = false;
 
                 if (currentObject.kind == 'ListType') {
@@ -66,22 +66,26 @@ createQueryResolvers = (database, tree) => {
                     isItList = true;
                 }
 
-                if (property === '_id') {
-                    newResolverBody['_id'] =  (parent) => { console.log(parent); return  parent };
+                if (propertyName === '_id') {
+                    newResolverBody['_id'] =  (parent) => {  return  parent }; // OK
                 }
-                else if (property === '_type') {
-                    newResolverBody['_type'] =  (parent) => {console.log(parent); return  database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") };
+                else if (propertyName === '_type') {
+                    newResolverBody['_type'] =  (parent) => { return  database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }; // OK
                 }
                 else {
+                    let uri = schemaMapping["@context"][propertyName];
+                        if (uri === undefined) {
+                            uri = "http://schema.org/" + propertyName;
+                        }
                     if (isItList) {
-                        const name = currentObject['uri'];
-                        let constr = (name) => { return (parent) => {console.log(parent); return database.getObjs(parent, name) } };
-                        newResolverBody[property] = constr(name);
+                        const name = uri; //currentObject['uri'];
+                        let constr = (name) => { return (parent) => { return database.getObjsforResolver(parent, name) } }; // OK
+                        newResolverBody[propertyName] = constr(name);
                     }
                     else {
-                        const name = currentObject['uri'];
-                        let constr = (name) => { return ((parent) => {console.log(parent); return database.getSingleLiteral(parent, name) }) };
-                        newResolverBody[property] = constr(name);
+                        const name = uri; //currentObject['uri'];
+                        let constr = (name) => { return ((parent) => { return database.getSingleLiteral(parent, name) }) };// OK
+                        newResolverBody[propertyName] = constr(name);
                     }
                 }
 
