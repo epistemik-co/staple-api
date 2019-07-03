@@ -13,9 +13,9 @@ class rootResolver {
 
         this.rootResolver = {
             Query: {
-                // Person_GET: () => {
-                //     return this.database.getSubs("http://schema.org/Person");
-                // },
+                Person: () => {
+                    return this.database.getSubs("http://schema.org/Person");
+                },
                 Organization: () => {
                     return this.database.getSubs("http://schema.org/Organization");
                 },
@@ -35,18 +35,18 @@ class rootResolver {
         // -------------------------------------------------- Create Query resolvers
         
         const queryResolvers = createQueryResolvers(this.database, this.tree);
-        // this.rootResolver = queryResolvers["Query"];
-        for (const [key, value] of Object.entries(queryResolvers["Query"])) {
+        this.rootResolver["Query"] = queryResolvers["Query"];
+        for (const [key, value] of Object.entries(queryResolvers["Objects"])) {
             // console.log(queryResolvers["Query"][key])
-            this.rootResolver[key] = queryResolvers["Query"][key];
+            this.rootResolver[key] = queryResolvers["Objects"][key];
         }
         for (const [key, value] of Object.entries(queryResolvers['Data'])) {
             // console.log(queryResolvers['Data'][key])
             this.rootResolver[key] = queryResolvers['Data'][key];
         }
 
-        // const mutationResolvers = createMutationResolvers(this.database, this.tree);
-        // this.rootResolver['Mutation'] = mutationResolvers;
+        const mutationResolvers = createMutationResolvers(this.database, this.tree);
+        this.rootResolver['Mutation'] = mutationResolvers;
         console.log(this.rootResolver)
 
     }

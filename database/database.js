@@ -125,7 +125,7 @@ class Database {
     };
 
 
-    async getSingleLiteral(sub, pred) {
+    getSingleLiteral(sub, pred) {
         const temp = this.y_tree.match(factory.namedNode(sub), factory.namedNode(pred), null);
         // console.log("Asked for subject: " + sub + " predicat: " + pred  );
         var itr = temp.quads();
@@ -137,7 +137,7 @@ class Database {
     };
 
 
-    async getSubs(type) {
+    getSubs(type) {
         const predicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
         const temp = this.y_tree.match(null, factory.namedNode(predicate), factory.namedNode(type));
         let data = [];

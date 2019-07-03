@@ -8,6 +8,7 @@ createQueryResolvers = (database, tree) => {
 
     let queryResolverBody = {};
     queryResolverBody['Query'] = {};
+    queryResolverBody['Objects'] = {};
     queryResolverBody['Data'] = {};
 
     // console.log(schemaTree)
@@ -45,6 +46,11 @@ createQueryResolvers = (database, tree) => {
             queryResolverBody['Data'][newResolver] = newResolverBody;
 
         } else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
+            // Core Query
+            let uri = tree[object]['uri'];
+            let constr = (uri) => { return (parent) => {console.log(uri); return database.getSubs(uri) } };
+            queryResolverBody['Query'][tree[object].name] = constr(uri);
+            
             //OBJECT
             // console.log(tree[object])
             let newResolver = tree[object].name
@@ -61,7 +67,6 @@ createQueryResolvers = (database, tree) => {
                 }
 
                 if (property === '_id') {
-                    
                     newResolverBody['_id'] =  (parent) => { console.log(parent); return  parent };
                 }
                 else if (property === '_type') {
@@ -82,7 +87,7 @@ createQueryResolvers = (database, tree) => {
 
             }
 
-            queryResolverBody['Query'][newResolver] = newResolverBody;
+            queryResolverBody['Objects'][newResolver] = newResolverBody;
         }
     }
     return queryResolverBody;
