@@ -7,6 +7,7 @@ createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
 
     let objectsFromSchemaObjectTree = [];
+
     for (var property in tree) { objectsFromSchemaObjectTree.push(tree[property]); };
     // console.log(objectsFromSchemaMapping)
     // console.log(schemaMapping["@context"])
@@ -63,10 +64,10 @@ createMutationResolvers = (database, tree) => {
                 }
             }
             else if (req.type === "INSERT") {
-                // Need to be created
-                if (database.getTriplesBySubject(objectID).length === 0) {
-                    return false;
-                }
+                // // Need to be created
+                // if (database.getTriplesBySubject(objectID).length === 0) {
+                //     return false;
+                // }
                 // Validation 
                 for (let propertyName in fieldFromSchemaTree.data) {
                     if (propertyName !== '_id' && propertyName !== '_type') {
@@ -122,7 +123,7 @@ createMutationResolvers = (database, tree) => {
                             uriFromInput = schemaMapping["@context"][objectFromInput['_type']];
 
                             if (uri.includes(uriFromInput)) {
-                                if (req.type === "REMOVE") {
+                                if (req.type === "REMOVE") { // add datatype vs objecttype
                                     database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
                                 }
                                 else {
