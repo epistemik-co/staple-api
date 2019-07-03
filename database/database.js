@@ -173,6 +173,10 @@ class Database {
         }
         return data;
     };
+
+    drop() {
+        this.y_tree.clear();
+    }
 }
 
 module.exports = Database

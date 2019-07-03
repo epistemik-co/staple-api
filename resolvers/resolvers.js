@@ -27,7 +27,7 @@ class rootResolver {
 
         const mutationResolvers = createMutationResolvers(this.database, this.tree);
         this.rootResolver['Mutation'] = mutationResolvers;
-        console.log(this.rootResolver)
+        // console.log(this.rootResolver)
 
     }
 }

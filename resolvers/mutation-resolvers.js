@@ -125,7 +125,7 @@ createMutationResolvers = (database, tree) => {
                             uri = fieldFromSchemaTree.data[propertyName].data.uri;
 
                             let objForQuery = factory.literal(objectFromInput['_value']);
-                            console.log(objectFromInput)
+                            // console.log(objectFromInput)
                             objForQuery.datatype = factory.namedNode("http://schema.org/Text");
 
                             if (uri.includes(schemaMapping["@context"][objectFromInput['_type']])) {
@@ -160,7 +160,7 @@ createMutationResolvers = (database, tree) => {
             // console.log("\n\n")
             // console.log(testQuads)
 
-            console.log(database.getAllQuads())
+            // console.log(database.getAllQuads())
             return true;
 
 
