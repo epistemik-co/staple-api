@@ -26,9 +26,9 @@ function showMemUsage(){
 const schema = makeExecutableSchema({
   typeDefs:schemaString,
   resolvers:rootResolver,
-  resolverValidationOptions: {
-    requireResolversForResolveType: false,
-  }
+//   resolverValidationOptions: {
+//     requireResolversForResolveType: false,
+//   }
 });
 
 

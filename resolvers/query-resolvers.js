@@ -72,26 +72,66 @@ createQueryResolvers = (database, tree) => {
                 else if (propertyName === '_type') {
                     newResolverBody['_type'] =  (parent) => { return  database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }; // OK
                 }
+
                 else {
                     let uri = schemaMapping["@context"][propertyName];
                         if (uri === undefined) {
                             uri = "http://schema.org/" + propertyName;
                         }
-                    if (isItList) {
-                        const name = uri; //currentObject['uri'];
-                        let constr = (name) => { return (parent) => { return database.getObjsforResolver(parent, name) } }; // OK
-                        newResolverBody[propertyName] = constr(name);
+
+                    if(tree[currentObject.name].type === "UnionType"){
+                        if (isItList) {
+                            const name = uri; //currentObject['uri'];
+                            let constr = (name) => { return (parent) => { 
+                                // console.log("UNION TYPE")
+                                // console.log(parent)
+                                // console.log(name)
+                                // console.log(database.getObjsforResolver(parent, name) )
+                                return database.getObjsforResolver(parent, name) 
+                            }}; //
+                            newResolverBody[propertyName] = constr(name);
+                        }
+                        else {
+                            const name = uri; //currentObject['uri'];
+                            let constr = (name) => { return (parent) => { 
+                                // console.log("UNION TYPE")
+                                // console.log(parent)
+                                // console.log(name)
+                                // console.log(database.getObjsforResolver(parent, name) )
+                                return database.getSingleLiteral(parent, name) 
+                            }};// 
+                            newResolverBody[propertyName] = constr(name);
+                        }
                     }
-                    else {
-                        const name = uri; //currentObject['uri'];
-                        let constr = (name) => { return ((parent) => { return database.getSingleLiteral(parent, name) }) };// OK
-                        newResolverBody[propertyName] = constr(name);
+                    else{
+                        if (isItList) {
+                            const name = uri; //currentObject['uri'];
+                            let constr = (name) => { return (parent) => { return database.getObjsforResolver(parent, name) } }; // OK
+                            newResolverBody[propertyName] = constr(name);
+                        }
+                        else {
+                            const name = uri; //currentObject['uri'];
+                            let constr = (name) => { return ((parent) => { return database.getSingleLiteral(parent, name) }) };// OK
+                            newResolverBody[propertyName] = constr(name);
+                        }
                     }
                 }
 
             }
 
             queryResolverBody['Objects'][newResolver] = newResolverBody;
+        }
+        else if (tree[object].type === "UnionType") {
+            let newResolver = tree[object].name
+            let newResolverBody = {}
+            newResolverBody['__resolveType'] = (parent) => { 
+                // ????
+                console.log(parent);
+                return database.getTriplesBySubject(parent.value) 
+            };
+            
+
+            queryResolverBody['Data'][newResolver] = newResolverBody;
         }
     }
     return queryResolverBody;

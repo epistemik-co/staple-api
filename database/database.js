@@ -21,7 +21,7 @@ class Database {
         // console.log(this.y_tree.size);
         this.y_tree.addQuads([...iterable1]);
         // console.log(this.y_tree.size);
-        console.log(this.getAllQuads())
+        // console.log(this.getAllQuads())
     }
 
 
@@ -99,6 +99,18 @@ class Database {
         var x = itr.next();
         while (!x.done) {
             data.push(x.value.object);
+            x = itr.next();
+        }
+        return data;
+    };
+
+    getUnionforResolver(sub, pred) {
+        const temp = this.y_tree.match(factory.namedNode(sub), factory.namedNode(pred), null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value);
             x = itr.next();
         }
         return data;

@@ -28,7 +28,7 @@ createMutationResolvers = (database, tree) => {
             if (objectID === undefined) {
                 return false;
             }
-            
+
             // let testQuads = database.getTriplesBySubject("http://subject");
             // console.log("\n\n")
             // console.log(testQuads)
@@ -43,7 +43,6 @@ createMutationResolvers = (database, tree) => {
                 if (database.getTriplesBySubject(objectID).length > 0) {
                     return false;
                 }
-
                 database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchemaTree.uri));
             }
             else if (req.type === "UPDATE") {
@@ -120,14 +119,20 @@ createMutationResolvers = (database, tree) => {
                             }
                         }
                         else if (returnType.type === "UnionType") {
-                            uriFromInput = schemaMapping["@context"][objectFromInput['_type']];
+                            // console.log("UNION TYPE")
+                            uriFromInput = uri;
+                            uri = fieldFromSchemaTree.data[propertyName].data.uri;
 
-                            if (uri.includes(uriFromInput)) {
+                            let objForQuery = factory.literal(objectFromInput['_value']);
+                            console.log(objectFromInput)
+                            objForQuery.datatype = factory.namedNode("http://schema.org/Text");
+
+                            if (uri.includes(schemaMapping["@context"][objectFromInput['_type']])) {
                                 if (req.type === "REMOVE") { // add datatype vs objecttype
-                                    database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
+                                    database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']), objForQuery);
                                 }
                                 else {
-                                    database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
+                                    database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']), objForQuery);
                                 }
 
                             }
@@ -153,6 +158,8 @@ createMutationResolvers = (database, tree) => {
             // testQuads = database.getTriplesBySubject("http://subject");
             // console.log("\n\n")
             // console.log(testQuads)
+
+            console.log(database.getAllQuads())
             return true;
 
 
