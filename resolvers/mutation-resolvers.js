@@ -28,7 +28,7 @@ createMutationResolvers = (database, tree) => {
             if (objectID === undefined) {
                 return false;
             }
-
+            
             // let testQuads = database.getTriplesBySubject("http://subject");
             // console.log("\n\n")
             // console.log(testQuads)
