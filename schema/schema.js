@@ -241,9 +241,9 @@ input shareholder_INPUT {
   """The type of the property filler."""
   _type: shareholder_TYPES!
   """The URI identfier of the object."""
-  _id: ID!
+  _id: ID
   """The literal data value of the property."""
-  _value: String!
+  _value: String
 }
 enum shareholder_TYPES {
   Organization

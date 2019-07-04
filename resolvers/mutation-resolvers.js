@@ -124,17 +124,32 @@ createMutationResolvers = (database, tree) => {
                             uriFromInput = uri;
                             uri = fieldFromSchemaTree.data[propertyName].data.uri;
 
-                            let objForQuery = factory.literal(objectFromInput['_value']);
-                            // console.log(objectFromInput)
-                            objForQuery.datatype = factory.namedNode("http://schema.org/Text");
-
                             if (uri.includes(schemaMapping["@context"][objectFromInput['_type']])) {
-                                if (req.type === "REMOVE") { // add datatype vs objecttype
-                                    database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']), objForQuery);
+
+                                let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
+
+                                if(type === "http://schema.org/DataType"){
+
+                                    let objForQuery = factory.literal(objectFromInput['_value']);
+                                    objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
+
+                                    if (req.type === "REMOVE") { 
+                                        database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery)//, objForQuery);
+                                    }
+                                    else {
+                                        database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery)//, objForQuery);
+                                    }
                                 }
-                                else {
-                                    database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']), objForQuery);
+                                else{
+                                    if (req.type === "REMOVE") { 
+                                        database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']))//, objForQuery);
+                                    }
+                                    else {
+                                        database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']))//, objForQuery);
+                                    }
                                 }
+
+                                console.log(database.getAllQuads())
 
                             }
                         }
