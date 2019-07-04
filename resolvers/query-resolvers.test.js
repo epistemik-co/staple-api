@@ -53,7 +53,7 @@ describe('My Test Cases for query resolvers', () => {
     mutation{
         Person(type: CREATE, input: {
         _id: "http://data/bluesB"
-        legalName: {
+        name: {
             _value: "Adam"
             _type: Text
         }
@@ -68,7 +68,7 @@ describe('My Test Cases for query resolvers', () => {
           employee{
             _id
             _type
-            legalName{
+            name{
               _value
             }
           }
@@ -76,7 +76,7 @@ describe('My Test Cases for query resolvers', () => {
           __typename
           ...on Person{
             _id
-            legalName{
+            name{
               _value
             }
           }
@@ -95,32 +95,51 @@ describe('My Test Cases for query resolvers', () => {
               "Organization": [
                 {
                   "_id": "http://subject",
-                  "employee": {
-                    "_id": "http://data/bluesB",
-                    "_type": [
-                      "http://schema.org/Person"
-                    ],
-                    "legalName": [
-                      {
+                  "employee": [
+                    {
+                      "_id": ">http://data/bluesB",
+                      "_type": [],
+                      "name": {
                         "_value": "Adam"
                       }
-                    ]
-                  },
-                  "shareholder": [
-                    {
-                      "__typename": "Person",
-                      "_id": ">http://data/bluesB",
-                      "legalName": [
-                        {
-                          "_value": "Adam"
-                        }
-                      ]
                     }
-                  ]
+                  ],
+                  "shareholder": []
                 }
               ]
             }
           }
+        // {
+        //     "data": {
+        //       "Organization": [
+        //         {
+        //           "_id": "http://subject",
+        //           "employee": {
+        //             "_id": "http://data/bluesB",
+        //             "_type": [
+        //               "http://schema.org/Person"
+        //             ],
+        //             "name": [
+        //               {
+        //                 "_value": "Adam"
+        //               }
+        //             ]
+        //           },
+        //           "shareholder": [
+        //             {
+        //               "__typename": "Person",
+        //               "_id": ">http://data/bluesB",
+        //               "name": [
+        //                 {
+        //                   "_value": "Adam"
+        //                 }
+        //               ]
+        //             }
+        //           ]
+        //         }
+        //       ]
+        //     }
+        //   }
         expect(result).toEqual(expected);
 
     });

@@ -4,6 +4,14 @@ const schemaMapping = require('../schema/schema-mapping');
 const factory = require('@graphy/core.data.factory');
 const { GraphQLError } = require('graphql');
 
+function isIterable(obj) {
+    // checks for null and undefined
+    if (obj == null) {
+      return false;
+    }
+    return typeof obj[Symbol.iterator] === 'function';
+  }
+
 createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
 
@@ -93,52 +101,61 @@ createMutationResolvers = (database, tree) => {
                         uri = "http://schema.org/" + propertyName;
                     }
 
-                    let objectFromInput = req.input[propertyName];
-                    if (objectFromInput !== undefined) {
-                        objectFromInput = objectFromInput[0]
+                    //let objectFromInput = req.input[propertyName];
+                    // console.log(req.input[propertyName])
+                    let objectsFromInput = req.input[propertyName];
+                    if(!isIterable(req.input[propertyName])){
+                        objectsFromInput = [req.input[propertyName]]; 
+                    }
+                    // console.log(objectsFromInput)
+                    for (let objectFromInput in objectsFromInput) {
+                        objectFromInput = objectsFromInput[objectFromInput];
+                        if (objectFromInput !== undefined) {
+                            // console.log(objectFromInput)
 
-                        let returnType = "";
-                        if (fieldFromSchemaTree.data[propertyName].kind === "ListType") {
-                            returnType = fieldFromSchemaTree.data[propertyName].data.name;
-                        }
-                        else {
-                            returnType = fieldFromSchemaTree.data[propertyName].name;
-                        }
-                        returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
-
-                        if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
-                            database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
-                        }
-                        else if (returnType.type === "UnionType") {
-                            // console.log("UNION TYPE")
-                            if(objectFromInput['_id'] !== undefined && objectFromInput['_value'] !== undefined){
-                                throw new GraphQLError({ key: `Defined all three properties for ${propertyName} type object.`, message: 'Select only one property.' });
+                            let returnType = "";
+                            if (fieldFromSchemaTree.data[propertyName].kind === "ListType") {
+                                returnType = fieldFromSchemaTree.data[propertyName].data.name;
                             }
+                            else {
+                                returnType = fieldFromSchemaTree.data[propertyName].name;
+                            }
+                            returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
 
-                            uriFromInput = uri;
-                            uri = fieldFromSchemaTree.data[propertyName].data.uri;
-
-                            if (uri.includes(schemaMapping["@context"][objectFromInput['_type']])) {
-
-                                let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
-
-                                if (type === "http://schema.org/DataType") {
-                                    let objForQuery = factory.literal(objectFromInput['_value']);
-                                    objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
-                                    database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery);
+                            if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
+                                database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                            }
+                            else if (returnType.type === "UnionType") {
+                                // console.log("UNION TYPE")
+                                if (objectFromInput['_id'] !== undefined && objectFromInput['_value'] !== undefined) {
+                                    throw new GraphQLError({ key: `Defined all three properties for ${propertyName} type object.`, message: 'Select only one property.' });
                                 }
-                                else {
-                                    database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
+
+                                uriFromInput = uri;
+                                uri = tree[ fieldFromSchemaTree.data[propertyName].data.name].values;
+                                uri = uri.map(x => schemaMapping["@context"][x]);
+
+                                if (uri.includes(schemaMapping["@context"][objectFromInput['_type']])) {
+                                    let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
+
+                                    if (type === "http://schema.org/DataType") {
+                                        let objForQuery = factory.literal(objectFromInput['_value']);
+                                        objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
+                                        database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery);
+                                    }
+                                    else {
+                                        database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
+                                    }
                                 }
                             }
-                        }
-                        else if (returnType.type === "http://schema.org/DataType") {
-                            let objForQuery = factory.literal(objectFromInput['_value']);
-                            objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
-                            database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
-                        }
-                        else {
-                            console.log("UNHANDLED TYPE")
+                            else if (returnType.type === "http://schema.org/DataType") {
+                                let objForQuery = factory.literal(objectFromInput['_value']);
+                                objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
+                                database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
+                            }
+                            else {
+                                console.log("UNHANDLED TYPE")
+                            }
                         }
                     }
                 }
@@ -148,7 +165,7 @@ createMutationResolvers = (database, tree) => {
             // console.log("\n\n")
             // console.log(testQuads)
 
-            // console.log(database.getAllQuads())
+            console.log(database.getAllQuads())
             return true;
 
 
