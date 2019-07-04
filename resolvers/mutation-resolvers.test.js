@@ -18,7 +18,7 @@ const schema = makeExecutableSchema({
 });
 
 afterEach(() => {
-    database.drop()
+    database.drop();
 });
 
 
@@ -148,7 +148,7 @@ describe('My Test Cases for mutation resolvers', () => {
         expect(data).toEqual("http://johnnyB2");
         // Data test int
         data = database.getSingleLiteral("http://subject", "http://schema.org/noOfEmployees");
-        expect(data.value).toEqual("1");
+        expect(data.value).toEqual("10");
         // Data test text
         data = database.getSingleStringValue("http://subject", "http://schema.org/legalName");
         expect(data).toEqual("Firma");
