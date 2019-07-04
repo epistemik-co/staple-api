@@ -40,8 +40,7 @@ describe('My Test Cases for mutation resolvers', () => {
             }
             shareholder:{
                 _type: Person
-                    _id: "http://data/bluesB"
-                _value: "20"
+                _id: "http://data/bluesB"
             }
             noOfEmployees: {
                 _type: Integer

@@ -150,7 +150,7 @@ type Organization {
   """
   The official name of the organization, e.g. the registered company name.
   """
-  employee: [Person]
+  employee: Person
   """
   The official name of the organization, e.g. the registered company name.
   """

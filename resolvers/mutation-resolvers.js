@@ -111,6 +111,10 @@ createMutationResolvers = (database, tree) => {
                         }
                         else if (returnType.type === "UnionType") {
                             // console.log("UNION TYPE")
+                            if(objectFromInput['_id'] !== undefined && objectFromInput['_value'] !== undefined){
+                                throw new GraphQLError({ key: `Defined all three properties for ${propertyName} type object.`, message: 'Select only one property.' });
+                            }
+
                             uriFromInput = uri;
                             uri = fieldFromSchemaTree.data[propertyName].data.uri;
 

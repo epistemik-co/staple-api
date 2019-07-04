@@ -34,12 +34,11 @@ describe('My Test Cases for query resolvers', () => {
             }
             employee: {
                 _type: Person
-                _id: "http://johnnyB"
+                _id: "http://data/bluesB"
             }
             shareholder:{
                 _type: Person
                 _id: "http://data/bluesB"
-                _value: "20"
             }
             noOfEmployees: {
                 _type: Integer
@@ -47,6 +46,7 @@ describe('My Test Cases for query resolvers', () => {
             }
             })
         }
+      
     `;
 
     const CreatePersonQuery = `
@@ -64,18 +64,25 @@ describe('My Test Cases for query resolvers', () => {
     const Query = `
     {
         Organization{
-        _id
-        shareholder{
-            __typename
-            ...on Person{
+          _id
+          employee{
+            _id
+            _type
+            legalName{
+              _value
+            }
+          }
+           shareholder{
+          __typename
+          ...on Person{
             _id
             legalName{
-                _value
+              _value
             }
-            }
+          }
+        }   
         }
-        }
-    }
+      }
     `
 
     test("Create Test", async () => {
@@ -83,7 +90,37 @@ describe('My Test Cases for query resolvers', () => {
         result = await graphql(schema, CreatePersonQuery, null, null, null);
         result = await graphql(schema, Query, null, null, null);
         // Create
-        const expected = {"data": {"Organization": [{"_id": "http://subject", "shareholder": [{"__typename": "Person", "_id": ">http://data/bluesB", "legalName": [{"_value": "Adam"}]}]}]}}
+        const expected = {
+            "data": {
+              "Organization": [
+                {
+                  "_id": "http://subject",
+                  "employee": {
+                    "_id": "http://data/bluesB",
+                    "_type": [
+                      "http://schema.org/Person"
+                    ],
+                    "legalName": [
+                      {
+                        "_value": "Adam"
+                      }
+                    ]
+                  },
+                  "shareholder": [
+                    {
+                      "__typename": "Person",
+                      "_id": ">http://data/bluesB",
+                      "legalName": [
+                        {
+                          "_value": "Adam"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         expect(result).toEqual(expected);
 
     });
