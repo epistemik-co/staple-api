@@ -2,7 +2,7 @@ const schemaString = require('../schema/schema');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const schemaMapping = require('../schema/schema-mapping');
 const factory = require('@graphy/core.data.factory');
-const { GraphQLError } = require( 'graphql' );
+const { GraphQLError } = require('graphql');
 
 createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
@@ -21,7 +21,6 @@ createMutationResolvers = (database, tree) => {
     const mutation = schema.getTypeMap()['Mutation'].astNode;
 
     for (let field in mutation.fields) {
-        // console.log(mutation.fields[field].name.value);
 
         newResolverBody[mutation.fields[field].name.value] = (args, req) => {
             // Object ID
@@ -30,13 +29,8 @@ createMutationResolvers = (database, tree) => {
                 return false;
             }
 
-            // let testQuads = database.getTriplesBySubject("http://subject");
-            // console.log("\n\n")
-            // console.log(testQuads)
-
             let fieldName = mutation.fields[field].name.value;
             let fieldFromSchemaTree = objectsFromSchemaObjectTree.filter(x => x.name === fieldName);
-            // console.log(fieldFromSchema)
             fieldFromSchemaTree = fieldFromSchemaTree[0];
 
 
@@ -58,7 +52,6 @@ createMutationResolvers = (database, tree) => {
                         if (uri === undefined) {
                             uri = "http://schema.org/" + propertyName;
                         }
-
                         database.delete(factory.namedNode(objectID), factory.namedNode(uri), undefined);
                     }
                 }
@@ -80,7 +73,7 @@ createMutationResolvers = (database, tree) => {
                                 if (uri === undefined) {
                                     uri = "http://schema.org/" + propertyName;
                                 }
-                                let search = database.getObjectsValueArray( factory.namedNode( objectID ) ,  factory.namedNode( uri ));
+                                let search = database.getObjectsValueArray(factory.namedNode(objectID), factory.namedNode(uri));
                                 if (search.length > 0) {
                                     throw new GraphQLError({ key: 'Can not override field: ' + propertyName, message: 'Field already defined in object' });
                                 }
@@ -90,10 +83,13 @@ createMutationResolvers = (database, tree) => {
                 }
             }
 
+            database.selectedOperation = req.type === "REMOVE" ? database.delete : database.create;
+
             for (let propertyName in fieldFromSchemaTree.data) {
                 if (propertyName !== '_id' && propertyName !== '_type') {
                     let uri = schemaMapping["@context"][propertyName];
                     if (uri === undefined) {
+                        // throw new GraphQLError({ key: `Uri not found`, message: 'URI for: {propertyName} was not found' });
                         uri = "http://schema.org/" + propertyName;
                     }
 
@@ -111,13 +107,7 @@ createMutationResolvers = (database, tree) => {
                         returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
 
                         if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
-
-                            if (req.type === "REMOVE") {
-                                database.delete(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
-                            }
-                            else {
-                                database.create(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
-                            }
+                            database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
                         }
                         else if (returnType.type === "UnionType") {
                             // console.log("UNION TYPE")
@@ -128,41 +118,20 @@ createMutationResolvers = (database, tree) => {
 
                                 let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
 
-                                if(type === "http://schema.org/DataType"){
-
+                                if (type === "http://schema.org/DataType") {
                                     let objForQuery = factory.literal(objectFromInput['_value']);
                                     objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
-
-                                    if (req.type === "REMOVE") { 
-                                        database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery)//, objForQuery);
-                                    }
-                                    else {
-                                        database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery)//, objForQuery);
-                                    }
+                                    database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery);
                                 }
-                                else{
-                                    if (req.type === "REMOVE") { 
-                                        database.delete(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']))//, objForQuery);
-                                    }
-                                    else {
-                                        database.create(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']))//, objForQuery);
-                                    }
+                                else {
+                                    database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
                                 }
-
-                                console.log(database.getAllQuads())
-
                             }
                         }
                         else if (returnType.type === "http://schema.org/DataType") {
                             let objForQuery = factory.literal(objectFromInput['_value']);
                             objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
-
-                            if (req.type === "REMOVE") {
-                                database.delete(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
-                            }
-                            else {
-                                database.create(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
-                            }
+                            database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
                         }
                         else {
                             console.log("UNHANDLED TYPE")
