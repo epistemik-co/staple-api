@@ -1,4 +1,5 @@
 const schemaMapping = require('../schema/schema-mapping');
+const factory = require('@graphy/core.data.factory');
 const { GraphQLError } = require('graphql');
 
 createQueryResolvers = (database, tree) => {
@@ -46,7 +47,7 @@ createQueryResolvers = (database, tree) => {
         } else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
             // Core Query
             let uri = tree[object]['uri'];
-            let constr = (uri) => { return (parent) => { return database.getSubs(uri) } }; // OK
+            let constr = (uri) => { return (parent) => { return database.getSubjectsByType(factory.namedNode( uri )) } }; // OK
             queryResolverBody['Query'][tree[object].name] = constr(uri);
 
             //OBJECT
@@ -68,7 +69,7 @@ createQueryResolvers = (database, tree) => {
                     newResolverBody['_id'] = (parent) => { return parent }; // OK
                 }
                 else if (propertyName === '_type') {
-                    newResolverBody['_type'] = (parent) => { return database.getObjs(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") }; // OK
+                    newResolverBody['_type'] = (parent) => { return database.getObjectsValueArray(factory.namedNode( parent ), factory.namedNode( "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) }; // OK
                 }
 
                 else {
@@ -86,7 +87,7 @@ createQueryResolvers = (database, tree) => {
                                     // console.log(parent)
                                     // console.log(name)
                                     // console.log(database.getObjsforResolver(parent, name) )
-                                    let data = database.getObjsforResolver(parent, name);
+                                    let data = database.getObjsforResolver(factory.namedNode( parent ), factory.namedNode(  name ));
                                     return data;
                                 }
                             }; //
@@ -100,7 +101,7 @@ createQueryResolvers = (database, tree) => {
                                     // console.log(parent)
                                     // console.log(name)
                                     // console.log(database.getObjsforResolver(parent, name) )
-                                    let data = database.getObjsforResolver(parent, name);
+                                    let data = database.getObjsforResolver(factory.namedNode( parent), factory.namedNode( name));
                                     return data;
                                 }
                             };// 
@@ -115,7 +116,7 @@ createQueryResolvers = (database, tree) => {
                                     if (parent.value) {
                                         parent = parent.value;
                                     }
-                                    return database.getObjsforResolver(parent, name)
+                                    return database.getObjsforResolver(factory.namedNode( parent), factory.namedNode( name));
                                 }
                             }; // OK
                             newResolverBody[propertyName] = constr(name);
@@ -132,7 +133,7 @@ createQueryResolvers = (database, tree) => {
                                     // console.log(name);
                                     // console.log(database.getAllQuads());
                                     // console.log(database.getSingleLiteral(parent, name));
-                                    return database.getSingleLiteral(parent, name)
+                                    return database.getSingleLiteral(factory.namedNode( parent ) , factory.namedNode( name ));
                                 })
                             };// OK
                             newResolverBody[propertyName] = constr(name);
@@ -155,8 +156,8 @@ createQueryResolvers = (database, tree) => {
                         uriToName[schemaMapping["@context"][value]] = value;
                         return uriToName;
                     })
-                    
-                    const typeOfObject = database.getObjs(parent.value, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")[0];
+
+                    const typeOfObject = database.getObjectsValueArray(factory.namedNode( parent.value ), factory.namedNode( "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ))[0];
                     typesOfObject = typesOfObject.filter( x => x[typeOfObject] !== undefined)[0]
                     return typesOfObject[typeOfObject];
                 };

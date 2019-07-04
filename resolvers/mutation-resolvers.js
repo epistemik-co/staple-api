@@ -41,14 +41,14 @@ createMutationResolvers = (database, tree) => {
 
 
             if (req.type === "CREATE") {
-                if (database.getTriplesBySubject(objectID).length > 0) {
+                if (database.getTriplesBySubject(factory.namedNode(objectID)).length > 0) {
                     throw new GraphQLError({ key: 'Duplicate', message: 'Object with given ID is already deffined in database' });
                 }
                 database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchemaTree.uri));
             }
             else if (req.type === "UPDATE") {
                 // Need to be created
-                if (database.getTriplesBySubject(objectID).length === 0) {
+                if (database.getTriplesBySubject(factory.namedNode(objectID)).length === 0) {
                     throw new GraphQLError({ key: 'Object not found', message: 'Object with given ID is not deffined in database' });
                 }
                 // Remove old fields
@@ -80,7 +80,7 @@ createMutationResolvers = (database, tree) => {
                                 if (uri === undefined) {
                                     uri = "http://schema.org/" + propertyName;
                                 }
-                                let search = database.getObjs(objectID, uri);
+                                let search = database.getObjectsValueArray( factory.namedNode( objectID ) ,  factory.namedNode( uri ));
                                 if (search.length > 0) {
                                     throw new GraphQLError({ key: 'Can not override field: ' + propertyName, message: 'Field already defined in object' });
                                 }
