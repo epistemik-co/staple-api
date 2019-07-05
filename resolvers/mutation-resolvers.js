@@ -31,6 +31,7 @@ createMutationResolvers = (database, tree) => {
     for (let field in mutation.fields) {
 
         newResolverBody[mutation.fields[field].name.value] = (args, req) => {
+            console.log(JSON.stringify( req.input))
             // Object ID
             const objectID = req.input['_id'];
             if (objectID === undefined) {
@@ -135,10 +136,9 @@ createMutationResolvers = (database, tree) => {
                                 uri = tree[ fieldFromSchemaTree.data[propertyName].data.name].values;
                                 uri = uri.map(x => schemaMapping["@context"][x]);
 
-                                if (uri.includes(schemaMapping["@context"][objectFromInput['_type']])) {
-                                    let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
+                                    //let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
 
-                                    if (type === "http://schema.org/DataType") {
+                                    if (objectFromInput['_value'] !== undefined ) {
                                         let objForQuery = factory.literal(objectFromInput['_value']);
                                         objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
                                         database.selectedOperation((objectID), (uriFromInput), objForQuery);
@@ -146,7 +146,7 @@ createMutationResolvers = (database, tree) => {
                                     else {
                                         database.selectedOperation((objectID), (uriFromInput), (objectFromInput['_id']));
                                     }
-                                }
+                                
                             }
                             else if (returnType.type === "http://schema.org/DataType") {
 

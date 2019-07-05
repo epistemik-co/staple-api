@@ -97,7 +97,7 @@ enum _Text_ {
 """The filler for the property affiliation"""
 input affiliation_INPUT {
   """The type of the property filler."""
-  _type: _Organization_!
+  _type: _Organization_
 
   """The URI identfier of the object."""
   _id: ID!
@@ -106,7 +106,7 @@ input affiliation_INPUT {
 """The filler for the property employee"""
 input employee_INPUT {
   """The type of the property filler."""
-  _type: _Person_!
+  _type: _Person_
 
   """The URI identfier of the object."""
   _id: ID!
@@ -366,7 +366,7 @@ type Query {
 """The filler for the property shareholder"""
 input shareholder_INPUT {
   """The type of the property filler."""
-  _type: _Organization_v_Person_v_Text_!
+  _type: _Organization_v_Person_v_Text_
 
   """The URI identfier of the object."""
   _id: ID
