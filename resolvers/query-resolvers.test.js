@@ -45,21 +45,18 @@ describe('My Test Cases for query resolvers', () => {
                 _value: "0"
             }
             })
+            Person(type: CREATE, input: {
+                _id: "http://data/bluesB"
+                name: {
+                    _value: "Adam"
+                    _type: Text
+                }
+                })
         }
+
       
     `;
 
-    const CreatePersonQuery = `
-    mutation{
-        Person(type: CREATE, input: {
-        _id: "http://data/bluesB"
-        name: {
-            _value: "Adam"
-            _type: Text
-        }
-        })
-    }
-    `
 
     const Query = `
     {
@@ -87,7 +84,6 @@ describe('My Test Cases for query resolvers', () => {
 
     test("Create Test", async () => {
         let result = await graphql(schema, CreateOrganizationQuery, null, null, null);
-        result = await graphql(schema, CreatePersonQuery, null, null, null);
         result = await graphql(schema, Query, null, null, null);
         // Create
         const expected = {
@@ -97,8 +93,10 @@ describe('My Test Cases for query resolvers', () => {
                   "_id": "http://subject",
                   "employee": [
                     {
-                      "_id": ">http://data/bluesB",
-                      "_type": [],
+                      "_id": "http://data/bluesB",
+                      "_type": [
+                        "http://schema.org/Person"
+                      ],
                       "name": {
                         "_value": "Adam"
                       }
@@ -107,7 +105,7 @@ describe('My Test Cases for query resolvers', () => {
                   "shareholder": [
                     {
                       "__typename": "Person",
-                      "_id": ">http://data/bluesB",
+                      "_id": "http://data/bluesB",
                       "name": {
                         "_value": "Adam"
                       }
@@ -117,37 +115,7 @@ describe('My Test Cases for query resolvers', () => {
               ]
             }
           }
-        // {
-        //     "data": {
-        //       "Organization": [
-        //         {
-        //           "_id": "http://subject",
-        //           "employee": {
-        //             "_id": "http://data/bluesB",
-        //             "_type": [
-        //               "http://schema.org/Person"
-        //             ],
-        //             "name": [
-        //               {
-        //                 "_value": "Adam"
-        //               }
-        //             ]
-        //           },
-        //           "shareholder": [
-        //             {
-        //               "__typename": "Person",
-        //               "_id": ">http://data/bluesB",
-        //               "name": [
-        //                 {
-        //                   "_value": "Adam"
-        //                 }
-        //               ]
-        //             }
-        //           ]
-        //         }
-        //       ]
-        //     }
-        //   }
+       
         expect(result).toEqual(expected);
 
     });
