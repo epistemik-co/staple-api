@@ -63,7 +63,7 @@ createQueryResolvers = (database, tree) => {
                 }
 
                 if (propertyName === '_id') {
-                    newResolverBody['_id'] = (parent) => { return parent }; // OK
+                    newResolverBody['_id'] = (parent) => {if(parent.value) {return parent.value;} return parent }; // OK
                 }
                 else if (propertyName === '_type') {
                     newResolverBody['_type'] = (parent) => { return database.getObjectsValueArray(factory.namedNode(parent), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) }; // OK

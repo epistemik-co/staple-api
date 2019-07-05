@@ -59,9 +59,9 @@ type _Context {
 
 """All datatypes in the schema."""
 enum _DATATYPES {
-  Text
-  Number
   Integer
+  Number
+  Text
 }
 
 enum _Integer_ {
@@ -70,10 +70,10 @@ enum _Integer_ {
 
 """All object types in the schema."""
 enum _OBJECT_TYPES {
-  Thing
   Organization
-  Person
   Patient
+  Person
+  Thing
 }
 
 enum _Organization_ {

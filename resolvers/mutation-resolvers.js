@@ -165,7 +165,7 @@ createMutationResolvers = (database, tree) => {
             // console.log("\n\n")
             // console.log(testQuads)
 
-            console.log(database.getAllQuads())
+            // console.log(database.getAllQuads())
             return true;
 
 

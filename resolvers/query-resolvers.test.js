@@ -104,7 +104,15 @@ describe('My Test Cases for query resolvers', () => {
                       }
                     }
                   ],
-                  "shareholder": []
+                  "shareholder": [
+                    {
+                      "__typename": "Person",
+                      "_id": ">http://data/bluesB",
+                      "name": {
+                        "_value": "Adam"
+                      }
+                    }
+                  ]
                 }
               ]
             }
