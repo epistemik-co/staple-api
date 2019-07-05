@@ -66,7 +66,10 @@ createQueryResolvers = (database, tree) => {
                     newResolverBody['_id'] = (parent) => {if(parent.value) {return parent.value;} return parent }; // OK
                 }
                 else if (propertyName === '_type') {
-                    newResolverBody['_type'] = (parent) => { return database.getObjectsValueArray(factory.namedNode(parent), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) }; // OK
+                    newResolverBody['_type'] = (parent) => {
+                        if(parent.value) {parent = parent.value;}
+                          return database.getObjectsValueArray(factory.namedNode(parent), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                         }; // OK
                 }
 
                 else {
