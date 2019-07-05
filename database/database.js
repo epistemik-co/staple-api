@@ -171,11 +171,29 @@ class Database {
     }
 
 
-    read(rdf) {
+    insertRDF(rdf) {
+        console.log(`inserting rdf ${rdf}`)
+        const constr = (tree) => {
+            read_graphy(rdf, {
+                data(y_quad) {
+                    tree.add(y_quad)
+                },
+                eof(h_prefixes) {
+                    console.log("END");
+                },
+            })
+        }
+
+        constr(this.y_tree);
+        
+    }
+
+    removeRDF(rdf) {
+        console.log(`removing rdf ${rdf}`)
         let y_tree2 = this.y_tree
         read_graphy(rdf, {
             data(y_quad) {
-                y_tree2.add(y_quad)
+                y_tree2.delete(y_quad)
             },
             eof(h_prefixes) {
                 this.y_tree = y_tree2

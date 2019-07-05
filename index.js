@@ -53,7 +53,7 @@ app.post('/api/upload',async (req, res) => {
         const todo = req.body;
         const rdf = await jsonld.toRDF(todo, {format: 'application/n-quads'});
         console.log(rdf)
-        database.read(rdf);
+        database.insertRDF(rdf);
 
     } catch (error) {
         return res.status(500).send({

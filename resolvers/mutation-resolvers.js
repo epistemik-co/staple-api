@@ -3,6 +3,7 @@ const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const schemaMapping = require('../schema/schema-mapping');
 const factory = require('@graphy/core.data.factory');
 const { GraphQLError } = require('graphql');
+const jsonld = require('jsonld');
 
 function isIterable(obj) {
     // checks for null and undefined
@@ -30,8 +31,8 @@ createMutationResolvers = (database, tree) => {
 
     for (let field in mutation.fields) {
 
-        newResolverBody[mutation.fields[field].name.value] = (args, req) => {
-            console.log(JSON.stringify( req.input))
+        newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
+            
             // Object ID
             const objectID = req.input['_id'];
             if (objectID === undefined) {
@@ -47,7 +48,7 @@ createMutationResolvers = (database, tree) => {
                 if (database.getTriplesBySubject((objectID)).length > 0) {
                     throw new GraphQLError({ key: 'Duplicate', message: 'Object with given ID is already deffined in database' });
                 }
-                database.create((objectID), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), (fieldFromSchemaTree.uri));
+                //database.create((objectID), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), (fieldFromSchemaTree.uri));
             }
             else if (req.type === "UPDATE") {
                 // Need to be created
@@ -124,7 +125,7 @@ createMutationResolvers = (database, tree) => {
                             returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
 
                             if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
-                                database.selectedOperation((objectID), (uri), (objectFromInput['_id']));
+                                //database.selectedOperation((objectID), (uri), (objectFromInput['_id']));
                             }
                             else if (returnType.type === "UnionType") {
                                 // console.log("UNION TYPE")
@@ -141,10 +142,10 @@ createMutationResolvers = (database, tree) => {
                                     if (objectFromInput['_value'] !== undefined ) {
                                         let objForQuery = factory.literal(objectFromInput['_value']);
                                         objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
-                                        database.selectedOperation((objectID), (uriFromInput), objForQuery);
+                                        //database.selectedOperation((objectID), (uriFromInput), objForQuery);
                                     }
                                     else {
-                                        database.selectedOperation((objectID), (uriFromInput), (objectFromInput['_id']));
+                                        //database.selectedOperation((objectID), (uriFromInput), (objectFromInput['_id']));
                                     }
                                 
                             }
@@ -160,7 +161,7 @@ createMutationResolvers = (database, tree) => {
                                 // objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
                                 // // console.log(objForQuery)
                                 // console.log("END")
-                                database.selectedOperation((objectID), (uri), objForQuery);
+                                //database.selectedOperation((objectID), (uri), objForQuery);
                             }
                             else {
                                 console.log("UNHANDLED TYPE")
@@ -174,7 +175,19 @@ createMutationResolvers = (database, tree) => {
             // console.log("\n\n")
             // console.log(testQuads)
 
-            // console.log(database.getAllQuads())
+
+            //console.log(JSON.stringify( req.input))
+            let dataForQuads =  req.input ;
+            dataForQuads["@context"] = schemaMapping["@context"];
+            //console.log( JSON.stringify(dataForQuads))
+
+            const rdf = await jsonld.toRDF(dataForQuads, {format: 'application/n-quads'});
+
+            req.type === "REMOVE" ? await database.removeRDF(rdf) : await database.insertRDF(rdf);
+
+            //console.log(rdf);
+            console.log(database.getAllQuads())
+
             return true;
 
 
