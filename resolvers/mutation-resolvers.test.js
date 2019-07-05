@@ -114,22 +114,22 @@ describe('My Test Cases for mutation resolvers', () => {
         // Create
         expect(result.data.Organization).toEqual(true);
         // Count Triples
-        let data = database.getTriplesBySubject(factory.namedNode( "http://subject" ));
+        let data = database.getTriplesBySubject(( "http://subject" ));
         expect(data.length).toEqual(5);
         // ID Type test
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
         expect(data).toEqual(schemaMapping["@context"]["Organization"]);
         // Object test
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://schema.org/employee"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://schema.org/employee"));
         expect(data).toEqual("http://johnnyB");
         // Data test
-        data = database.getSingleLiteral(factory.namedNode("http://subject"), factory.namedNode("http://schema.org/noOfEmployees"));
+        data = database.getSingleLiteral(("http://subject"), ("http://schema.org/noOfEmployees"));
         expect(data.value).toEqual("0");
         // Data test text
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://schema.org/legalName"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://schema.org/legalName"));
         expect(data).toEqual("Nazwa firmy");
         // Union test
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://schema.org/shareholder"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://schema.org/shareholder"));
         expect(data).toEqual("http://data/bluesB");
     });
 
@@ -138,19 +138,20 @@ describe('My Test Cases for mutation resolvers', () => {
         let result = await graphql(schema, CreateQuery, null, null, null);
         result = await graphql(schema, UpdateQuery, null, null, null);
 
+
         // Update
         expect(result.data.Organization).toEqual(true);
         // Count Triples
-        let data = database.getTriplesBySubject(factory.namedNode( "http://subject" ));
+        let data = database.getTriplesBySubject(( "http://subject" ));
         expect(data.length).toEqual(4);
         // Object test
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://schema.org/employee"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://schema.org/employee"));
         expect(data).toEqual("http://johnnyB2");
         // Data test int
-        data = database.getSingleLiteral(factory.namedNode("http://subject"), factory.namedNode("http://schema.org/noOfEmployees"));
+        data = database.getSingleLiteral(("http://subject"), ("http://schema.org/noOfEmployees"));
         expect(data.value).toEqual("1");
         // Data test text
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://schema.org/legalName"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://schema.org/legalName"));
         expect(data).toEqual("Firma");
     });
 
@@ -162,10 +163,10 @@ describe('My Test Cases for mutation resolvers', () => {
         // Update
         expect(result.data.Organization).toEqual(true);
         // Count Triples
-        let data = database.getTriplesBySubject(factory.namedNode( "http://subject" ));
+        let data = database.getTriplesBySubject(( "http://subject" ));
         expect(data.length).toEqual(2);
         // 
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://schema.org/shareholder"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://schema.org/shareholder"));
         expect(data).toEqual("http://data/bluesB");
     });
 
@@ -189,10 +190,10 @@ describe('My Test Cases for mutation resolvers', () => {
         // Update
         expect(result.data.Organization).toEqual(true);
         // Count Triples
-        let data = database.getTriplesBySubject(factory.namedNode( "http://subject" ));
+        let data = database.getTriplesBySubject(( "http://subject" ));
         expect(data.length).toEqual(5);
         // 
-        data = database.getSingleStringValue(factory.namedNode( "http://subject" ), factory.namedNode( "http://schema.org/legalName"));
+        data = database.getSingleStringValue(( "http://subject" ), ( "http://schema.org/legalName"));
         expect(data).toEqual("Adam");
     });
 
@@ -204,7 +205,7 @@ describe('My Test Cases for mutation resolvers', () => {
         // Update
         expect(result.data.DELETE).toEqual(true);
         // Count Triples
-        let data = database.getTriplesBySubject(factory.namedNode( "http://subject" ));
+        let data = database.getTriplesBySubject(( "http://subject" ));
         expect(data.length).toEqual(0);
     });
 })

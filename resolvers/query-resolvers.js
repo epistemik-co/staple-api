@@ -45,7 +45,7 @@ createQueryResolvers = (database, tree) => {
         } else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
             // Core Query
             let uri = tree[object]['uri'];
-            let constr = (uri) => { return (parent) => { return database.getSubjectsByType(factory.namedNode(uri)) } }; // OK
+            let constr = (uri) => { return (parent) => { return database.getSubjectsByType((uri)) } }; // OK
             queryResolverBody['Query'][tree[object].name] = constr(uri);
 
             //OBJECT
@@ -68,7 +68,7 @@ createQueryResolvers = (database, tree) => {
                 else if (propertyName === '_type') {
                     newResolverBody['_type'] = (parent) => {
                         if(parent.value) {parent = parent.value;}
-                          return database.getObjectsValueArray(factory.namedNode(parent), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                          return database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
                          }; // OK
                 }
 
@@ -83,7 +83,7 @@ createQueryResolvers = (database, tree) => {
                         const name = uri; 
                         let constr = (name) => {
                             return (parent) => {
-                                let data = database.getObjsforResolver(factory.namedNode(parent), factory.namedNode(name));
+                                let data = database.getObjectsValueArray((parent), (name));
                                 return data;
                             }
                         }; 
@@ -98,10 +98,10 @@ createQueryResolvers = (database, tree) => {
                                     parent = parent.value;
                                 }
                                 if (isItList) {
-                                    return database.getObjsforResolver(factory.namedNode(parent), factory.namedNode(name));
+                                    return database.getObjectsValueArray((parent), (name));
                                 }
                                 else {
-                                    return database.getSingleLiteral(factory.namedNode(parent), factory.namedNode(name));
+                                    return database.getSingleLiteral((parent), (name));
                                 }
                             })
                         };
@@ -126,7 +126,7 @@ createQueryResolvers = (database, tree) => {
                         return uriToName;
                     })
 
-                    const typeOfObject = database.getObjectsValueArray(factory.namedNode(parent.value), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))[0];
+                    const typeOfObject = database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))[0];
                     typesOfObject = typesOfObject.filter(x => x[typeOfObject] !== undefined)[0]
                     return typesOfObject[typeOfObject];
                 };

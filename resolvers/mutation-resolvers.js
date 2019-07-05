@@ -43,14 +43,14 @@ createMutationResolvers = (database, tree) => {
 
 
             if (req.type === "CREATE") {
-                if (database.getTriplesBySubject(factory.namedNode(objectID)).length > 0) {
+                if (database.getTriplesBySubject((objectID)).length > 0) {
                     throw new GraphQLError({ key: 'Duplicate', message: 'Object with given ID is already deffined in database' });
                 }
-                database.create(factory.namedNode(objectID), factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), factory.namedNode(fieldFromSchemaTree.uri));
+                database.create((objectID), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), (fieldFromSchemaTree.uri));
             }
             else if (req.type === "UPDATE") {
                 // Need to be created
-                if (database.getTriplesBySubject(factory.namedNode(objectID)).length === 0) {
+                if (database.getTriplesBySubject((objectID)).length === 0) {
                     throw new GraphQLError({ key: 'Object not found', message: 'Object with given ID is not deffined in database' });
                 }
                 // Remove old fields
@@ -60,7 +60,7 @@ createMutationResolvers = (database, tree) => {
                         if (uri === undefined) {
                             uri = "http://schema.org/" + propertyName;
                         }
-                        database.delete(factory.namedNode(objectID), factory.namedNode(uri), undefined);
+                        database.delete((objectID), (uri), undefined);
                     }
                 }
             }
@@ -81,7 +81,7 @@ createMutationResolvers = (database, tree) => {
                                 if (uri === undefined) {
                                     uri = "http://schema.org/" + propertyName;
                                 }
-                                let search = database.getObjectsValueArray(factory.namedNode(objectID), factory.namedNode(uri));
+                                let search = database.getObjectsValueArray((objectID), (uri));
                                 if (search.length > 0) {
                                     throw new GraphQLError({ key: 'Can not override field: ' + propertyName, message: 'Field already defined in object' });
                                 }
@@ -123,7 +123,7 @@ createMutationResolvers = (database, tree) => {
                             returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
 
                             if (returnType.type === "http://www.w3.org/2000/01/rdf-schema#Class") {
-                                database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), factory.namedNode(objectFromInput['_id']));
+                                database.selectedOperation((objectID), (uri), (objectFromInput['_id']));
                             }
                             else if (returnType.type === "UnionType") {
                                 // console.log("UNION TYPE")
@@ -141,17 +141,26 @@ createMutationResolvers = (database, tree) => {
                                     if (type === "http://schema.org/DataType") {
                                         let objForQuery = factory.literal(objectFromInput['_value']);
                                         objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
-                                        database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), objForQuery);
+                                        database.selectedOperation((objectID), (uriFromInput), objForQuery);
                                     }
                                     else {
-                                        database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uriFromInput), factory.namedNode(objectFromInput['_id']));
+                                        database.selectedOperation((objectID), (uriFromInput), (objectFromInput['_id']));
                                     }
                                 }
                             }
                             else if (returnType.type === "http://schema.org/DataType") {
+
+                                // console.log("CREATE DATA TYPE CON")
+                                // console.log(objectID)
+                                // console.log(uri)
+
+                                
                                 let objForQuery = factory.literal(objectFromInput['_value']);
-                                objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
-                                database.selectedOperation(factory.namedNode(objectID), factory.namedNode(uri), objForQuery);
+                                objForQuery.datatype = {value: schemaMapping["@context"][objectFromInput['_type']]}
+                                // objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
+                                // // console.log(objForQuery)
+                                // console.log("END")
+                                database.selectedOperation((objectID), (uri), objForQuery);
                             }
                             else {
                                 console.log("UNHANDLED TYPE")
@@ -177,7 +186,7 @@ createMutationResolvers = (database, tree) => {
         if (objectID === undefined) {
             return false;
         }
-        return database.deleteID(factory.namedNode(objectID));
+        return database.deleteID((objectID));
     }
 
     return newResolverBody;

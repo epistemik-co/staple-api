@@ -2,31 +2,36 @@ const read_graphy = require('graphy').content.nt.read;
 const dataset_tree = require('graphy').util.dataset.tree
 const factory = require('@graphy/core.data.factory');
 
+
+// IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
     constructor() {
         this.y_tree = dataset_tree();
     }
 
+    // ---
     create(sub, pred, obj, gra = null) {
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+        if (typeof (obj) !== "object") {
+            obj = factory.namedNode(obj);
+        }
+        gra = factory.namedNode(gra);
+
         let quad = factory.quad(sub, pred, obj, gra);
         this.y_tree.add(quad);
     }
 
-
-    read(rdf) {
-        let y_tree2 = this.y_tree
-        read_graphy(rdf, {
-            data(y_quad) {
-                y_tree2.add(y_quad)
-            },
-            eof(h_prefixes) {
-                this.y_tree = y_tree2
-            },
-        })
-    }
-
-
+    // ---  
     delete(sub, pred, obj, gra = null) {
+
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+        if (typeof (obj) !== "object" && obj !== undefined) {
+            obj = factory.namedNode(obj);
+        }
+        gra = factory.namedNode(gra);
+
         // remove all objects of specyfic type
         if (obj === undefined) {
             const temp = this.y_tree.match(sub, pred, null);
@@ -44,8 +49,10 @@ class Database {
         }
     }
 
-
+    // returns boolean 
     deleteID(id) {
+        id = factory.namedNode(id);
+
         let removed = false;
         var temp = this.y_tree.match(id, null, null);
         var itr = temp.quads();
@@ -67,8 +74,12 @@ class Database {
         return removed;
     }
 
-
+    // Array of uri
     getObjectsValueArray(sub, pred) {
+
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+
         const temp = this.y_tree.match(sub, pred, null);
         let data = [];
         var itr = temp.quads();
@@ -80,26 +91,64 @@ class Database {
         return data;
     };
 
-    getObjsforResolver(sub, pred) {
-        const temp = this.y_tree.match(sub, pred, null);
-        let data = [];
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            data.push(x.value.object);
-            x = itr.next();
-        }
-        return data;
-    };
 
-
+    // Array of Quads
     getTriplesBySubject(sub) {
+
+        sub = factory.namedNode(sub);
+
         const temp = this.y_tree.match(sub, null, null);
         let data = [];
         var itr = temp.quads();
         var x = itr.next();
         while (!x.done) {
             data.push(x.value);
+            x = itr.next();
+        }
+        return data;
+    };
+
+
+    // returns single object value - uri or data
+    getSingleStringValue(sub, pred) {
+
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+
+        const temp = this.y_tree.match(sub, pred, null);
+        var itr = temp.quads();
+        var x = itr.next();
+
+        return x.value.object.value;
+    };
+
+
+
+    // returns single object value - data
+    getSingleLiteral(sub, pred) {
+
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+
+        const temp = this.y_tree.match(sub, pred, null);
+        var itr = temp.quads();
+        var x = itr.next();
+
+        return x.value.object;
+    };
+
+    // returns array of uri
+    getSubjectsByType(type) {
+
+        type = factory.namedNode(type);
+
+        const predicate = factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+        const temp = this.y_tree.match(null, predicate, type);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value.subject.value);
             x = itr.next();
         }
         return data;
@@ -117,43 +166,23 @@ class Database {
         return data;
     };
 
-
-    getSingleStringValue(sub, pred) {
-        const temp = this.y_tree.match(sub, pred, null);
-        var itr = temp.quads();
-        var x = itr.next();
-        return x.value.object.value;
-    };
-
-
-    getSingleLiteral(sub, pred) {
-        const temp = this.y_tree.match(sub, pred, null);
-        // console.log("Asked for subject: " + sub + " predicat: " + pred  );
-        var itr = temp.quads();
-        var x = itr.next();
-        if (x.value.object.constructor.name === "NamedNode") {
-            return x.value.object.value;
-        }
-        return x.value.object;
-    };
-
-
-    getSubjectsByType(type) {
-        const predicate = factory.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-        const temp = this.y_tree.match(null, predicate, type);
-        let data = [];
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            data.push(x.value.subject.value);
-            x = itr.next();
-        }
-        return data;
-    };
-
     drop() {
         this.y_tree.clear();
     }
+
+
+    read(rdf) {
+        let y_tree2 = this.y_tree
+        read_graphy(rdf, {
+            data(y_quad) {
+                y_tree2.add(y_quad)
+            },
+            eof(h_prefixes) {
+                this.y_tree = y_tree2
+            },
+        })
+    }
+
 }
 
 module.exports = Database
