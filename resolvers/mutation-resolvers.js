@@ -44,13 +44,8 @@ createMutationResolvers = (database, tree) => {
             fieldFromSchemaTree = fieldFromSchemaTree[0];
 
 
-            if (req.type === "CREATE") {
-                if (database.getTriplesBySubject((objectID)).length > 0) {
-                    throw new GraphQLError({ key: 'Duplicate', message: 'Object with given ID is already deffined in database' });
-                }
-                //database.create((objectID), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), (fieldFromSchemaTree.uri));
-            }
-            else if (req.type === "UPDATE") {
+            
+            if (req.type === "UPDATE") {
                 // Need to be created
                 if (database.getTriplesBySubject((objectID)).length === 0) {
                     throw new GraphQLError({ key: 'Object not found', message: 'Object with given ID is not deffined in database' });
@@ -195,10 +190,17 @@ createMutationResolvers = (database, tree) => {
 
     newResolverBody['DELETE'] = (args, req) => {
         const objectID = req.id;
-        if (objectID === undefined) {
-            return false;
+        if (!database.isTripleInDB(objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing")) {
+            throw new GraphQLError({ key: 'ERROR', message: 'The object must exist in the database prior to this request.' });
         }
         return database.deleteID((objectID));
+    }
+    newResolverBody['CREATE'] = (args, req) => {
+        const objectID = req.id;
+        if (database.isTripleInDB(objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing")) {
+            throw new GraphQLError({ key: 'ERROR', message: 'The object cannot exist in the database prior to this request.' });
+        }
+        return database.create(objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing");
     }
 
     return newResolverBody;

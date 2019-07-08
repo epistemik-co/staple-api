@@ -20,6 +20,7 @@ class Database {
 
         let quad = factory.quad(sub, pred, obj, gra);
         this.y_tree.add(quad);
+        return true;
     }
 
     // ---  
@@ -89,6 +90,22 @@ class Database {
             x = itr.next();
         }
         return data;
+    };
+
+    // Array of uri
+    isTripleInDB(sub, pred, obj, gra = null) {
+
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+        if (typeof (obj) !== "object" && obj !== undefined) {
+            obj = factory.namedNode(obj);
+        }
+        gra = factory.namedNode(gra);
+
+
+        let quad = factory.quad(sub, pred, obj, gra);
+
+        return this.y_tree.has(quad)
     };
 
 

@@ -112,6 +112,7 @@ describe('My Test Cases for mutation resolvers', () => {
     test("Create Test", async () => {
         const result = await graphql(schema, CreateQuery, null, null, null);
         // Create
+        console.log(result)
         expect(result.data.Organization).toEqual(true);
         // Count Triples
         setTimeout(() => {

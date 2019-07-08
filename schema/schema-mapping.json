@@ -1,1 +1,124 @@
-{"@context":{"_id":"@id","_value":"@value","_type":"@type","rdfs":"http://www.w3.org/2000/01/rdf-schema#","Thing":"http://schema.org/Thing","Organization":"http://schema.org/Organization","Person":"http://schema.org/Person","Patient":"http://schema.org/Patient","Text":"http://schema.org/Text","Number":"http://schema.org/Number","Integer":"http://schema.org/Integer","legalName":"http://schema.org/legalName","shareholder":"http://schema.org/shareholder","employee":"http://schema.org/employee","affiliation":"http://schema.org/affiliation","noOfEmployees":"http://schema.org/noOfEmployees","name":"http://schema.org/name"},"@graph":[{"@id":"http://schema.org/Thing","@type":"http://www.w3.org/2000/01/rdf-schema#Class","rdfs:subClassOf":[{"@id":"http://schema.org/Thing"}]},{"@id":"http://schema.org/Organization","@type":"http://www.w3.org/2000/01/rdf-schema#Class","rdfs:subClassOf":[{"@id":"http://schema.org/Organization"},{"@id":"http://schema.org/Thing"}]},{"@id":"http://schema.org/Person","@type":"http://www.w3.org/2000/01/rdf-schema#Class","rdfs:subClassOf":[{"@id":"http://schema.org/Person"},{"@id":"http://schema.org/Thing"}]},{"@id":"http://schema.org/Patient","@type":"http://www.w3.org/2000/01/rdf-schema#Class","rdfs:subClassOf":[{"@id":"http://schema.org/Patient"},{"@id":"http://schema.org/Person"},{"@id":"http://schema.org/Thing"}]},{"@id":"http://schema.org/Text","@type":"http://schema.org/DataType"},{"@id":"http://schema.org/Number","@type":"http://schema.org/DataType"},{"@id":"http://schema.org/Integer","@type":"http://schema.org/DataType"},{"@id":"http://schema.org/legalName","@type":"http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"},{"@id":"http://schema.org/shareholder","@type":"http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"},{"@id":"http://schema.org/employee","@type":"http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"},{"@id":"http://schema.org/affiliation","@type":"http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"},{"@id":"http://schema.org/noOfEmployees","@type":"http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"},{"@id":"http://schema.org/name","@type":"http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"}]}
+{
+    "@context": {
+        "_id": "@id",
+        "_value": "@value",
+        "_type": "@type",
+        "Thing": "http://schema.org/Thing",
+        "Organization": "http://schema.org/Organization",
+        "Person": "http://schema.org/Person",
+        "Patient": "http://schema.org/Patient",
+        "Text": "http://schema.org/Text",
+        "Number": "http://schema.org/Number",
+        "Integer": "http://schema.org/Integer",
+        "legalName": "http://schema.org/legalName",
+        "shareholder": "http://schema.org/shareholder",
+        "employee": "http://schema.org/employee",
+        "affiliation": "http://schema.org/affiliation",
+        "noOfEmployees": "http://schema.org/noOfEmployees",
+        "name": "http://schema.org/name"
+    },
+    "@graph": [
+        {
+            "@id": "http://schema.org/Thing",
+            "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+                {
+                    "@id": "http://schema.org/Thing"
+                }
+            ]
+        },
+        {
+            "@id": "http://schema.org/Organization",
+            "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+                {
+                    "@id": "http://schema.org/Organization"
+                },
+                {
+                    "@id": "http://schema.org/Thing"
+                }
+            ]
+        },
+        {
+            "@id": "http://schema.org/Person",
+            "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+                {
+                    "@id": "http://schema.org/Person"
+                },
+                {
+                    "@id": "http://schema.org/Thing"
+                }
+            ]
+        },
+        {
+            "@id": "http://schema.org/Patient",
+            "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+                {
+                    "@id": "http://schema.org/Patient"
+                },
+                {
+                    "@id": "http://schema.org/Person"
+                },
+                {
+                    "@id": "http://schema.org/Thing"
+                }
+            ]
+        },
+        {
+            "@id": "http://schema.org/Text",
+            "@type": "http://schema.org/DataType",
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+                {
+                    "@id": "http://schema.org/Text"
+                }
+            ]
+        },
+        {
+            "@id": "http://schema.org/Number",
+            "@type": "http://schema.org/DataType",
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+                {
+                    "@id": "http://schema.org/Number"
+                }
+            ]
+        },
+        {
+            "@id": "http://schema.org/Integer",
+            "@type": "http://schema.org/DataType",
+            "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+                {
+                    "@id": "http://schema.org/Integer"
+                },
+                {
+                    "@id": "http://schema.org/Number"
+                }
+            ]
+        },
+        {
+            "@id": "http://schema.org/legalName",
+            "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        },
+        {
+            "@id": "http://schema.org/shareholder",
+            "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        },
+        {
+            "@id": "http://schema.org/employee",
+            "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        },
+        {
+            "@id": "http://schema.org/affiliation",
+            "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        },
+        {
+            "@id": "http://schema.org/noOfEmployees",
+            "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        },
+        {
+            "@id": "http://schema.org/name",
+            "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+        }
+    ]
+}

@@ -1,10 +1,10 @@
 schemaString = `
 """
 Exposes linked data context mapppings for this schema. Response to the full
-_Context query returns a valid JSON-LD context sufficient to interpret data
+_CONTEXT query returns a valid JSON-LD context sufficient to interpret data
 returned by other queries and inserted via mutations.
 """
-type _Context {
+type _CONTEXT {
   """@id"""
   _id: String
 
@@ -13,9 +13,6 @@ type _Context {
 
   """@type"""
   _type: String
-
-  """http://www.w3.org/2000/01/rdf-schema#"""
-  rdfs: String
 
   """http://schema.org/Thing"""
   Thing: String
@@ -68,6 +65,21 @@ enum _Integer_ {
   Integer
 }
 
+"""Any object in the database."""
+type _OBJECT {
+  """The URI identfier of the object."""
+  _id(
+    """The URI must be on the provided list of URIs."""
+    only: [String]
+  ): ID!
+
+  """Types of the object."""
+  _type(
+    """Include inferred types for this project."""
+    inferred: Boolean = false
+  ): [String]
+}
+
 """All object types in the schema."""
 enum _OBJECT_TYPES {
   Organization
@@ -112,11 +124,15 @@ input employee_INPUT {
   _id: ID!
 }
 
-"""This is integer DataType."""
+"""
+This is integer DataType.
+
+Broader types: Number
+"""
 type Integer {
   """The literal data value for the property."""
   _value(
-    """The value of the property must be within the specifed set."""
+    """The value of this property must be on the provided list."""
     only: [String]
 
     """The value of the property must contain the specified string."""
@@ -126,14 +142,14 @@ type Integer {
     lang: String
   ): String
 
-  """The known types of the object."""
+  """Asserted data type of this value."""
   _type: [String]
 }
 
 """The filler for the property legalName"""
 input legalName_INPUT {
   """The type of the property filler."""
-  _type: _Text_!
+  _type: _Text_
 
   """The literal data value of the property."""
   _value: String!
@@ -141,27 +157,70 @@ input legalName_INPUT {
 
 """CRUD operations over objects of specifc types."""
 type Mutation {
-  DELETE(
-    """Delete all data about the object specified by the provided ID."""
+  """Creates a new object with the provided ID."""
+  CREATE(
+    """A valid, new URI for the created object."""
     id: ID!
   ): Boolean
-  Thing(type: MutationType!, input: Thing_INPUT!): Boolean
-  Organization(type: MutationType!, input: Organization_INPUT!): Boolean
-  Person(type: MutationType!, input: Person_INPUT!): Boolean
-  Patient(type: MutationType!, input: Patient_INPUT!): Boolean
+
+  """
+  Deletes an existing object by the provided ID (including all data about it).
+  """
+  DELETE(
+    """A valid URI of an existing object"""
+    id: ID!
+  ): Boolean
+  Thing(
+    """The type of the mutation to be applied."""
+    type: MutationType!
+
+    """
+    Throw error (instead of a warning) in case the object does not exist prior to the mutation.
+    """
+    ensureExists: Boolean
+
+    """The input object of the mutation."""
+    input: Thing_INPUT!
+  ): Boolean
+  Organization(
+    """The type of the mutation to be applied."""
+    type: MutationType!
+
+    """
+    Throw error (instead of a warning) in case the object does not exist prior to the mutation.
+    """
+    ensureExists: Boolean
+
+    """The input object of the mutation."""
+    input: Organization_INPUT!
+  ): Boolean
+  Person(
+    """The type of the mutation to be applied."""
+    type: MutationType!
+
+    """
+    Throw error (instead of a warning) in case the object does not exist prior to the mutation.
+    """
+    ensureExists: Boolean
+
+    """The input object of the mutation."""
+    input: Person_INPUT!
+  ): Boolean
+  Patient(
+    """The type of the mutation to be applied."""
+    type: MutationType!
+
+    """
+    Throw error (instead of a warning) in case the object does not exist prior to the mutation.
+    """
+    ensureExists: Boolean
+
+    """The input object of the mutation."""
+    input: Patient_INPUT!
+  ): Boolean
 }
 
 enum MutationType {
-  """
-  Create a new object with specified properties, provided it does not yet exist.
-  """
-  CREATE
-
-  """
-  Replace the existing object with its new version specified in the input.
-  """
-  UPDATE
-
   """
   Add specified data about an object, provided the object exists and the data is consistent with the current knowledge base.
   """
@@ -169,12 +228,17 @@ enum MutationType {
 
   """Remove all specified data from the current knowledge base."""
   REMOVE
+
+  """
+  Replace the existing object with its new version specified in the input.
+  """
+  UPDATE
 }
 
 """The filler for the property name"""
 input name_INPUT {
   """The type of the property filler."""
-  _type: _Text_!
+  _type: _Text_
 
   """The literal data value of the property."""
   _value: String!
@@ -183,7 +247,7 @@ input name_INPUT {
 """The filler for the property noOfEmployees"""
 input noOfEmployees_INPUT {
   """The type of the property filler."""
-  _type: _Integer_!
+  _type: _Integer_
 
   """The literal data value of the property."""
   _value: String!
@@ -193,7 +257,7 @@ input noOfEmployees_INPUT {
 type Number {
   """The literal data value for the property."""
   _value(
-    """The value of the property must be within the specifed set."""
+    """The value of this property must be on the provided list."""
     only: [String]
 
     """The value of the property must contain the specified string."""
@@ -203,11 +267,15 @@ type Number {
     lang: String
   ): String
 
-  """The known types of the object."""
+  """Asserted data type of this value."""
   _type: [String]
 }
 
-"""An organization such as a school, NGO, corporation, club, etc."""
+"""
+An organization such as a school, NGO, corporation, club, etc.
+
+Broader types: Thing
+"""
 type Organization {
   """
   The official name of the organization, e.g. the registered company name.
@@ -228,15 +296,22 @@ type Organization {
 
   """The URI identfier of the object."""
   _id(
-    """The URI must belong to the specified list."""
+    """The URI must be on the provided list of URIs."""
     only: [String]
   ): ID!
 
-  """The known types of the object."""
-  _type: [String]
+  """Types of the object."""
+  _type(
+    """Include inferred types for this project."""
+    inferred: Boolean = false
+  ): [String]
 }
 
-"""An organization such as a school, NGO, corporation, club, etc."""
+"""
+An organization such as a school, NGO, corporation, club, etc.
+
+Broader types: Thing
+"""
 input Organization_INPUT {
   """
   The official name of the organization, e.g. the registered company name.
@@ -258,14 +333,18 @@ input Organization_INPUT {
   """The URI identfier of the object."""
   _id: ID!
 
-  """The known types of the object."""
+  """Types of the object."""
   _type: [_OBJECT_TYPES]
 }
 
 """A filler of any of the types: Organization, Person, Text."""
 union Organization_v_Person_v_Text = Organization | Person | Text
 
-"""A patient"""
+"""
+A patient
+
+Broader types: Person, Thing
+"""
 type Patient {
   """Affiliation of a person."""
   affiliation: [Organization]
@@ -275,15 +354,22 @@ type Patient {
 
   """The URI identfier of the object."""
   _id(
-    """The URI must belong to the specified list."""
+    """The URI must be on the provided list of URIs."""
     only: [String]
   ): ID!
 
-  """The known types of the object."""
-  _type: [String]
+  """Types of the object."""
+  _type(
+    """Include inferred types for this project."""
+    inferred: Boolean = false
+  ): [String]
 }
 
-"""A patient"""
+"""
+A patient
+
+Broader types: Person, Thing
+"""
 input Patient_INPUT {
   """Affiliation of a person."""
   affiliation: [affiliation_INPUT]
@@ -294,11 +380,15 @@ input Patient_INPUT {
   """The URI identfier of the object."""
   _id: ID!
 
-  """The known types of the object."""
+  """Types of the object."""
   _type: [_OBJECT_TYPES]
 }
 
-"""A person"""
+"""
+A person
+
+Broader types: Thing
+"""
 type Person {
   """Affiliation of a person."""
   affiliation: [Organization]
@@ -308,15 +398,22 @@ type Person {
 
   """The URI identfier of the object."""
   _id(
-    """The URI must belong to the specified list."""
+    """The URI must be on the provided list of URIs."""
     only: [String]
   ): ID!
 
-  """The known types of the object."""
-  _type: [String]
+  """Types of the object."""
+  _type(
+    """Include inferred types for this project."""
+    inferred: Boolean = false
+  ): [String]
 }
 
-"""A person"""
+"""
+A person
+
+Broader types: Thing
+"""
 input Person_INPUT {
   """Affiliation of a person."""
   affiliation: [affiliation_INPUT]
@@ -327,7 +424,7 @@ input Person_INPUT {
   """The URI identfier of the object."""
   _id: ID!
 
-  """The known types of the object."""
+  """Types of the object."""
   _type: [_OBJECT_TYPES]
 }
 
@@ -336,30 +433,50 @@ type Query {
   """
   The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema.
   """
-  _Context: [_Context]
+  _CONTEXT: [_CONTEXT]
+
+  """List objects in the database."""
+  _OBJECT(
+    """
+    The number of the consecutive results page to be returned by the query.
+    """
+    page: Int = 1
+  ): [_OBJECT]
   Thing(
     """
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+
+    """Include inferred objects of this type."""
+    inferred: Boolean = false
   ): [Thing]
   Organization(
     """
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+
+    """Include inferred objects of this type."""
+    inferred: Boolean = false
   ): [Organization]
   Person(
     """
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+
+    """Include inferred objects of this type."""
+    inferred: Boolean = false
   ): [Person]
   Patient(
     """
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+
+    """Include inferred objects of this type."""
+    inferred: Boolean = false
   ): [Patient]
 }
 
@@ -379,7 +496,7 @@ input shareholder_INPUT {
 type Text {
   """The literal data value for the property."""
   _value(
-    """The value of the property must be within the specifed set."""
+    """The value of this property must be on the provided list."""
     only: [String]
 
     """The value of the property must contain the specified string."""
@@ -389,7 +506,7 @@ type Text {
     lang: String
   ): String
 
-  """The known types of the object."""
+  """Asserted data type of this value."""
   _type: [String]
 }
 
@@ -400,12 +517,15 @@ type Thing {
 
   """The URI identfier of the object."""
   _id(
-    """The URI must belong to the specified list."""
+    """The URI must be on the provided list of URIs."""
     only: [String]
   ): ID!
 
-  """The known types of the object."""
-  _type: [String]
+  """Types of the object."""
+  _type(
+    """Include inferred types for this project."""
+    inferred: Boolean = false
+  ): [String]
 }
 
 """Anything."""
@@ -416,7 +536,7 @@ input Thing_INPUT {
   """The URI identfier of the object."""
   _id: ID!
 
-  """The known types of the object."""
+  """Types of the object."""
   _type: [_OBJECT_TYPES]
 }
 `
