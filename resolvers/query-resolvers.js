@@ -46,7 +46,10 @@ createQueryResolvers = (database, tree) => {
 
             // Core Query
             let uri = tree[object]['uri'];
-            let constr = (uri) => { return (parent) => { return database.getSubjectsByType((uri)) } }; // OK
+            let constr = (uri) => { return (parent, args) => { 
+                let data = database.getSubjectsByType((uri));
+                data = data.filter( (id, index) => { return index >= (args.page-1)*10 && index < args.page*10  })
+                return data } }; // OK
             queryResolverBody['Query'][tree[object].name] = constr(uri);
 
             //OBJECT
@@ -64,14 +67,12 @@ createQueryResolvers = (database, tree) => {
                 }
 
                 if (propertyName === '_id') {
-                    newResolverBody['_id'] = (parent) => { return parent }; // OK
+                    newResolverBody['_id'] = (parent) => { return parent };
                 }
                 else if (propertyName === '_type') {
                     newResolverBody['_type'] = (parent) => {
-
-                        if (parent.value) { parent = parent.value; }
                         return database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
-                    }; // OK
+                    };
                 }
 
                 else {
@@ -108,12 +109,9 @@ createQueryResolvers = (database, tree) => {
                             })
                         };
                         newResolverBody[propertyName] = constr(name, isItList);
-
                     }
                 }
-
             }
-
             queryResolverBody['Objects'][newResolver] = newResolverBody;
         }
         else if (tree[object].type === "UnionType") {
@@ -145,10 +143,11 @@ createQueryResolvers = (database, tree) => {
             queryResolverBody["Query"]["_CONTEXT"] = () => { return [schemaMapping["@context"]] }
         }
         else if (object === "_OBJECT") {
-            queryResolverBody["Query"]["_OBJECT"] = () => {
+            queryResolverBody["Query"]["_OBJECT"] = (obj, args, context, info) => {
                 let data = database.getSubjectsByType("http://schema.org/Thing", "http://staple-api.org/datamodel/type");
-                data = data.map(x => { return { '_id': x, '_type': ["http://schema.org/Thing"] } })
-                return data
+                data = data.filter( (id, index) => { return index >= (args.page-1)*10 && index < args.page*10  })
+                data = data.map( (id) => { return { '_id': id, '_type': ["http://schema.org/Thing"] } }) // find all types
+                return  data
             }
         }
         else {
@@ -156,7 +155,7 @@ createQueryResolvers = (database, tree) => {
             console.log(tree[object].type)
         }
     }
-    console.log(queryResolverBody);
+    //console.log(queryResolverBody);
     return queryResolverBody;
 }
 
