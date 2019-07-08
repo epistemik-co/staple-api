@@ -8,10 +8,10 @@ const jsonld = require('jsonld');
 function isIterable(obj) {
     // checks for null and undefined
     if (obj == null) {
-      return false;
+        return false;
     }
     return typeof obj[Symbol.iterator] === 'function';
-  }
+}
 
 createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
@@ -32,7 +32,7 @@ createMutationResolvers = (database, tree) => {
     for (let field in mutation.fields) {
 
         newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
-            
+
             // Object ID
             const objectID = req.input['_id'];
             if (objectID === undefined) {
@@ -106,8 +106,8 @@ createMutationResolvers = (database, tree) => {
                     //let objectFromInput = req.input[propertyName];
                     // console.log(req.input[propertyName])
                     let objectsFromInput = req.input[propertyName];
-                    if(!isIterable(req.input[propertyName])){
-                        objectsFromInput = [req.input[propertyName]]; 
+                    if (!isIterable(req.input[propertyName])) {
+                        objectsFromInput = [req.input[propertyName]];
                     }
                     // console.log(objectsFromInput)
                     for (let objectFromInput in objectsFromInput) {
@@ -134,20 +134,20 @@ createMutationResolvers = (database, tree) => {
                                 }
 
                                 uriFromInput = uri;
-                                uri = tree[ fieldFromSchemaTree.data[propertyName].data.name].values;
+                                uri = tree[fieldFromSchemaTree.data[propertyName].data.name].values;
                                 uri = uri.map(x => schemaMapping["@context"][x]);
 
-                                    //let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
+                                //let type = schemaMapping["@graph"].filter(x => x['@id'] === schemaMapping["@context"][objectFromInput['_type']])[0]['@type']; // scary !
 
-                                    if (objectFromInput['_value'] !== undefined ) {
-                                        let objForQuery = factory.literal(objectFromInput['_value']);
-                                        objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
-                                        //database.selectedOperation((objectID), (uriFromInput), objForQuery);
-                                    }
-                                    else {
-                                        //database.selectedOperation((objectID), (uriFromInput), (objectFromInput['_id']));
-                                    }
-                                
+                                if (objectFromInput['_value'] !== undefined) {
+                                    let objForQuery = factory.literal(objectFromInput['_value']);
+                                    objForQuery.datatype = factory.namedNode(schemaMapping["@context"][objectFromInput['_type']]);
+                                    //database.selectedOperation((objectID), (uriFromInput), objForQuery);
+                                }
+                                else {
+                                    //database.selectedOperation((objectID), (uriFromInput), (objectFromInput['_id']));
+                                }
+
                             }
                             else if (returnType.type === "http://schema.org/DataType") {
 
@@ -155,9 +155,9 @@ createMutationResolvers = (database, tree) => {
                                 // console.log(objectID)
                                 // console.log(uri)
 
-                                
+
                                 let objForQuery = factory.literal(objectFromInput['_value']);
-                                objForQuery.datatype = {value: schemaMapping["@context"][objectFromInput['_type']]}
+                                objForQuery.datatype = { value: schemaMapping["@context"][objectFromInput['_type']] }
                                 // objForQuery.datatype = factory.namedNode("http://schema.org/" + objectFromInput['_type']);
                                 // // console.log(objForQuery)
                                 // console.log("END")
@@ -177,18 +177,18 @@ createMutationResolvers = (database, tree) => {
 
 
             //console.log(JSON.stringify( req.input))
-            let dataForQuads =  req.input ;
+            let dataForQuads = req.input;
             dataForQuads["@context"] = schemaMapping["@context"];
             //console.log( JSON.stringify(dataForQuads))
 
-            const rdf = await jsonld.toRDF(dataForQuads, {format: 'application/n-quads'});
+            const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' });
 
-            req.type === "REMOVE" ? database.removeRDF(rdf) : database.insertRDF(rdf);
+            req.type === "REMOVE" ? database.removeRDF(rdf, objectID) : database.insertRDF(rdf, objectID);
 
             //console.log(rdf);
-            // setTimeout(() => console.log(database.getAllQuads()), 1);
-            
-            
+            setTimeout(() => console.log(database.getAllQuads()), 1);
+
+
             return true;
         };
     }

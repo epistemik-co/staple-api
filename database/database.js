@@ -171,40 +171,42 @@ class Database {
     }
 
 
-    insertRDF(rdf) {
-        console.log(`inserting rdf data`)
-        const constr = (tree) => {
+    insertRDF(rdf, ID) {
+        //console.log(`inserting rdf data`)
+        const constr = (tree, ID) => {
             let data = (y_quad) => {
-                tree.add(y_quad)
-            }
-            
-            let eof = (h_prefixes) => {
-                console.log("Done");
+                if (y_quad.subject.value === ID) {
+                    tree.add(y_quad);
+                }
             }
 
-            read_graphy(rdf, {data,eof,})
+            let eof = (h_prefixes) => {
+                //console.log("Done");
+            }
+
+            read_graphy(rdf, { data, eof, })
         }
 
-        constr(this.y_tree);
-        
+        constr(this.y_tree, ID);
     }
 
-    removeRDF(rdf) {
-        console.log(`removing rdf data`);
-        const constr = (tree) => {
+    removeRDF(rdf, ID) {
+        //console.log(`removing rdf data`);
+        const constr = (tree, ID) => {
             let data = (y_quad) => {
-                tree.delete(y_quad)
-            }
-            
-            let eof = (h_prefixes) => {
-                console.log("Done");
+                if (y_quad.subject.value === ID) {
+                    tree.delete(y_quad);
+                }
             }
 
-            read_graphy(rdf, {data,eof,})
+            let eof = (h_prefixes) => {
+                //console.log("Done");
+            }
+
+            read_graphy(rdf, { data, eof, })
         }
 
-        constr(this.y_tree);
-
+        constr(this.y_tree, ID);
     }
 
 }

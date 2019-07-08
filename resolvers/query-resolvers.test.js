@@ -84,40 +84,43 @@ describe('My Test Cases for query resolvers', () => {
 
     test("Create Test", async () => {
         let result = await graphql(schema, CreateOrganizationQuery, null, null, null);
-        result = await graphql(schema, Query, null, null, null);
-        // Create
-        const expected = {
-            "data": {
-              "Organization": [
-                {
-                  "_id": "http://subject",
-                  "employee": [
-                    {
-                      "_id": "http://data/bluesB",
-                      "_type": [
-                        "http://schema.org/Person"
-                      ],
-                      "name": {
-                        "_value": "Adam"
-                      }
-                    }
-                  ],
-                  "shareholder": [
-                    {
-                      "__typename": "Person",
-                      "_id": "http://data/bluesB",
-                      "name": {
-                        "_value": "Adam"
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-       
-        expect(result).toEqual(expected);
 
+
+        setTimeout(async () => {
+            result = await graphql(schema, Query, null, null, null);
+            // Create
+            const expected = {
+                "data": {
+                    "Organization": [
+                        {
+                            "_id": "http://subject",
+                            "employee": [
+                                {
+                                    "_id": "http://data/bluesB",
+                                    "_type": [
+                                        "http://schema.org/Person"
+                                    ],
+                                    "name": {
+                                        "_value": "Adam"
+                                    }
+                                }
+                            ],
+                            "shareholder": [
+                                {
+                                    "__typename": "Person",
+                                    "_id": "http://data/bluesB",
+                                    "name": {
+                                        "_value": "Adam"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+
+            expect(result).toEqual(expected);
+        }, 1);
     });
 
 
