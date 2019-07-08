@@ -142,7 +142,14 @@ createQueryResolvers = (database, tree) => {
         else if (tree[object].type === "EnumType") {
         }
         else if (object === "_CONTEXT") {
-            queryResolverBody["Query"]["_CONTEXT"] = () => { return [ schemaMapping["@context"] ]}
+            queryResolverBody["Query"]["_CONTEXT"] = () => { return [schemaMapping["@context"]] }
+        }
+        else if (object === "_OBJECT") {
+            queryResolverBody["Query"]["_OBJECT"] = () => {
+                let data = database.getSubjectsByType("http://schema.org/Thing", "http://staple-api.org/datamodel/type");
+                data = data.map(x => { return { '_id': x, '_type': ["http://schema.org/Thing"] } })
+                return data
+            }
         }
         else {
             console.log("UNHANDLED TYPE")

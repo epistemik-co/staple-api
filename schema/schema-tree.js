@@ -137,7 +137,6 @@ createTree = () => {
         'Int',
         'Float',
         'Boolean',
-        '_OBJECT',
     ];
 
     // console.log(schemaMapping["@context"]["Person"])
