@@ -13,6 +13,32 @@ function isIterable(obj) {
     return typeof obj[Symbol.iterator] === 'function';
 }
 
+function validateURI(uri) {
+    var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+    if (!pattern.test(uri)) {
+        throw new GraphQLError({ key: 'ERROR', message: 'The value of all _id keys in the object are valid URIs' });
+    }
+}
+
+function validateflattenedJson(data) {
+    getDepth = function (obj) {
+        var depth = 0;
+        if (obj.children) {
+            obj.children.forEach(function (d) {
+                var tmpDepth = getDepth(d)
+                if (tmpDepth > depth) {
+                    depth = tmpDepth;
+                }
+            })
+        }
+        return 1 + depth;
+    }
+    if(getDepth(data) > 1){
+        throw new GraphQLError({ key: 'ERROR', message: 'The input object is a valid flattened JSON-LD object under the assumed context' });
+    }
+}
+
+
 createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
 
@@ -38,13 +64,17 @@ createMutationResolvers = (database, tree) => {
             if (objectID === undefined) {
                 return false;
             }
+            validateURI(objectID);
+            validateflattenedJson(req.input);
+
+            console.log(req.input['_type'])
 
             let fieldName = mutation.fields[field].name.value;
             let fieldFromSchemaTree = objectsFromSchemaObjectTree.filter(x => x.name === fieldName);
             fieldFromSchemaTree = fieldFromSchemaTree[0];
 
 
-            
+
             if (req.type === "UPDATE") {
                 // Need to be created
                 if (database.getTriplesBySubject((objectID)).length === 0) {
@@ -55,18 +85,21 @@ createMutationResolvers = (database, tree) => {
                     if (propertyName !== '_id' && propertyName !== '_type') {
                         let uri = schemaMapping["@context"][propertyName];
                         if (uri === undefined) {
-                            uri = "http://schema.org/" + propertyName;
+                            throw new GraphQLError({ key: 'ERROR', message: `Uri for ${propertyNameField} is not defined in context` });
                         }
                         database.delete((objectID), (uri), undefined);
                     }
                 }
             }
             else if (req.type === "INSERT") {
-                // // Need to be created
-                // if (database.getTriplesBySubject(objectID).length === 0) {
-                //     return false;
-                // }
-                // Validation 
+                database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" ,fieldFromSchemaTree.uri)
+
+                if(req.ensureExists){
+                    if (!database.isTripleInDB(objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing")) {
+                        throw new GraphQLError({ key: 'ERROR', message: 'The object must exist in the database prior to this request.' });
+                    }
+                }
+
                 for (let propertyName in fieldFromSchemaTree.data) {
                     if (propertyName !== '_id' && propertyName !== '_type') {
                         if (req.input[propertyName] !== undefined) {
@@ -76,11 +109,11 @@ createMutationResolvers = (database, tree) => {
                             else {
                                 let uri = schemaMapping["@context"][propertyName];
                                 if (uri === undefined) {
-                                    uri = "http://schema.org/" + propertyName;
+                                    throw new GraphQLError({ key: 'ERROR', message: `Uri for ${propertyNameField} is not defined in context` });
                                 }
                                 let search = database.getObjectsValueArray((objectID), (uri));
                                 if (search.length > 0) {
-                                    throw new GraphQLError({ key: 'Can not override field: ' + propertyName, message: 'Field already defined in object' });
+                                    throw new GraphQLError({ key: 'ERROR', message: `Can not override field: ${propertyNameField}. The field is already defined in object` });
                                 }
                             }
                         }
@@ -94,8 +127,7 @@ createMutationResolvers = (database, tree) => {
                 if (propertyName !== '_id' && propertyName !== '_type') {
                     let uri = schemaMapping["@context"][propertyName];
                     if (uri === undefined) {
-                        // throw new GraphQLError({ key: `Uri not found`, message: 'URI for: {propertyName} was not found' });
-                        uri = "http://schema.org/" + propertyName;
+                        throw new GraphQLError({ key: 'ERROR', message: `Uri for ${propertyNameField} is not defined in context` });
                     }
 
                     //let objectFromInput = req.input[propertyName];
