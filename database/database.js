@@ -19,6 +19,7 @@ class Database {
         gra = factory.namedNode(gra);
 
         let quad = factory.quad(sub, pred, obj, gra);
+
         this.y_tree.add(quad);
         return true;
     }
@@ -193,7 +194,12 @@ class Database {
         const constr = (tree, ID) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
+                    if (y_quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
+                        y_quad.predicate.value = "http://www.w3.org/1999/02/22-rdf-syntax-ns#staple:type"
+                    }
+
                     tree.add(y_quad);
+
                 }
             }
 
@@ -212,6 +218,10 @@ class Database {
         const constr = (tree, ID) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
+                    if (y_quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
+                        y_quad.predicate.value = "http://www.w3.org/1999/02/22-rdf-syntax-ns#staple:type"
+                    }
+                    
                     tree.delete(y_quad);
                 }
             }
