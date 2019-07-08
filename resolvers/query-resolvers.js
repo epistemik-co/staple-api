@@ -33,17 +33,17 @@ createQueryResolvers = (database, tree) => {
 
             for (var propertyName in tree[object].data) {
                 if (propertyName === '_value') {
-                    newResolverBody['_value'] = async (parent) => { return parent.value } 
+                    newResolverBody['_value'] = async (parent) => { return parent.value }
                 }
                 else if (propertyName === '_type') {
-                    newResolverBody['_type'] = (parent) => { return [parent.datatype.value] } 
+                    newResolverBody['_type'] = (parent) => { return [parent.datatype.value] }
                 }
             }
 
             queryResolverBody['Data'][newResolver] = newResolverBody;
 
         } else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
-            
+
             // Core Query
             let uri = tree[object]['uri'];
             let constr = (uri) => { return (parent) => { return database.getSubjectsByType((uri)) } }; // OK
@@ -68,10 +68,10 @@ createQueryResolvers = (database, tree) => {
                 }
                 else if (propertyName === '_type') {
                     newResolverBody['_type'] = (parent) => {
-                        
-                        if(parent.value) {parent = parent.value;}
-                          return database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
-                         }; // OK
+
+                        if (parent.value) { parent = parent.value; }
+                        return database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                    }; // OK
                 }
 
                 else {
@@ -82,13 +82,13 @@ createQueryResolvers = (database, tree) => {
                     }
 
                     if (tree[currentObject.name].type === "UnionType") {
-                        const name = uri; 
+                        const name = uri;
                         let constr = (name) => {
                             return (parent) => {
                                 let data = database.getObjectsValueArray((parent), (name));
                                 return data;
                             }
-                        }; 
+                        };
                         newResolverBody[propertyName] = constr(name);
 
                     }
@@ -141,11 +141,15 @@ createQueryResolvers = (database, tree) => {
         }
         else if (tree[object].type === "EnumType") {
         }
+        else if (object === "_CONTEXT") {
+            queryResolverBody["Query"]["_CONTEXT"] = () => { return [ schemaMapping["@context"] ]}
+        }
         else {
             console.log("UNHANDLED TYPE")
             console.log(tree[object].type)
         }
     }
+    console.log(queryResolverBody);
     return queryResolverBody;
 }
 
