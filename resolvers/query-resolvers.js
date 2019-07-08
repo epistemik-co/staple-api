@@ -43,6 +43,7 @@ createQueryResolvers = (database, tree) => {
             queryResolverBody['Data'][newResolver] = newResolverBody;
 
         } else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
+            
             // Core Query
             let uri = tree[object]['uri'];
             let constr = (uri) => { return (parent) => { return database.getSubjectsByType((uri)) } }; // OK
@@ -63,10 +64,11 @@ createQueryResolvers = (database, tree) => {
                 }
 
                 if (propertyName === '_id') {
-                    newResolverBody['_id'] = (parent) => {if(parent.value) {return parent.value;} return parent }; // OK
+                    newResolverBody['_id'] = (parent) => { return parent }; // OK
                 }
                 else if (propertyName === '_type') {
                     newResolverBody['_type'] = (parent) => {
+                        
                         if(parent.value) {parent = parent.value;}
                           return database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
                          }; // OK

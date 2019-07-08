@@ -183,14 +183,13 @@ createMutationResolvers = (database, tree) => {
 
             const rdf = await jsonld.toRDF(dataForQuads, {format: 'application/n-quads'});
 
-            req.type === "REMOVE" ? await database.removeRDF(rdf) : await database.insertRDF(rdf);
+            req.type === "REMOVE" ? database.removeRDF(rdf) : database.insertRDF(rdf);
 
             //console.log(rdf);
-            console.log(database.getAllQuads())
-
+            // setTimeout(() => console.log(database.getAllQuads()), 1);
+            
+            
             return true;
-
-
         };
     }
 
