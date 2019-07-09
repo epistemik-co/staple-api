@@ -24,35 +24,35 @@ afterEach(() => {
 
 describe('My Test Cases for query resolvers', () => {
     const CreateOrganizationQuery = `
-        mutation{
-            Organization(type: CREATE, input: {
-            _id: "http://subject"
-            _type: Organization
-            legalName: {
-                _value: "Nazwa firmy"
+    mutation{
+        Organization(type: INSERT, input: {
+        _id: "http://subject"
+        _type: Organization
+        legalName: {
+            _value: "Nazwa firmy"
+            _type: Text
+        }
+        employee: {
+            _type: Person
+            _id: "http://data/bluesB"
+        }
+        shareholder:{
+            _type: Person
+            _id: "http://data/bluesB"
+        }
+        noOfEmployees: {
+            _type: Integer
+            _value: "0"
+        }
+        })
+        Person(type: INSERT, input: {
+            _id: "http://data/bluesB"
+            name: {
+                _value: "Adam"
                 _type: Text
             }
-            employee: {
-                _type: Person
-                _id: "http://data/bluesB"
-            }
-            shareholder:{
-                _type: Person
-                _id: "http://data/bluesB"
-            }
-            noOfEmployees: {
-                _type: Integer
-                _value: "0"
-            }
             })
-            Person(type: CREATE, input: {
-                _id: "http://data/bluesB"
-                name: {
-                    _value: "Adam"
-                    _type: Text
-                }
-                })
-        }
+    }
 
       
     `;
@@ -85,42 +85,40 @@ describe('My Test Cases for query resolvers', () => {
     test("Create Test", async () => {
         let result = await graphql(schema, CreateOrganizationQuery, null, null, null);
 
-
-        setTimeout(async () => {
-            result = await graphql(schema, Query, null, null, null);
-            // Create
-            const expected = {
-                "data": {
-                    "Organization": [
-                        {
-                            "_id": "http://subject",
-                            "employee": [
-                                {
-                                    "_id": "http://data/bluesB",
-                                    "_type": [
-                                        "http://schema.org/Person"
-                                    ],
-                                    "name": {
-                                        "_value": "Adam"
-                                    }
+        result = await graphql(schema, Query, null, null, null);
+        // Create
+        const expected = {
+            "data": {
+                "Organization": [
+                    {
+                        "_id": "http://subject",
+                        "employee": [
+                            {
+                                "_id": "http://data/bluesB",
+                                "_type": [
+                                    "http://schema.org/Person"
+                                ],
+                                "name": {
+                                    "_value": "Adam"
                                 }
-                            ],
-                            "shareholder": [
-                                {
-                                    "__typename": "Person",
-                                    "_id": "http://data/bluesB",
-                                    "name": {
-                                        "_value": "Adam"
-                                    }
+                            }
+                        ],
+                        "shareholder": [
+                            {
+                                "__typename": "Person",
+                                "_id": "http://data/bluesB",
+                                "name": {
+                                    "_value": "Adam"
                                 }
-                            ]
-                        }
-                    ]
-                }
+                            }
+                        ]
+                    }
+                ]
             }
+        }
 
-            expect(result).toEqual(expected);
-        }, 1);
+        expect(result).toEqual(expected);
+        
     });
 
 

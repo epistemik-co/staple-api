@@ -23,7 +23,6 @@ afterEach(() => {
 });
 
 
-
 describe('My Test Cases for mutation resolvers', () => {
     const InsertCreateQuery = `
         mutation{
@@ -90,18 +89,6 @@ describe('My Test Cases for mutation resolvers', () => {
         })
       }
     `
-
-    const InsertQuery = `
-    mutation{
-        Organization(type: INSERT, input: {
-            _id: "http://subject"
-          legalName: {
-            _value: "Adam"
-            _type: Text
-          }
-        })
-      }
-    `
    
     const CreateQuery = `
     mutation {
@@ -120,9 +107,8 @@ describe('My Test Cases for mutation resolvers', () => {
         // Create
         expect(result.data.Organization).toEqual(true);
         // Count Triples
-        setTimeout(() => {
             let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(5);
+            expect(data.length).toEqual(7);
             // ID Type test
             data = database.getSingleStringValue(("http://subject"), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
             expect(data).toEqual(schemaMapping["@context"]["Organization"]);
@@ -138,7 +124,7 @@ describe('My Test Cases for mutation resolvers', () => {
             // Union test
             data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholder"));
             expect(data).toEqual("http://data/bluesB");
-        }, 1);
+       
     });
 
 
@@ -152,9 +138,8 @@ describe('My Test Cases for mutation resolvers', () => {
         expect(result.data.Organization).toEqual(true);
         // Count Triples
 
-        setTimeout(() => {
             let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(4);
+            expect(data.length).toEqual(6);
             // Object test
             data = database.getSingleStringValue(("http://subject"), ("http://schema.org/employee"));
             expect(data).toEqual("http://johnnyB2");
@@ -164,7 +149,7 @@ describe('My Test Cases for mutation resolvers', () => {
             // Data test text
             data = database.getSingleStringValue(("http://subject"), ("http://schema.org/legalName"));
             expect(data).toEqual("Firma");
-        }, 1);
+        
     });
 
 
@@ -176,44 +161,12 @@ describe('My Test Cases for mutation resolvers', () => {
         expect(result.data.Organization).toEqual(true);
         // Count Triples
 
-
-        setTimeout(() => {
             let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(2);
+            expect(data.length).toEqual(7);
             // 
             data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholder"));
             expect(data).toEqual("http://data/bluesB");
-        }, 1);
-    });
-
-
-    test("Insert Test", async () => {
-        let result = await graphql(schema, InsertCreateQuery, null, null, null);
-        let RemoveQuery = `
-        mutation{
-            Organization(type: REMOVE, input: {
-              _id: "http://subject"
-              legalName: {
-                _value: "Nazwa firmy"
-                _type:	Text
-              }
-            })
-          }
-        `
-        result = await graphql(schema, RemoveQuery, null, null, null);
-        result = await graphql(schema, InsertQuery, null, null, null);
-
-        // Update
-        expect(result.data.Organization).toEqual(true);
-        // Count Triples
-
-        setTimeout(() => {
-            let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(5);
-            // 
-            data = database.getSingleStringValue(("http://subject"), ("http://schema.org/legalName"));
-            expect(data).toEqual("Adam");
-        }, 1);
+        
     });
 
 
@@ -221,12 +174,11 @@ describe('My Test Cases for mutation resolvers', () => {
         let result = await graphql(schema, InsertCreateQuery, null, null, null);
         result = await graphql(schema, DeleteQuery, null, null, null);
 
-        setTimeout(() => {
             expect(result.data.DELETE).toEqual(true);
             // Count Triples
             let data = database.getTriplesBySubject(("http://subject"));
             expect(data.length).toEqual(0);
-        }, 1);
+
     });
 
 
@@ -235,13 +187,12 @@ describe('My Test Cases for mutation resolvers', () => {
         // Create
         expect(result.data.CREATE).toEqual(true);
         
-        setTimeout(() => {
             let data = database.getTriplesBySubject(("http://subject"));
             expect(data.length).toBe(1);
             // ID Type test
             data = database.isTripleInDB("http://subject", "http://staple-api.org/datamodel/type", "http://schema.org/Thing")
             expect(data).toEqual(true);
-        }, 1);
+        
     });
 })
 

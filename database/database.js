@@ -161,7 +161,7 @@ class Database {
     getSubjectsByType(type, predicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
 
         type = factory.namedNode(type);
-        predicate = factory.namedNode(predicate);
+        predicate = factory.namedNode(this.stampleDataType);
         const temp = this.database.match(null, predicate, type);
         let data = [];
         var itr = temp.quads();
@@ -170,6 +170,8 @@ class Database {
             data.push(x.value.subject.value);
             x = itr.next();
         }
+
+        
         return data;
     };
 
@@ -189,10 +191,35 @@ class Database {
         this.database.clear();
     }
 
+    async readFromFile(filename){
+        let y_tree2 = this.y_tree
+        var stream = fs.createReadStream(filename)
+            .pipe(read_graphy_ttl())
+            .on('data', (y_quad) => {
+                y_tree2.add(y_quad)
+            })
+            .on('eof', () => {
+                console.log('Loading complete.');
+            })
+        await this.streamPromise(stream)
+    }
 
-    insertRDF(rdf, ID) {
-        //console.log(`inserting rdf data`)
-        const constr = (tree, ID) => {
+    streamPromise(stream) {
+        return new Promise((resolve, reject) => {
+            stream.on('end', () => {
+                resolve('end');
+            });
+            stream.on('finish', () => {
+                resolve('finish');
+            });
+            stream.on('error', (error) => {
+                reject(error);
+            });
+        });
+    }
+
+    insertRDFPromise(tree, ID, rdf){
+        return new Promise((resolve, reject) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
                     y_quad.graph = factory.namedNode(null);
@@ -201,33 +228,36 @@ class Database {
             }
 
             let eof = (h_prefixes) => {
-                //console.log("Done");
+                resolve('done')
             }
 
             read_graphy(rdf, { data, eof, })
-        }
-
-        constr(this.database, ID);
+        });
     }
 
-    removeRDF(rdf, ID) {
-        //console.log(`removing rdf data`);
-        const constr = (tree, ID) => {
+    async insertRDF(rdf, ID) {
+        await this.insertRDFPromise(this.database, ID, rdf);
+    }
+
+    removeRDFPromise(tree, ID, rdf){
+        return new Promise((resolve, reject) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
-                    y_quad['graph'] = factory.namedNode(null);
-                    tree.delete(y_quad);
+                    y_quad.graph = factory.namedNode(null);
+                    tree.add(y_quad);
                 }
             }
 
             let eof = (h_prefixes) => {
-                //console.log("Done");
+                resolve('done')
             }
 
             read_graphy(rdf, { data, eof, })
-        }
+        });
+    }
 
-        constr(this.database, ID);
+    async removeRDF(rdf, ID) {
+        await this.removeRDFPromise(this.database, ID,rdf );
     }
 
     updateInference() {
@@ -258,7 +288,7 @@ class Database {
                 let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
 
                 for (let key in data) {
-                    console.log(itrData.value.object.value)
+                    // console.log(itrData.value.object.value)
                     let uris = data[key]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
 
                     for (let x in uris) {
@@ -270,9 +300,6 @@ class Database {
             }
             itrData = itr.next();
         }
-
-        console.log(addedQuads)
-        console.log("\n\n")
 
     }
 }

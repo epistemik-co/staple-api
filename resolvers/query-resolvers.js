@@ -48,6 +48,7 @@ createQueryResolvers = (database, tree) => {
             let uri = tree[object]['uri'];
             let constr = (uri) => { return (parent, args) => { 
                 let data = database.getSubjectsByType((uri));
+                // data = database.getSubjects 
                 data = data.filter( (id, index) => { return index >= (args.page-1)*10 && index < args.page*10  })
                 return data } }; // OK
             queryResolverBody['Query'][tree[object].name] = constr(uri);
