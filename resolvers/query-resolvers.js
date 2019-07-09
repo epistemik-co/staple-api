@@ -1,6 +1,4 @@
 const schemaMapping = require('../schema/schema-mapping');
-const factory = require('@graphy/core.data.factory');
-const { GraphQLError } = require('graphql');
 
 createQueryResolvers = (database, tree) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
@@ -48,9 +46,8 @@ createQueryResolvers = (database, tree) => {
             let uri = tree[object]['uri'];
             let constr = (uri) => { return (parent, args) => { 
                 let data = database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" , args.inferred);
-                // data = database.getSubjects 
                 data = data.filter( (id, index) => { return index >= (args.page-1)*10 && index < args.page*10  })
-                return data } }; // OK
+                return data } }; 
             queryResolverBody['Query'][tree[object].name] = constr(uri);
 
             //OBJECT
@@ -130,7 +127,7 @@ createQueryResolvers = (database, tree) => {
                         return uriToName;
                     })
 
-                    const typeOfObject = database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))[0];
+                    const typeOfObject = database.getObjectsValueArray(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")[0];
                     typesOfObject = typesOfObject.filter(x => x[typeOfObject] !== undefined)[0]
                     return typesOfObject[typeOfObject];
                 };

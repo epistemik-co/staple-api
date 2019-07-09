@@ -3,6 +3,8 @@ const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const schemaMapping = require('../schema/schema-mapping');
 const { GraphQLError } = require('graphql');
 const jsonld = require('jsonld');
+const read_graphy = require('graphy').content.nt.read;
+const dataset_tree = require('graphy').util.dataset.tree
 
 function validateIsIterable(obj) {
     // checks for null and undefined
@@ -53,6 +55,42 @@ function validateIsIdDefined(id) {
         throw new GraphQLError({ key: 'ERROR', message: 'The ID must be defined.' });
     }
 }
+
+async function validateData(database, objectID, rdf, ensureExists) {
+    let dataForValidation = dataset_tree();
+
+    await database.insertRDFPromise(dataForValidation, objectID, rdf);
+
+    let temp = dataForValidation.match(null, null, null);
+    let data = {};
+    var itr = temp.quads();
+    var x = itr.next();
+    while (!x.done) {
+        data = x.value;
+        // uri validation
+        validateURI(data.subject.value, data.subject.value)
+        validateURI(data.predicate.value, data.predicate.value)
+        if (data.object.datatype === undefined) {
+            validateURI(data.object.value, data.object.value)
+        }
+        else {
+            validateURI(data.object.datatype.value, data.object.datatype.value)
+        }
+
+        // ensureExists
+        if (ensureExists) {
+            if (data.object.datatype === undefined) {
+                if (data.predicate.value !== database.stampleDataType && data.predicate.value !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
+                    let uri = data.object.value;
+                    validateIsObjectInDatabase(database, uri, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", false);
+                }
+            }
+        }
+
+        x = itr.next();
+    }
+}
+
 
 createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
@@ -153,15 +191,15 @@ createMutationResolvers = (database, tree) => {
             let dataForQuads = req.input;
             dataForQuads["@context"] = schemaMapping["@context"];
             const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' });
+
+            await validateData(database, objectID, rdf, req.ensureExists)
+
             req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
 
 
             // Inference
-
             database.updateInference();
             // console.log(database.getAllQuads())
-
-
             return true;
         };
     }

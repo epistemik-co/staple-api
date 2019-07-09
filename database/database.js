@@ -160,12 +160,14 @@ class Database {
     // returns array of uri
     getSubjectsByType(type, predicate, inferred = false) {
         type = factory.namedNode(type);
+
         if(inferred){
             predicate = factory.namedNode(this.stampleDataType);
         }
         else{
             predicate = factory.namedNode(predicate);
         }
+
         const temp = this.database.match(null, predicate, type);
         let data = [];
         var itr = temp.quads();
@@ -195,32 +197,6 @@ class Database {
         this.database.clear();
     }
 
-    async readFromFile(filename){
-        let y_tree2 = this.y_tree
-        var stream = fs.createReadStream(filename)
-            .pipe(read_graphy_ttl())
-            .on('data', (y_quad) => {
-                y_tree2.add(y_quad)
-            })
-            .on('eof', () => {
-                console.log('Loading complete.');
-            })
-        await this.streamPromise(stream)
-    }
-
-    streamPromise(stream) {
-        return new Promise((resolve, reject) => {
-            stream.on('end', () => {
-                resolve('end');
-            });
-            stream.on('finish', () => {
-                resolve('finish');
-            });
-            stream.on('error', (error) => {
-                reject(error);
-            });
-        });
-    }
 
     insertRDFPromise(tree, ID, rdf){
         return new Promise((resolve, reject) => {
