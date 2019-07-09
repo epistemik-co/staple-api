@@ -94,7 +94,6 @@ async function validateData(database, objectID, rdf, ensureExists) {
 
 createMutationResolvers = (database, tree) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
-
     let objectsFromSchemaObjectTree = [];
 
     for (var property in tree) { objectsFromSchemaObjectTree.push(tree[property]); };
@@ -200,6 +199,8 @@ createMutationResolvers = (database, tree) => {
             // Inference
             database.updateInference();
             // console.log(database.getAllQuads())
+
+            //throw new GraphQLError({ key: 'Warning', message: `Uri for ${name} is not defined in context` });
             return true;
         };
     }
