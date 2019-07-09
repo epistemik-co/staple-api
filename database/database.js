@@ -158,10 +158,14 @@ class Database {
     };
 
     // returns array of uri
-    getSubjectsByType(type, predicate = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
-
+    getSubjectsByType(type, predicate, inferred = false) {
         type = factory.namedNode(type);
-        predicate = factory.namedNode(this.stampleDataType);
+        if(inferred){
+            predicate = factory.namedNode(this.stampleDataType);
+        }
+        else{
+            predicate = factory.namedNode(predicate);
+        }
         const temp = this.database.match(null, predicate, type);
         let data = [];
         var itr = temp.quads();
