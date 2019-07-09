@@ -195,12 +195,8 @@ class Database {
         const constr = (tree, ID) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
-                    if (y_quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
-                        y_quad.predicate.value = "http://staple-api.org/datamodel/type"
-                    }
-
+                    y_quad.graph = factory.namedNode(null);
                     tree.add(y_quad);
-
                 }
             }
 
@@ -219,10 +215,7 @@ class Database {
         const constr = (tree, ID) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
-                    if (y_quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
-                        y_quad.predicate.value = "http://staple-api.org/datamodel/type"
-                    }
-
+                    y_quad['graph'] = factory.namedNode(null);
                     tree.delete(y_quad);
                 }
             }
@@ -257,13 +250,13 @@ class Database {
         temp = this.database.match(null, null, null);
         itr = temp.quads();
         itrData = itr.next();
-        let added = []
         let addedQuads = []
 
         while (!itrData.done) {
-            if (itrData.value.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" && added.filter(x => x === itrData.value.object.value).length === 0) {
+
+            if (itrData.value.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
                 let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
-                
+
                 for (let key in data) {
                     console.log(itrData.value.object.value)
                     let uris = data[key]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
@@ -273,7 +266,6 @@ class Database {
                         addedQuads.push(`${itrData.value.subject.value}, ${this.stampleDataType}, ${uris[x]['@id']}`)
                     }
 
-                    added.push(itrData.value.object.value);
                 }
             }
             itrData = itr.next();

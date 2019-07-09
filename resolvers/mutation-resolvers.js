@@ -157,8 +157,8 @@ createMutationResolvers = (database, tree) => {
             // Inference
 
             setTimeout(() => {
-                console.log(database.getAllQuads())
                 database.updateInference();
+                console.log(database.getAllQuads())
             }, 1);
 
             return true;
