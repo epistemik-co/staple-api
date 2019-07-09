@@ -20,7 +20,7 @@ function validateURI(uri, name) {
     }
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     if (!pattern.test(uri)) {
-        throw new GraphQLError({ key: 'ERROR', message: 'The value of all _id keys in the object are valid URIs' });
+        throw new GraphQLError({ key: 'ERROR', message: `The value of ${name} keys in the object are valid URIs` });
     }
 }
 
@@ -207,6 +207,7 @@ createMutationResolvers = (database, tree) => {
     newResolverBody['DELETE'] = (args, req) => {
         const objectID = req.id;
         validateIsIdDefined(objectID);
+        validateURI(objectID, "id");
         validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing");
 
         let res = database.deleteID((objectID));
@@ -219,6 +220,7 @@ createMutationResolvers = (database, tree) => {
     newResolverBody['CREATE'] = (args, req) => {
         const objectID = req.id;
         validateIsIdDefined(objectID);
+        validateURI(objectID, "id");
         validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", true);
 
         let res = database.create(objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing");
