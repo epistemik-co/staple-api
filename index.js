@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jsonld = require('jsonld');
 const graphqlHttp = require('express-graphql');
+const { ApolloServer, gql } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
 
 const DatabaseInterface = require('./database/Database');
@@ -28,15 +29,29 @@ const schema = makeExecutableSchema({
     resolvers: rootResolver,
 });
 
+// // Construct a schema, using GraphQL schema language
+// const typeDefs = gql`
+//   type Query {
+//     hello: String
+//   }
+// `;
 
-app.use('/graphql', graphqlHttp({
-    schema: schema,
-    graphiql: true,
-    customFormatErrorFn: error => {
-        const { code, message } = error.originalError;
-        return { code, message };
-    },
-}));
+const server = new ApolloServer({ schema });
+
+server.applyMiddleware({ app });
+
+app.listen({ port: 4000 }, () =>
+  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+);
+
+// app.use('/graphql', graphqlHttp({
+//     schema: schema,
+//     graphiql: true,
+//     customFormatErrorFn: error => {
+//         const { code, message } = error.originalError;
+//         return { code, message };
+//     },
+// }));
 
 
 app.get('/', async (req, res, next) => {
@@ -68,9 +83,6 @@ app.post('/api/upload', async (req, res) => {
         message: 'added successfully'
     })
 });
-
-
-app.listen(3000);
 
 
 module.exports = {
