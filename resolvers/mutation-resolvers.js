@@ -21,7 +21,7 @@ function validateURI(uri, name) {
     }
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     if (!pattern.test(uri)) {
-        throw new ApolloError("message", "code", "code");
+        // throw new ApolloError("message", "code", "code");
         throw new GraphQLError({ key: 'ERROR', message: `The value of ${name} keys in the object are valid URIs` });
     }
 }
@@ -58,7 +58,7 @@ function validateIsIdDefined(id) {
     }
 }
 
-async function validateData(database, objectID, rdf, ensureExists) {
+async function validateData(database, objectID, rdf, ensureExists, reqType, Warnings) {
     let dataForValidation = dataset_tree();
 
     await database.insertRDFPromise(dataForValidation, objectID, rdf);
@@ -67,6 +67,7 @@ async function validateData(database, objectID, rdf, ensureExists) {
     let data = {};
     var itr = temp.quads();
     var x = itr.next();
+    let RemovedType = {};
     while (!x.done) {
         data = x.value;
         // uri validation
@@ -88,9 +89,35 @@ async function validateData(database, objectID, rdf, ensureExists) {
                 }
             }
         }
+        else{
+            if (data.object.datatype === undefined) {
+                if (data.predicate.value !== database.stampleDataType && data.predicate.value !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
+                    let uri = data.object.value;
+                    if (database.isTripleInDB(uri,  "http://staple-api.org/datamodel/type", "http://schema.org/Thing") === false) {
+                        database.create(uri, "http://staple-api.org/datamodel/type", "http://schema.org/Thing")
+                    }
+                }
+            }
+        }
+
+        if(reqType === "REMOVE" && data.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"){
+            if(RemovedType[data.subject.value] === undefined ){
+                RemovedType[data.subject.value] = [];
+            }
+            RemovedType[data.subject.value].push(data.object.value);
+        }
 
         x = itr.next();
     }
+
+    for(let key in RemovedType){
+        let types = database.getObjectsValueArray(key,"http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+        if(types.every(elem => RemovedType[key].indexOf(elem) > -1)){
+            Warnings.push({ 'Message': `Object with id: ${key} has no type` })
+        }
+    }
+
+    console.log(database.getAllQuads())
 }
 
 
@@ -192,14 +219,14 @@ createMutationResolvers = (database, tree, Warnings) => {
                 dataForQuads["@context"] = schemaMapping["@context"];
                 const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' });
 
-                await validateData(database, objectID, rdf, req.ensureExists)
+                await validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings)
 
                 req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
 
 
                 // Inference
                 database.updateInference();
-                console.log(database.getAllQuads())
+                // console.log(database.getAllQuads())
 
                 //throw new GraphQLError({ key: 'Warning', message: `Uri for ${name} is not defined in context` });
                 return true;

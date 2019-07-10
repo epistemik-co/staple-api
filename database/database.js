@@ -227,6 +227,7 @@ class Database {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
                     y_quad.graph = factory.namedNode(null);
+                    console.log(y_quad)
                     tree.delete(y_quad);
                 }
             }
