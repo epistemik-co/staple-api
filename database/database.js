@@ -111,7 +111,6 @@ class Database {
         return this.database.has(quad)
     };
 
-
     // Array of Quads
     getTriplesBySubject(sub) {
 
@@ -128,7 +127,6 @@ class Database {
         return data;
     };
 
-
     // returns single object value - uri or data
     getSingleStringValue(sub, pred) {
 
@@ -141,8 +139,6 @@ class Database {
 
         return x.value.object.value;
     };
-
-
 
     // returns single object value - data
     getSingleLiteral(sub, pred) {
@@ -184,6 +180,7 @@ class Database {
         return data;
     };
 
+    // returns all quads
     getAllQuads() {
         const temp = this.database.match(null, null, null);
         let data = [];
@@ -199,7 +196,6 @@ class Database {
     drop() {
         this.database.clear();
     }
-
 
     insertRDFPromise(tree, ID, rdf){
         return new Promise((resolve, reject) => {
@@ -227,7 +223,6 @@ class Database {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
                     y_quad.graph = factory.namedNode(null);
-                    console.log(y_quad)
                     tree.delete(y_quad);
                 }
             }
@@ -246,15 +241,11 @@ class Database {
 
     updateInference() {
         // remove all staple : datatype but not Thing 
-        // ...
-
         let temp = this.database.match(null, null, null);
         let itr = temp.quads();
         let itrData = itr.next();
         while (!itrData.done) {
             if (itrData.value.predicate.value === this.stampleDataType && itrData.value.object.value !== schemaMapping["@context"]['Thing']) {
-                // console.log(`deleted \n ${x.value}`)
-                // console.log(x.value)
                 this.database.delete(itrData.value);
             }
             itrData = itr.next();
@@ -272,7 +263,6 @@ class Database {
                 let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
 
                 for (let key in data) {
-                    // console.log(itrData.value.object.value)
                     let uris = data[key]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
 
                     for (let x in uris) {

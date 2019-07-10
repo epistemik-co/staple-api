@@ -1,6 +1,6 @@
 const createTree = require('../schema/schema-tree');
-const createMutationResolvers = require('./mutation-resolvers');
-const createQueryResolvers = require('./query-resolvers');
+const createMutationResolvers = require('./mutation-resolver/mutation-resolvers');
+const createQueryResolvers = require('./query-resolvers/query-resolvers');
 
 class rootResolver {
     constructor(db, Warnings) {
