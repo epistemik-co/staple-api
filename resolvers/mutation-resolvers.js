@@ -108,7 +108,7 @@ createMutationResolvers = (database, tree, Warnings) => {
 
     for (let field in mutation.fields) {
         newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
-                Warnings.push({ 'Message': "Information about object" })
+                // Warnings.push({ 'Message': "Information about object" })
                 // Object ID
                 const objectID = req.input['_id'];
                 if (req.ensureExists === undefined) {
@@ -199,7 +199,7 @@ createMutationResolvers = (database, tree, Warnings) => {
 
                 // Inference
                 database.updateInference();
-                // console.log(database.getAllQuads())
+                console.log(database.getAllQuads())
 
                 //throw new GraphQLError({ key: 'Warning', message: `Uri for ${name} is not defined in context` });
                 return true;

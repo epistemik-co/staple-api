@@ -180,7 +180,6 @@ class Database {
             data.push(x.value.subject.value);
             x = itr.next();
         }
-
         
         return data;
     };
@@ -228,7 +227,7 @@ class Database {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
                     y_quad.graph = factory.namedNode(null);
-                    tree.add(y_quad);
+                    tree.delete(y_quad);
                 }
             }
 

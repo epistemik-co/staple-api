@@ -162,7 +162,7 @@ describe('My Test Cases for mutation resolvers', () => {
         // Count Triples
 
             let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(7);
+            expect(data.length).toEqual(4);
             // 
             data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholder"));
             expect(data).toEqual("http://data/bluesB");

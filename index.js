@@ -11,7 +11,7 @@ const Resolver = require('./resolvers/resolvers');
 const app = express();
 const database = new DatabaseInterface();
 
-let Warnings = [];
+const Warnings = [];
 const rootResolver = new Resolver(database, Warnings).rootResolver;
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
@@ -38,11 +38,11 @@ const server = new ApolloServer({
             response.data = false;
         }
         else {
-            if (response.data !== null) {
+            if (response.data !== null && Warnings.length > 0) {
                 response["extensions"] = {}
                 response["extensions"]['Warning'] = [...Warnings];
+                Warnings.length = 0;
             }
-            Warnings.length = 0;
         }
         return response;
     },
