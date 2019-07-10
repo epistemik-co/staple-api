@@ -154,6 +154,10 @@ class Database {
         var itr = temp.quads();
         var x = itr.next();
 
+        if(x.value === undefined){
+            return null;
+        }
+
         return x.value.object;
     };
 

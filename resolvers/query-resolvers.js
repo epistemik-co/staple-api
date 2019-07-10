@@ -34,7 +34,7 @@ createQueryResolvers = (database, tree) => {
                     newResolverBody['_value'] = async (parent) => { return parent.value }
                 }
                 else if (propertyName === '_type') {
-                    newResolverBody['_type'] = (parent) => {  return [parent.datatype.value] }
+                    newResolverBody['_type'] = (parent) => { return [parent.datatype.value] }
                 }
             }
 
@@ -44,10 +44,13 @@ createQueryResolvers = (database, tree) => {
 
             // Core Query
             let uri = tree[object]['uri'];
-            let constr = (uri) => { return (parent, args) => { 
-                let data = database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" , args.inferred);
-                data = data.filter( (id, index) => { return index >= (args.page-1)*10 && index < args.page*10  })
-                return data } }; 
+            let constr = (uri) => {
+                return (parent, args) => {
+                    let data = database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred);
+                    data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 })
+                    return data
+                }
+            };
             queryResolverBody['Query'][tree[object].name] = constr(uri);
 
             //OBJECT
@@ -69,7 +72,7 @@ createQueryResolvers = (database, tree) => {
                 }
                 else if (propertyName === '_type') {
                     newResolverBody['_type'] = (parent, args) => {
-                        if(args.inferred){
+                        if (args.inferred) {
                             return database.getObjectsValueArray((parent), database.stampleDataType)
                         }
                         return database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
@@ -145,10 +148,10 @@ createQueryResolvers = (database, tree) => {
         }
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = (obj, args, context, info) => {
-                let data = database.getSubjectsByType("http://schema.org/Thing", "http://staple-api.org/datamodel/type", args.inferred);
-                data = data.filter( (id, index) => { return index >= (args.page-1)*10 && index < args.page*10  })
-                data = data.map( (id) => { return { '_id': id, '_type': ["http://schema.org/Thing"] } }) // find all types
-                return  data
+                let data = database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred);
+                data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
+                data = data.map((id) => { return { '_id': id, '_type': database.getObjectsValueArray(id, database.stampleDataType) } });
+                return data;
             }
         }
         else {

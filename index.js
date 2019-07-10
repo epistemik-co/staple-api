@@ -26,8 +26,6 @@ function showMemUsage() {
 const schema = makeExecutableSchema({
     typeDefs: schemaString,
     resolvers: rootResolver,
-
-
 });
 
 
