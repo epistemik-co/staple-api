@@ -1,6 +1,6 @@
 const schemaMapping = require('../schema/schema-mapping');
 
-createQueryResolvers = (database, tree) => {
+createQueryResolvers = (database, tree, Warnings) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
 
     let queryResolverBody = {};

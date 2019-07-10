@@ -1,8 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const jsonld = require('jsonld');
-const graphqlHttp = require('express-graphql');
-const { ApolloServer, gql } = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
 
 const DatabaseInterface = require('./database/Database');
@@ -11,7 +10,9 @@ const Resolver = require('./resolvers/resolvers');
 
 const app = express();
 const database = new DatabaseInterface();
-const rootResolver = new Resolver(database).rootResolver;
+
+let Warnings = [];
+const rootResolver = new Resolver(database, Warnings).rootResolver;
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
@@ -29,29 +30,29 @@ const schema = makeExecutableSchema({
     resolvers: rootResolver,
 });
 
-// // Construct a schema, using GraphQL schema language
-// const typeDefs = gql`
-//   type Query {
-//     hello: String
-//   }
-// `;
 
-const server = new ApolloServer({ schema });
+const server = new ApolloServer({
+    schema,
+    formatResponse: response => {
+        if (response.errors !== undefined) {
+            response.data = false;
+        }
+        else {
+            if (response.data !== null) {
+                response["extensions"] = {}
+                response["extensions"]['Warning'] = [...Warnings];
+            }
+            Warnings.length = 0;
+        }
+        return response;
+    },
+});
 
 server.applyMiddleware({ app });
 
 app.listen({ port: 4000 }, () =>
-  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+    console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
 );
-
-// app.use('/graphql', graphqlHttp({
-//     schema: schema,
-//     graphiql: true,
-//     customFormatErrorFn: error => {
-//         const { code, message } = error.originalError;
-//         return { code, message };
-//     },
-// }));
 
 
 app.get('/', async (req, res, next) => {

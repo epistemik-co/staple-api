@@ -5,6 +5,7 @@ const { GraphQLError } = require('graphql');
 const jsonld = require('jsonld');
 const read_graphy = require('graphy').content.nt.read;
 const dataset_tree = require('graphy').util.dataset.tree
+const { ApolloError } = require('apollo-server-express');
 
 function validateIsIterable(obj) {
     // checks for null and undefined
@@ -20,6 +21,7 @@ function validateURI(uri, name) {
     }
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     if (!pattern.test(uri)) {
+        throw new ApolloError("message", "code", "code");
         throw new GraphQLError({ key: 'ERROR', message: `The value of ${name} keys in the object are valid URIs` });
     }
 }
@@ -92,7 +94,7 @@ async function validateData(database, objectID, rdf, ensureExists) {
 }
 
 
-createMutationResolvers = (database, tree) => {
+createMutationResolvers = (database, tree, Warnings) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let objectsFromSchemaObjectTree = [];
 
@@ -105,104 +107,106 @@ createMutationResolvers = (database, tree) => {
     const mutation = schema.getTypeMap()['Mutation'].astNode;
 
     for (let field in mutation.fields) {
-
         newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
+                Warnings.push({ 'Message': "Information about object" })
+                // Object ID
+                const objectID = req.input['_id'];
+                if (req.ensureExists === undefined) {
+                    req.ensureExists = false;
+                }
+                validateIsIdDefined(objectID);
+                validateURI(objectID, 'id');
+                validateflattenedJson(req.input);
+                validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", false, req.ensureExists);
 
-            // Object ID
-            const objectID = req.input['_id'];
-            if (req.ensureExists === undefined) {
-                req.ensureExists = false;
-            }
-            validateIsIdDefined(objectID);
-            validateURI(objectID, 'id');
-            validateflattenedJson(req.input);
-            validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", false, req.ensureExists);
 
+                let fieldName = mutation.fields[field].name.value;
+                let fieldFromSchemaTree = objectsFromSchemaObjectTree.filter(x => x.name === fieldName);
+                fieldFromSchemaTree = fieldFromSchemaTree[0];
 
-            let fieldName = mutation.fields[field].name.value;
-            let fieldFromSchemaTree = objectsFromSchemaObjectTree.filter(x => x.name === fieldName);
-            fieldFromSchemaTree = fieldFromSchemaTree[0];
+                if (req.type === "INSERT") {
+                    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
 
-            if (req.type === "INSERT") {
-                database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
-
-                for (let propertyName in fieldFromSchemaTree.data) {
-                    if (propertyName !== '_id' && propertyName !== '_type') {
-                        if (req.input[propertyName] !== undefined) {
-                            if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
-                                continue;
-                            }
-                            else {
-                                let uri = schemaMapping["@context"][propertyName];
-                                validateURI(uri, propertyName);
-                                let search = database.getObjectsValueArray((objectID), (uri));
-                                if (search.length > 0) {
-                                    throw new GraphQLError({ key: 'ERROR', message: `Can not override field: ${propertyName}. The field is already defined in object` });
+                    for (let propertyName in fieldFromSchemaTree.data) {
+                        if (propertyName !== '_id' && propertyName !== '_type') {
+                            if (req.input[propertyName] !== undefined) {
+                                if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
+                                    continue;
+                                }
+                                else {
+                                    let uri = schemaMapping["@context"][propertyName];
+                                    validateURI(uri, propertyName);
+                                    let search = database.getObjectsValueArray((objectID), (uri));
+                                    if (search.length > 0) {
+                                        throw new GraphQLError({ key: 'ERROR', message: `Can not override field: ${propertyName}. The field is already defined in object` });
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            else if (req.type === "UPDATE") {
-                database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
-                // Remove old fields
+                else if (req.type === "UPDATE") {
+                    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
+                    // Remove old fields
+                    for (let propertyName in fieldFromSchemaTree.data) {
+                        if (propertyName !== '_id' && propertyName !== '_type') {
+                            let uri = schemaMapping["@context"][propertyName];
+                            validateURI(uri, propertyName);
+                            database.delete((objectID), (uri), undefined);
+                        }
+                    }
+                }
+
                 for (let propertyName in fieldFromSchemaTree.data) {
                     if (propertyName !== '_id' && propertyName !== '_type') {
                         let uri = schemaMapping["@context"][propertyName];
                         validateURI(uri, propertyName);
-                        database.delete((objectID), (uri), undefined);
-                    }
-                }
-            }
+                        let objectsFromInput = !validateIsIterable(req.input[propertyName]) ? req.input[propertyName] : [req.input[propertyName]];
 
-            for (let propertyName in fieldFromSchemaTree.data) {
-                if (propertyName !== '_id' && propertyName !== '_type') {
-                    let uri = schemaMapping["@context"][propertyName];
-                    validateURI(uri, propertyName);
-                    let objectsFromInput = !validateIsIterable(req.input[propertyName]) ? req.input[propertyName] : [req.input[propertyName]];
+                        // console.log(Union type validation)
+                        for (let objectFromInput in objectsFromInput) {
+                            objectFromInput = objectsFromInput[objectFromInput];
+                            if (objectFromInput !== undefined) {
 
-                    // console.log(Union type validation)
-                    for (let objectFromInput in objectsFromInput) {
-                        objectFromInput = objectsFromInput[objectFromInput];
-                        if (objectFromInput !== undefined) {
+                                let returnType = fieldFromSchemaTree.data[propertyName].kind === "ListType" ?
+                                    fieldFromSchemaTree.data[propertyName].data.name :
+                                    fieldFromSchemaTree.data[propertyName].name;
 
-                            let returnType = fieldFromSchemaTree.data[propertyName].kind === "ListType" ?
-                                fieldFromSchemaTree.data[propertyName].data.name :
-                                fieldFromSchemaTree.data[propertyName].name;
+                                returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
 
-                            returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
-
-                            if (returnType.type === "UnionType") {
-                                if (objectFromInput['_id'] !== undefined && objectFromInput['_value'] !== undefined) {
-                                    throw new GraphQLError({ key: 'ERROR', message: `Defined id and type properties for ${propertyName} type object. Select only one property.` });
-                                }
-                                if (objectFromInput['_value'] !== undefined && objectFromInput['_type'] === undefined) {
-                                    throw new GraphQLError({ key: 'ERROR', message: `Defined value without type properties for ${propertyName} type object.` });
+                                if (returnType.type === "UnionType") {
+                                    if (objectFromInput['_id'] !== undefined && objectFromInput['_value'] !== undefined) {
+                                        throw new GraphQLError({ key: 'ERROR', message: `Defined id and type properties for ${propertyName} type object. Select only one property.` });
+                                    }
+                                    if (objectFromInput['_value'] !== undefined && objectFromInput['_type'] === undefined) {
+                                        throw new GraphQLError({ key: 'ERROR', message: `Defined value without type properties for ${propertyName} type object.` });
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
 
-            let dataForQuads = req.input;
-            dataForQuads["@context"] = schemaMapping["@context"];
-            const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' });
+                let dataForQuads = req.input;
+                dataForQuads["@context"] = schemaMapping["@context"];
+                const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' });
 
-            await validateData(database, objectID, rdf, req.ensureExists)
+                await validateData(database, objectID, rdf, req.ensureExists)
 
-            req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
+                req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
 
 
-            // Inference
-            database.updateInference();
-            // console.log(database.getAllQuads())
+                // Inference
+                database.updateInference();
+                // console.log(database.getAllQuads())
 
-            //throw new GraphQLError({ key: 'Warning', message: `Uri for ${name} is not defined in context` });
-            return true;
+                //throw new GraphQLError({ key: 'Warning', message: `Uri for ${name} is not defined in context` });
+                return true;
         };
+        
+        
+        
     }
 
     newResolverBody['DELETE'] = (args, req) => {

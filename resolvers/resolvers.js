@@ -3,8 +3,9 @@ const createMutationResolvers = require('./mutation-resolvers');
 const createQueryResolvers = require('./query-resolvers');
 
 class rootResolver {
-    constructor(db) {
+    constructor(db, Warnings) {
         this.database = db;
+        //Warnings.push({'Message': "Information about object2"})
         // console.log(schema.getTypeMap()["Person"]);
 
         this.rootResolver = {}
@@ -13,7 +14,8 @@ class rootResolver {
 
         // -------------------------------------------------- Create Query resolvers
         
-        const queryResolvers = createQueryResolvers(this.database, this.tree);
+
+        const queryResolvers = createQueryResolvers(this.database, this.tree, Warnings);
         this.rootResolver["Query"] = queryResolvers["Query"];
 
         for (const [key, value] of Object.entries(queryResolvers["Objects"])) {
@@ -25,7 +27,7 @@ class rootResolver {
             this.rootResolver[key] = queryResolvers['Data'][key];
         }
 
-        const mutationResolvers = createMutationResolvers(this.database, this.tree);
+        const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings);
         this.rootResolver['Mutation'] = mutationResolvers;
         // console.log(this.rootResolver)
 
