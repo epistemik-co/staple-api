@@ -105,34 +105,26 @@ describe('My Test Cases for mutation resolvers', () => {
   test("Insert Create Test", async () => {
     const result = await graphql(schema, InsertCreateQuery, null, null, null);
     // Create
-    console.log(1)
     expect(result.data.Organization).toEqual(true);
     // Count Triples
-    console.log(2)
     let data = database.getTriplesBySubject(("http://subject"));
     expect(data.length).toEqual(7);
     // ID Type test
-    console.log(3)
     data = database.getSingleStringValue(("http://subject"), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
     expect(data).toEqual(schemaMapping["@context"]["Organization"]);
     // Object test
-    console.log(4)
     data = database.getSingleStringValue(("http://subject"), ("http://schema.org/employee"));
     expect(data).toEqual("http://johnnyB");
     // Data test
-    console.log(5)
     data = database.getSingleLiteral(("http://subject"), ("http://schema.org/noOfEmployees"));
     expect(data.value).toEqual("0");
     // Data test text
-    console.log(6)
     data = database.getSingleStringValue(("http://subject"), ("http://schema.org/legalName"));
     expect(data).toEqual("Nazwa firmy");
     // Union test
-    console.log(7)
     data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholderOf"));
     expect(data).toEqual("http://data/bluesB");
     
-
   });
 
 

@@ -127,6 +127,20 @@ class Database {
         return data;
     };
 
+    // Array of Quads
+    getTriplesByObjectUri(uri) {
+        uri = factory.namedNode(uri);
+        const temp = this.database.match(null, null, uri);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value);
+            x = itr.next();
+        }
+        return data;
+    };
+
     // returns single object value - uri or data
     getSingleStringValue(sub, pred) {
 
@@ -150,7 +164,7 @@ class Database {
         var itr = temp.quads();
         var x = itr.next();
 
-        if(x.value === undefined){
+        if (x.value === undefined) {
             return null;
         }
 
@@ -161,10 +175,10 @@ class Database {
     getSubjectsByType(type, predicate, inferred = false) {
         type = factory.namedNode(type);
 
-        if(inferred){
+        if (inferred) {
             predicate = factory.namedNode(this.stampleDataType);
         }
-        else{
+        else {
             predicate = factory.namedNode(predicate);
         }
 
@@ -176,7 +190,7 @@ class Database {
             data.push(x.value.subject.value);
             x = itr.next();
         }
-        
+
         return data;
     };
 
@@ -197,7 +211,7 @@ class Database {
         this.database.clear();
     }
 
-    insertRDFPromise(tree, ID, rdf){
+    insertRDFPromise(tree, ID, rdf) {
         return new Promise((resolve, reject) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
@@ -218,7 +232,7 @@ class Database {
         await this.insertRDFPromise(this.database, ID, rdf);
     }
 
-    removeRDFPromise(tree, ID, rdf){
+    removeRDFPromise(tree, ID, rdf) {
         return new Promise((resolve, reject) => {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID) {
@@ -236,7 +250,7 @@ class Database {
     }
 
     async removeRDF(rdf, ID) {
-        await this.removeRDFPromise(this.database, ID,rdf );
+        await this.removeRDFPromise(this.database, ID, rdf);
     }
 
     updateInference() {

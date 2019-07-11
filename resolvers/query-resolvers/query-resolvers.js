@@ -40,7 +40,7 @@ createQueryResolvers = (database, tree, Warnings) => {
 
             queryResolverBody['Data'][newResolver] = newResolverBody;
 
-        } 
+        }
         else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
 
             // Core Query
@@ -48,8 +48,8 @@ createQueryResolvers = (database, tree, Warnings) => {
             let constr = (uri) => {
                 return (parent, args) => {
                     let data = database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred);
-                    data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 })
-                    return data
+                    data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
+                    return data;
                 }
             };
             queryResolverBody['Query'][tree[object].name] = constr(uri);
@@ -101,7 +101,12 @@ createQueryResolvers = (database, tree, Warnings) => {
                     else {
                         const name = uri;
                         let constr = (name, isItList) => {
-                            return ((parent) => {
+                            return ((parent, args) => {
+                                if (name === "@reverse") {
+                                    let data = database.getTriplesByObjectUri(parent);
+                                    return [data]; // TODO change to single value
+                                }
+
                                 if (parent.value) {
                                     parent = parent.value;
                                 }
@@ -147,13 +152,20 @@ createQueryResolvers = (database, tree, Warnings) => {
         else if (tree[object].type === "REV") {
             let newResolver = tree[object].name
             let newResolverBody = {}
-            let constr = (name) => {
-                return (parent) => {
-                    return parent;
-                };
-            };
 
-            newResolverBody['__resolveType'] = constr(object)
+            for (var propertyName in tree[object].data) {
+                let uri = tree[object].data[propertyName].data.uri;
+
+                let constr = (name) => {
+                    return ((parent, args) => {
+                        parent = parent.filter(x => x.predicate.value === name);
+                        let data = parent.map(x => x.subject.value);
+                        return data;
+                    })
+                };
+
+                newResolverBody[propertyName] = constr(uri);
+            }
 
             queryResolverBody['Data'][newResolver] = newResolverBody;
         }
