@@ -16,9 +16,13 @@ const validateURI = (uri, name) => {
     if (uri === undefined) {
         throw new GraphQLError({ key: 'ERROR', message: `Uri for ${name} is not defined in context` });
     }
+    if (uri === "@reverse") {
+        return;
+    }
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     if (!pattern.test(uri)) {
         // throw new ApolloError("message", "code", "code");
+        console.log(uri)
         throw new GraphQLError({ key: 'ERROR', message: `The value of ${name} keys in the object are valid URIs` });
     }
 }

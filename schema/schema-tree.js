@@ -55,15 +55,24 @@ handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUnions) 
     newNode['type'] = "ObjectType";
 
     // find uri and type of the type field from schema
-    let id = schemaMapping["@context"][schema.getTypeMap()[schemaTypeName]['name']];
-    newNode['uri'] = id;
 
-    let tempNewNodeType = schemaMapping["@graph"].filter((x) => { return x["@id"] === id })[0];
-    if (tempNewNodeType === undefined) {
-        newNode['type'] = undefined;
+    let id = schemaMapping["@context"][schema.getTypeMap()[schemaTypeName]['name']];
+
+    if(id === undefined && schemaTypeName !== "_CONTEXT" && schemaTypeName !== "_OBJECT"){
+        newNode['uri'] = schemaTypeName
+        newNode['type'] = "REV"
     }
-    else {
-        newNode['type'] = tempNewNodeType['@type'];
+    else{
+        newNode['uri'] = id;
+
+        let tempNewNodeType = schemaMapping["@graph"].filter((x) => { return x["@id"] === id })[0];
+
+        if (tempNewNodeType === undefined) {
+            newNode['type'] = undefined;
+        }
+        else {
+            newNode['type'] = tempNewNodeType['@type'];
+        }
     }
 
     schema.getTypeMap()[schemaTypeName].astNode.fields.map(object => {

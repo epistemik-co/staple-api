@@ -10,21 +10,21 @@ const schemaMapping = require('../../../schema/schema-mapping');
 const factory = require('@graphy/core.data.factory');
 
 const schema = makeExecutableSchema({
-    typeDefs: schemaString,
-    resolvers: rootResolver,
-    customFormatErrorFn: error => {
-        const { code, message } = error.originalError;
-        return { code, message };
-    }
+  typeDefs: schemaString,
+  resolvers: rootResolver,
+  customFormatErrorFn: error => {
+    const { code, message } = error.originalError;
+    return { code, message };
+  }
 });
 
 afterEach(() => {
-    database.drop();
+  database.drop();
 });
 
 
 describe('My Test Cases for mutation resolvers', () => {
-    const InsertCreateQuery = `
+  const InsertCreateQuery = `
         mutation{
             Organization(type: INSERT, input: {
             _id: "http://subject"
@@ -37,8 +37,8 @@ describe('My Test Cases for mutation resolvers', () => {
                 _type: Person
                 _id: "http://johnnyB"
             }
-            shareholder:{
-                _type: Person
+            shareholderOf:{
+                _type: Organization
                 _id: "http://data/bluesB"
             }
             noOfEmployees: {
@@ -49,7 +49,7 @@ describe('My Test Cases for mutation resolvers', () => {
         }
     `;
 
-    const UpdateQuery = `
+  const UpdateQuery = `
     mutation{
         Organization(type: UPDATE, input: {
           _id: "http://subject"
@@ -70,7 +70,7 @@ describe('My Test Cases for mutation resolvers', () => {
       }
     `
 
-    const RemoveQuery = `
+  const RemoveQuery = `
     mutation{
         Organization(type: REMOVE, input: {
           _id: "http://subject"
@@ -89,110 +89,118 @@ describe('My Test Cases for mutation resolvers', () => {
         })
       }
     `
-   
-    const CreateQuery = `
+
+  const CreateQuery = `
     mutation {
         CREATE(id: "http://subject" )
     }
   `
 
-    const DeleteQuery = `
+  const DeleteQuery = `
     mutation {
         DELETE(id: "http://subject" )
     }
   `
 
-    test("Insert Create Test", async () => {
-        const result = await graphql(schema, InsertCreateQuery, null, null, null);
-        // Create
-        expect(result.data.Organization).toEqual(true);
-        // Count Triples
-            let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(7);
-            // ID Type test
-            data = database.getSingleStringValue(("http://subject"), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
-            expect(data).toEqual(schemaMapping["@context"]["Organization"]);
-            // Object test
-            data = database.getSingleStringValue(("http://subject"), ("http://schema.org/employee"));
-            expect(data).toEqual("http://johnnyB");
-            // Data test
-            data = database.getSingleLiteral(("http://subject"), ("http://schema.org/noOfEmployees"));
-            expect(data.value).toEqual("0");
-            // Data test text
-            data = database.getSingleStringValue(("http://subject"), ("http://schema.org/legalName"));
-            expect(data).toEqual("Nazwa firmy");
-            // Union test
-            data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholder"));
-            expect(data).toEqual("http://data/bluesB");
-       
-    });
+  test("Insert Create Test", async () => {
+    const result = await graphql(schema, InsertCreateQuery, null, null, null);
+    // Create
+    console.log(1)
+    expect(result.data.Organization).toEqual(true);
+    // Count Triples
+    console.log(2)
+    let data = database.getTriplesBySubject(("http://subject"));
+    expect(data.length).toEqual(7);
+    // ID Type test
+    console.log(3)
+    data = database.getSingleStringValue(("http://subject"), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
+    expect(data).toEqual(schemaMapping["@context"]["Organization"]);
+    // Object test
+    console.log(4)
+    data = database.getSingleStringValue(("http://subject"), ("http://schema.org/employee"));
+    expect(data).toEqual("http://johnnyB");
+    // Data test
+    console.log(5)
+    data = database.getSingleLiteral(("http://subject"), ("http://schema.org/noOfEmployees"));
+    expect(data.value).toEqual("0");
+    // Data test text
+    console.log(6)
+    data = database.getSingleStringValue(("http://subject"), ("http://schema.org/legalName"));
+    expect(data).toEqual("Nazwa firmy");
+    // Union test
+    console.log(7)
+    data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholderOf"));
+    expect(data).toEqual("http://data/bluesB");
+    
+
+  });
 
 
 
-    test("Update Test", async () => {
-        let result = await graphql(schema, CreateQuery, null, null, null);
-        result = await graphql(schema, UpdateQuery, null, null, null);
+  test("Update Test", async () => {
+    let result = await graphql(schema, CreateQuery, null, null, null);
+    result = await graphql(schema, UpdateQuery, null, null, null);
 
 
-        // Update
-        expect(result.data.Organization).toEqual(true);
-        // Count Triples
+    // Update
+    expect(result.data.Organization).toEqual(true);
+    // Count Triples
 
-            let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(6);
-            // Object test
-            data = database.getSingleStringValue(("http://subject"), ("http://schema.org/employee"));
-            expect(data).toEqual("http://johnnyB2");
-            // Data test int
-            data = database.getSingleLiteral(("http://subject"), ("http://schema.org/noOfEmployees"));
-            expect(data.value).toEqual("1");
-            // Data test text
-            data = database.getSingleStringValue(("http://subject"), ("http://schema.org/legalName"));
-            expect(data).toEqual("Firma");
-        
-    });
+    let data = database.getTriplesBySubject(("http://subject"));
+    expect(data.length).toEqual(6);
+    // Object test
+    data = database.getSingleStringValue(("http://subject"), ("http://schema.org/employee"));
+    expect(data).toEqual("http://johnnyB2");
+    // Data test int
+    data = database.getSingleLiteral(("http://subject"), ("http://schema.org/noOfEmployees"));
+    expect(data.value).toEqual("1");
+    // Data test text
+    data = database.getSingleStringValue(("http://subject"), ("http://schema.org/legalName"));
+    expect(data).toEqual("Firma");
 
-
-    test("Remove Test", async () => {
-        let result = await graphql(schema, InsertCreateQuery, null, null, null);
-        result = await graphql(schema, RemoveQuery, null, null, null);
-
-        // Update
-        expect(result.data.Organization).toEqual(true);
-        // Count Triples
-
-            let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(4);
-            // 
-            data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholder"));
-            expect(data).toEqual("http://data/bluesB");
-        
-    });
+  });
 
 
-    test("Delete Test", async () => {
-        let result = await graphql(schema, InsertCreateQuery, null, null, null);
-        result = await graphql(schema, DeleteQuery, null, null, null);
+  test("Remove Test", async () => {
+    let result = await graphql(schema, InsertCreateQuery, null, null, null);
+    result = await graphql(schema, RemoveQuery, null, null, null);
 
-            expect(result.data.DELETE).toEqual(true);
-            // Count Triples
-            let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toEqual(0);
+    // Update
+    expect(result.data.Organization).toEqual(true);
+    // Count Triples
 
-    });
+    let data = database.getTriplesBySubject(("http://subject"));
+    expect(data.length).toEqual(4);
+    // 
+    data = database.getSingleStringValue(("http://subject"), ("http://schema.org/shareholderOf"));
+    expect(data).toEqual("http://data/bluesB");
+
+  });
 
 
-    test("Create Test", async () => {
-        const result = await graphql(schema, CreateQuery, null, null, null);
-        // Create
-        expect(result.data.CREATE).toEqual(true);
-        
-            let data = database.getTriplesBySubject(("http://subject"));
-            expect(data.length).toBe(1);
-            // ID Type test
-            data = database.isTripleInDB("http://subject", "http://staple-api.org/datamodel/type", "http://schema.org/Thing")
-            expect(data).toEqual(true);
-        
-    });
+  test("Delete Test", async () => {
+    let result = await graphql(schema, InsertCreateQuery, null, null, null);
+    result = await graphql(schema, DeleteQuery, null, null, null);
+
+    expect(result.data.DELETE).toEqual(true);
+    // Count Triples
+    let data = database.getTriplesBySubject(("http://subject"));
+    expect(data.length).toEqual(0);
+
+  });
+
+
+  test("Create Test", async () => {
+    const result = await graphql(schema, CreateQuery, null, null, null);
+    // Create
+    expect(result.data.CREATE).toEqual(true);
+
+    let data = database.getTriplesBySubject(("http://subject"));
+    expect(data.length).toBe(1);
+    // ID Type test
+    data = database.isTripleInDB("http://subject", "http://staple-api.org/datamodel/type", "http://schema.org/Thing")
+    expect(data).toEqual(true);
+
+  });
 })
 

@@ -14,6 +14,9 @@ type _CONTEXT {
   """@type"""
   _type: String
 
+  """@reverse"""
+  _reverse: String
+
   """http://schema.org/Thing"""
   Thing: String
 
@@ -38,8 +41,11 @@ type _CONTEXT {
   """http://schema.org/legalName"""
   legalName: String
 
-  """http://schema.org/shareholder"""
-  shareholder: String
+  """http://schema.org/hasShareholder"""
+  hasShareholder: String
+
+  """http://schema.org/shareholderOf"""
+  shareholderOf: String
 
   """http://schema.org/employee"""
   employee: String
@@ -124,6 +130,18 @@ input employee_INPUT {
   _id: ID!
 }
 
+"""The filler for the property hasShareholder"""
+input hasShareholder_INPUT {
+  """The type of the property filler."""
+  _type: _Organization_v_Person_v_Text_
+
+  """The URI identfier of the object."""
+  _id: ID
+
+  """The literal data value of the property."""
+  _value: String
+}
+
 """
 This is integer DataType.
 
@@ -170,6 +188,8 @@ type Mutation {
     """A valid URI of an existing object"""
     id: ID!
   ): Boolean
+
+  """Perform mutation over an object of type: Thing."""
   Thing(
     """The type of the mutation to be applied."""
     type: MutationType!
@@ -182,6 +202,8 @@ type Mutation {
     """The input object of the mutation."""
     input: Thing_INPUT!
   ): Boolean
+
+  """Perform mutation over an object of type: Organization."""
   Organization(
     """The type of the mutation to be applied."""
     type: MutationType!
@@ -194,6 +216,8 @@ type Mutation {
     """The input object of the mutation."""
     input: Organization_INPUT!
   ): Boolean
+
+  """Perform mutation over an object of type: Person."""
   Person(
     """The type of the mutation to be applied."""
     type: MutationType!
@@ -206,6 +230,8 @@ type Mutation {
     """The input object of the mutation."""
     input: Person_INPUT!
   ): Boolean
+
+  """Perform mutation over an object of type: Patient."""
   Patient(
     """The type of the mutation to be applied."""
     type: MutationType!
@@ -282,8 +308,11 @@ type Organization {
   """
   legalName: Text
 
-  """A shareholder of an organization."""
-  shareholder: [Organization_v_Person_v_Text]
+  """Has a shareholder."""
+  hasShareholder: [Organization_v_Person_v_Text]
+
+  """Is a shareholder of an organization."""
+  shareholderOf: [Organization]
 
   """An employee of an organization."""
   employee: [Person]
@@ -305,6 +334,9 @@ type Organization {
     """Include inferred types for this project."""
     inferred: Boolean = false
   ): [String]
+
+  """The reverse view of the object with all incoming properties."""
+  _reverse: [Organization_REV]
 }
 
 """
@@ -318,8 +350,11 @@ input Organization_INPUT {
   """
   legalName: legalName_INPUT
 
-  """A shareholder of an organization."""
-  shareholder: [shareholder_INPUT]
+  """Has a shareholder."""
+  hasShareholder: [hasShareholder_INPUT]
+
+  """Is a shareholder of an organization."""
+  shareholderOf: [shareholderOf_INPUT]
 
   """An employee of an organization."""
   employee: [employee_INPUT]
@@ -337,6 +372,31 @@ input Organization_INPUT {
   _type: [_OBJECT_TYPES]
 }
 
+"""
+This is a reverse view of the object of type: Organization. This means that the
+values on the included fields should be in fact interpreted as their subjects
+while the actual value is the current object of type: Organization.
+"""
+type Organization_REV {
+  """
+  Has a shareholder. (Note: this is a reverse view of the property: hasShareholder)
+  """
+  hasShareholder: [Organization]
+
+  """
+  Is a shareholder of an organization. (Note: this is a reverse view of the property: shareholderOf)
+  """
+  shareholderOf: [Organization_v_Person]
+
+  """
+  Affiliation of a person. (Note: this is a reverse view of the property: affiliation)
+  """
+  affiliation: [Person]
+}
+
+"""A filler of any of the types: Organization, Person."""
+union Organization_v_Person = Organization | Person
+
 """A filler of any of the types: Organization, Person, Text."""
 union Organization_v_Person_v_Text = Organization | Person | Text
 
@@ -346,6 +406,9 @@ A patient
 Broader types: Person, Thing
 """
 type Patient {
+  """Is a shareholder of an organization."""
+  shareholderOf: [Organization]
+
   """Affiliation of a person."""
   affiliation: [Organization]
 
@@ -363,6 +426,9 @@ type Patient {
     """Include inferred types for this project."""
     inferred: Boolean = false
   ): [String]
+
+  """The reverse view of the object with all incoming properties."""
+  _reverse: [Patient_REV]
 }
 
 """
@@ -371,6 +437,9 @@ A patient
 Broader types: Person, Thing
 """
 input Patient_INPUT {
+  """Is a shareholder of an organization."""
+  shareholderOf: [shareholderOf_INPUT]
+
   """Affiliation of a person."""
   affiliation: [affiliation_INPUT]
 
@@ -385,11 +454,31 @@ input Patient_INPUT {
 }
 
 """
+This is a reverse view of the object of type: Patient. This means that the
+values on the included fields should be in fact interpreted as their subjects
+while the actual value is the current object of type: Patient.
+"""
+type Patient_REV {
+  """
+  Has a shareholder. (Note: this is a reverse view of the property: hasShareholder)
+  """
+  hasShareholder: [Organization]
+
+  """
+  An employee of an organization. (Note: this is a reverse view of the property: employee)
+  """
+  employee: [Organization]
+}
+
+"""
 A person
 
 Broader types: Thing
 """
 type Person {
+  """Is a shareholder of an organization."""
+  shareholderOf: [Organization]
+
   """Affiliation of a person."""
   affiliation: [Organization]
 
@@ -407,6 +496,9 @@ type Person {
     """Include inferred types for this project."""
     inferred: Boolean = false
   ): [String]
+
+  """The reverse view of the object with all incoming properties."""
+  _reverse: [Person_REV]
 }
 
 """
@@ -415,6 +507,9 @@ A person
 Broader types: Thing
 """
 input Person_INPUT {
+  """Is a shareholder of an organization."""
+  shareholderOf: [shareholderOf_INPUT]
+
   """Affiliation of a person."""
   affiliation: [affiliation_INPUT]
 
@@ -426,6 +521,23 @@ input Person_INPUT {
 
   """Types of the object."""
   _type: [_OBJECT_TYPES]
+}
+
+"""
+This is a reverse view of the object of type: Person. This means that the values
+on the included fields should be in fact interpreted as their subjects while the
+actual value is the current object of type: Person.
+"""
+type Person_REV {
+  """
+  Has a shareholder. (Note: this is a reverse view of the property: hasShareholder)
+  """
+  hasShareholder: [Organization]
+
+  """
+  An employee of an organization. (Note: this is a reverse view of the property: employee)
+  """
+  employee: [Organization]
 }
 
 """Get objects of specific types."""
@@ -442,6 +554,8 @@ type Query {
     """
     page: Int = 1
   ): [_OBJECT]
+
+  """Get objects of type: Thing."""
   Thing(
     """
     The number of the consecutive results page to be returned by the query.
@@ -451,6 +565,8 @@ type Query {
     """Include inferred objects of this type."""
     inferred: Boolean = false
   ): [Thing]
+
+  """Get objects of type: Organization."""
   Organization(
     """
     The number of the consecutive results page to be returned by the query.
@@ -460,6 +576,8 @@ type Query {
     """Include inferred objects of this type."""
     inferred: Boolean = false
   ): [Organization]
+
+  """Get objects of type: Person."""
   Person(
     """
     The number of the consecutive results page to be returned by the query.
@@ -469,6 +587,8 @@ type Query {
     """Include inferred objects of this type."""
     inferred: Boolean = false
   ): [Person]
+
+  """Get objects of type: Patient."""
   Patient(
     """
     The number of the consecutive results page to be returned by the query.
@@ -480,16 +600,13 @@ type Query {
   ): [Patient]
 }
 
-"""The filler for the property shareholder"""
-input shareholder_INPUT {
+"""The filler for the property shareholderOf"""
+input shareholderOf_INPUT {
   """The type of the property filler."""
-  _type: _Organization_v_Person_v_Text_
+  _type: _Organization_
 
   """The URI identfier of the object."""
-  _id: ID
-
-  """The literal data value of the property."""
-  _value: String
+  _id: ID!
 }
 
 """This is text DataType."""

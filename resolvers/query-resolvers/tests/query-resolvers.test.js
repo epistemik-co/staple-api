@@ -36,8 +36,8 @@ describe('My Test Cases for query resolvers', () => {
             _type: Person
             _id: "http://data/bluesB"
         }
-        shareholder:{
-            _type: Person
+        shareholderOf:{
+            _type: Organization
             _id: "http://data/bluesB"
         }
         noOfEmployees: {
@@ -69,9 +69,9 @@ describe('My Test Cases for query resolvers', () => {
               _value
             }
           }
-           shareholder{
+           shareholderOf{
           __typename
-          ...on Person{
+          ...on Organization{
             _id
             name{
               _value
@@ -89,33 +89,33 @@ describe('My Test Cases for query resolvers', () => {
         // Create
         const expected = {
             "data": {
-                "Organization": [
+              "Organization": [
+                {
+                  "_id": "http://subject",
+                  "employee": [
                     {
-                        "_id": "http://subject",
-                        "employee": [
-                            {
-                                "_id": "http://data/bluesB",
-                                "_type": [
-                                    "http://schema.org/Person"
-                                ],
-                                "name": {
-                                    "_value": "Adam"
-                                }
-                            }
-                        ],
-                        "shareholder": [
-                            {
-                                "__typename": "Person",
-                                "_id": "http://data/bluesB",
-                                "name": {
-                                    "_value": "Adam"
-                                }
-                            }
-                        ]
+                      "_id": "http://data/bluesB",
+                      "_type": [
+                        "http://schema.org/Person"
+                      ],
+                      "name": {
+                        "_value": "Adam"
+                      }
                     }
-                ]
+                  ],
+                  "shareholderOf": [
+                    {
+                      "__typename": "Organization",
+                      "_id": "http://data/bluesB",
+                      "name": {
+                        "_value": "Adam"
+                      }
+                    }
+                  ]
+                }
+              ]
             }
-        }
+          }
 
         expect(result).toEqual(expected);
         

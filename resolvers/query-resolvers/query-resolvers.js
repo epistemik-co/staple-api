@@ -40,7 +40,8 @@ createQueryResolvers = (database, tree, Warnings) => {
 
             queryResolverBody['Data'][newResolver] = newResolverBody;
 
-        } else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
+        } 
+        else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
 
             // Core Query
             let uri = tree[object]['uri'];
@@ -143,6 +144,19 @@ createQueryResolvers = (database, tree, Warnings) => {
         }
         else if (tree[object].type === "EnumType") {
         }
+        else if (tree[object].type === "REV") {
+            let newResolver = tree[object].name
+            let newResolverBody = {}
+            let constr = (name) => {
+                return (parent) => {
+                    return parent;
+                };
+            };
+
+            newResolverBody['__resolveType'] = constr(object)
+
+            queryResolverBody['Data'][newResolver] = newResolverBody;
+        }
         else if (object === "_CONTEXT") {
             queryResolverBody["Query"]["_CONTEXT"] = () => { return [schemaMapping["@context"]] }
         }
@@ -156,6 +170,7 @@ createQueryResolvers = (database, tree, Warnings) => {
         }
         else {
             console.log("UNHANDLED TYPE")
+            console.log(object)
             console.log(tree[object].type)
         }
     }
