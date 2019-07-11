@@ -60,7 +60,7 @@ handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUnions) 
 
     if(id === undefined && schemaTypeName !== "_CONTEXT" && schemaTypeName !== "_OBJECT"){
         newNode['uri'] = schemaTypeName
-        newNode['type'] = "REV"
+        newNode['type'] = "Reverse"
     }
     else{
         newNode['uri'] = id;

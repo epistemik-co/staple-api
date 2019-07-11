@@ -5,6 +5,40 @@ const { GraphQLError } = require('graphql');
 const jsonld = require('jsonld');
 const validators = require('./validate-functions');
 
+beforeInsert = (database, objectID, fieldFromSchemaTree, req) => {
+    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
+    // Validation for single value types
+    for (let propertyName in fieldFromSchemaTree.data) {
+        if (propertyName !== '_id' && propertyName !== '_type') {
+            if (req.input[propertyName] !== undefined) {
+                if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
+                    continue;
+                }
+                else {
+                    let uri = schemaMapping["@context"][propertyName];
+                    validators.validateURI(uri, propertyName);
+                    let search = database.getObjectsValueArray((objectID), (uri));
+                    if (search.length > 0) {
+                        throw new GraphQLError({ key: 'ERROR', message: `Can not override field: ${propertyName}. The field is already defined in object` });
+                    }
+                }
+            }
+        }
+    }
+}
+
+beforeUpdate = (database, objectID, fieldFromSchemaTree) => {
+    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
+    // Remove old fields
+    for (let propertyName in fieldFromSchemaTree.data) {
+        if (propertyName !== '_id' && propertyName !== '_type') {
+            let uri = schemaMapping["@context"][propertyName];
+
+            validators.validateURI(uri, propertyName);
+            database.delete((objectID), (uri), undefined);
+        }
+    }
+}
 
 createMutationResolvers = (database, tree, Warnings) => {
     const schema = buildSchemaFromTypeDefinitions(schemaString);
@@ -19,7 +53,7 @@ createMutationResolvers = (database, tree, Warnings) => {
         newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
             const objectID = req.input['_id'];
             req.ensureExists = req.ensureExists === undefined ? false : req.ensureExists;
-            
+
             validators.validateIsIdDefined(objectID);
             validators.validateURI(objectID, 'id');
             validators.validateflattenedJson(req.input);
@@ -30,37 +64,10 @@ createMutationResolvers = (database, tree, Warnings) => {
             fieldFromSchemaTree = fieldFromSchemaTree[0];
 
             if (req.type === "INSERT") {
-                database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
-
-                for (let propertyName in fieldFromSchemaTree.data) {
-                    if (propertyName !== '_id' && propertyName !== '_type') {
-                        if (req.input[propertyName] !== undefined) {
-                            if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
-                                continue;
-                            }
-                            else {
-                                let uri = schemaMapping["@context"][propertyName];
-                                validators.validateURI(uri, propertyName);
-                                let search = database.getObjectsValueArray((objectID), (uri));
-                                if (search.length > 0) {
-                                    throw new GraphQLError({ key: 'ERROR', message: `Can not override field: ${propertyName}. The field is already defined in object` });
-                                }
-                            }
-                        }
-                    }
-                }
+                beforeInsert(database, objectID, fieldFromSchemaTree, req);
             }
             else if (req.type === "UPDATE") {
-                database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
-                // Remove old fields
-                for (let propertyName in fieldFromSchemaTree.data) {
-                    if (propertyName !== '_id' && propertyName !== '_type') {
-                        let uri = schemaMapping["@context"][propertyName];
-
-                        validators.validateURI(uri, propertyName);
-                        database.delete((objectID), (uri), undefined);
-                    }
-                }
+                beforeUpdate(database, objectID, fieldFromSchemaTree);
             }
 
             validators.validateUnion(fieldFromSchemaTree, schemaMapping, req, objectsFromSchemaObjectTree);

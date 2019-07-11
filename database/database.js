@@ -210,7 +210,7 @@ class Database {
     drop() {
         this.database.clear();
     }
-
+ 
     insertRDFPromise(tree, ID, rdf) {
         return new Promise((resolve, reject) => {
             let data = (y_quad) => {

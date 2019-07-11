@@ -11,8 +11,8 @@ const Resolver = require('./resolvers/resolvers');
 const app = express();
 const database = new DatabaseInterface();
 
-const Warnings = [];
-const rootResolver = new Resolver(database, Warnings).rootResolver;
+const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
+const rootResolver = new Resolver(database, Warnings).rootResolver; // Generate Resolvers for graphql
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
@@ -23,14 +23,13 @@ function showMemUsage() {
     return Math.round(used * 100) / 100;
 }
 
-//initGraphQL server with makeExecutableSchema() which is the critical bit 
-//istnieja pewnie inne sposoby inicjalizacji serwera i moze bedziemy szukac innych, ale ten dziala jak na chwilowe potrzeby ;)
+// init GraphQL server with makeExecutableSchema() which is the critical bit 
 const schema = makeExecutableSchema({
     typeDefs: schemaString,
     resolvers: rootResolver,
 });
 
-
+// Graphql ApolloSerwer init
 const server = new ApolloServer({
     schema,
     formatResponse: response => {
@@ -59,8 +58,8 @@ app.get('/', async (req, res, next) => {
     res.send("HELLO WORLD!")
 })
 
-
-app.post('/api/upload', async (req, res) => {
+// This end-point should create data for qraphql mutation and run it.
+app.post('/api/upload', async (req, res) => { 
     var start = new Date().getTime();
     try {
         const todo = req.body;
