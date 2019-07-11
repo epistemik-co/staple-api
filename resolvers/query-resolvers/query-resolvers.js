@@ -104,7 +104,7 @@ createQueryResolvers = (database, tree, Warnings) => {
                             return ((parent, args) => {
                                 if (name === "@reverse") {
                                     let data = database.getTriplesByObjectUri(parent);
-                                    return [data]; // TODO change to single value
+                                    return data;
                                 }
 
                                 if (parent.value) {

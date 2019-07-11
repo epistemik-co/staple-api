@@ -336,7 +336,7 @@ type Organization {
   ): [String]
 
   """The reverse view of the object with all incoming properties."""
-  _reverse: [Organization_REV]
+  _reverse: Organization_REV
 }
 
 """
@@ -428,7 +428,7 @@ type Patient {
   ): [String]
 
   """The reverse view of the object with all incoming properties."""
-  _reverse: [Patient_REV]
+  _reverse: Patient_REV
 }
 
 """
@@ -498,7 +498,7 @@ type Person {
   ): [String]
 
   """The reverse view of the object with all incoming properties."""
-  _reverse: [Person_REV]
+  _reverse: Person_REV
 }
 
 """

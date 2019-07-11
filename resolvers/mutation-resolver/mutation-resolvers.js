@@ -76,7 +76,7 @@ createMutationResolvers = (database, tree, Warnings) => {
 
             // Inference
             database.updateInference();
-            // console.log(database.getAllQuads())
+            console.log(database.getAllQuads())
             return true;
         };
     }
