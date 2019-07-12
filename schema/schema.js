@@ -545,7 +545,7 @@ type Query {
   """
   The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema.
   """
-  _CONTEXT: [_CONTEXT]
+  _CONTEXT: _CONTEXT
 
   """List objects in the database."""
   _OBJECT(
