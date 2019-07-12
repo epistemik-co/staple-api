@@ -170,7 +170,7 @@ createQueryResolvers = (database, tree, Warnings) => {
             queryResolverBody['Data'][newResolver] = handleReverseDataTypeResolver(tree, object);
         }
         else if (object === "_CONTEXT") {
-            queryResolverBody["Query"]["_CONTEXT"] = () => { return [schemaMapping["@context"]] }
+            queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"] }
         }
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = (obj, args, context, info) => {
