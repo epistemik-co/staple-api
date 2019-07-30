@@ -1,81 +1,20 @@
-.App {
-  overflow: hidden;
-  background-color: #162B3A;
-  margin: 0;
-  font-size: calc(10px + 2vmin);
-  color: white;
-  display: grid;
-  grid-template-columns: 33.3333% 33.3333% auto;
-
-  grid-template-rows: 40vh 60vh;
-}
-
-h1{
-  margin: 0;
-}
-
-.bottom-box {
-  grid-column-start: 1;
-  grid-column-end: 4;
-}
-
-.playground{
-    width: 100%;
-    height: 60vh;
-}
-
-.JVBvg, .JVBvg:hover, .JVBvg:active{
-  overflow: visible;
-}
-
-.box-left {
-  font-size: 12px;
-  overflow: scroll;
-}
-
-.box-left h3{
-  position: fixed;
+.home-page-container {
+  background: #162B3A;
   width:100%;
-  background: #0F202E;
-  padding:10px 10px;
-  margin: 0;
-} 
+  height: 100vh;
+  margin:0;
+  padding:0;
+  align-content: center;
+  text-align: center;
 
-.box-left p{
-  margin-top: 40px;
-} 
+  p{ 
+    padding: 40vh 0 0 0;
+    color: white;
+    margin:0;
+  }
 
-
-.box-middle {
-  font-size: 12px;
-  overflow: scroll;
+  h2 {   
+     color: white;
+     cursor: pointer;
+  }
 }
-
-.box-middle h3{
-  position: fixed;
-  width:100%;
-  background: #0F202E;
-  padding:10px 10px;
-  margin: 0;
-} 
-
-.box-middle p{
-  margin-top: 40px;
-} 
-
-.box-right {
-  font-size: 12px;
-  overflow: scroll;
-}
-
-.box-right h3{
-  position: fixed;
-  width:100%;
-  background: #0F202E;
-  padding:10px 10px;
-  margin: 0;
-} 
-
-.box-right p{
-  margin-top: 40px;
-} 
