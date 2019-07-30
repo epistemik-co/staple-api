@@ -8,7 +8,19 @@ handleDataTypeResolver = (tree, object) => {
             newResolverBody['_value'] = async (parent) => { return parent.value }
         }
         else if (propertyName === '_type') {
-            newResolverBody['_type'] = (parent) => { return [parent.datatype.value] }
+            newResolverBody['_type'] = (parent) => { 
+                let types = [parent.datatype.value] 
+
+                types = types.map(x => {
+                   for(let key in  schemaMapping['@context']){
+                       if(schemaMapping['@context'][key] === x)
+                       return key;
+                   }
+                   return ""
+                })
+
+                return types;
+            }
         }
     }
 
@@ -34,7 +46,17 @@ handleClassTypeResolver = (tree, object, database) => {
                 if (args.inferred) {
                     return database.getObjectsValueArray((parent), database.stampleDataType)
                 }
-                return database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                let types = database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+
+                types = types.map(x => {
+                   for(let key in  schemaMapping['@context']){
+                       if(schemaMapping['@context'][key] === x)
+                       return key;
+                   }
+                   return ""
+                })
+
+                return types
             };
         }
 
