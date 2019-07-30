@@ -1,6 +1,6 @@
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const schemaString = require('./schema');
-const schemaMapping = require('./schema-mapping');
+let schemaMapping = undefined;//require('./schema-mapping');
 
 
 getUris = (object, name, listOfUnions) => {
@@ -124,7 +124,8 @@ saveTreeToFile = (treeFromSchema, path) => {
 }
 
 // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
-createTree = () => {
+createTree = (schemaMappingArg) => {
+    schemaMapping = schemaMappingArg;
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let treeFromSchema = {};
 

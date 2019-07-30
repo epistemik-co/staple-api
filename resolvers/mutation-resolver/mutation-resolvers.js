@@ -1,6 +1,6 @@
 const schemaString = require('../../schema/schema');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
-const schemaMapping = require('../../schema/schema-mapping');
+let schemaMapping = undefined; // require('../../schema/schema-mapping');
 const { GraphQLError } = require('graphql');
 const jsonld = require('jsonld');
 const validators = require('./validate-functions');
@@ -40,7 +40,8 @@ beforeUpdate = (database, objectID, fieldFromSchemaTree) => {
     }
 }
 
-createMutationResolvers = (database, tree, Warnings) => {
+createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
+    schemaMapping = schemaMappingArg;
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let objectsFromSchemaObjectTree = [];
 

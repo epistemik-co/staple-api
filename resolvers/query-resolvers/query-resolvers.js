@@ -1,4 +1,4 @@
-const schemaMapping = require('../../schema/schema-mapping');
+let schemaMapping = undefined; // require('../../schema/schema-mapping');
 
 handleDataTypeResolver = (tree, object) => {
     let newResolverBody = {}
@@ -122,9 +122,9 @@ handleReverseDataTypeResolver = (tree, object) => {
     return newResolverBody;
 }
 
-createQueryResolvers = (database, tree, Warnings) => {
+createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
-
+    schemaMapping = schemaMappingArg;
     let queryResolverBody = {};
     queryResolverBody['Query'] = {};
     queryResolverBody['Objects'] = {};

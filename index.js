@@ -9,10 +9,10 @@ const schemaString = require('./schema/schema');
 const Resolver = require('./resolvers/resolvers');
 
 const app = express();
-const database = new DatabaseInterface();
+const database = new DatabaseInterface(require('./schema/schema-mapping'));
 
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-const rootResolver = new Resolver(database, Warnings).rootResolver; // Generate Resolvers for graphql
+const rootResolver = new Resolver(database, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
@@ -84,7 +84,29 @@ app.post('/api/upload', async (req, res) => {
     })
 });
 
+class Staple {
+    constructor(schemaLocation, contextLocation, configLocation){
+        this.DatabaseInterface = require('./database/Database');
+        this.schemaString = require(schemaLocation);//('./schema/schema');
+        this.schemaMapping = require(contextLocation);//('schema/schema-mapping');
+        this.Resolver = require('./resolvers/resolvers');
+        
+        this.database = new DatabaseInterface(this.schemaMapping);
+        
+        this.Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
+        this.rootResolver = new Resolver(this.database, this.Warnings, this.schemaMapping).rootResolver; // Generate Resolvers for graphql
+        
+        this.schema = makeExecutableSchema({
+            typeDefs: this.schemaString,
+            resolvers: this.rootResolver,
+        });
+        console.log("WORKIBNG ?")
+    }
+}
+
+const test = new Staple('./schema/schema', './schema/schema-mapping', "");
 
 module.exports = {
-    app
+    app,
+    Staple
 };

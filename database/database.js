@@ -1,12 +1,13 @@
 const read_graphy = require('graphy').content.nt.read;
 const dataset_tree = require('graphy').util.dataset.tree
 const factory = require('@graphy/core.data.factory');
-const schemaMapping = require('../schema/schema-mapping');
+// const schemaMapping = require('../schema/schema-mapping');
 
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
-    constructor() {
+    constructor(schemaMapping) {
+        this.schemaMapping = schemaMapping;
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
     }
@@ -218,7 +219,7 @@ class Database {
                     y_quad.graph = factory.namedNode(null);
 
                     // add inverses 
-                    let inverse = schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
+                    let inverse = this.schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
                     inverse = inverse[0]
                     if (inverse !== undefined) {
                         inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
@@ -270,7 +271,7 @@ class Database {
         let itr = temp.quads();
         let itrData = itr.next();
         while (!itrData.done) {
-            if (itrData.value.predicate.value === this.stampleDataType && itrData.value.object.value !== schemaMapping["@context"]['Thing']) {
+            if (itrData.value.predicate.value === this.stampleDataType && itrData.value.object.value !== this.schemaMapping["@context"]['Thing']) {
                 this.database.delete(itrData.value);
             }
             itrData = itr.next();
@@ -285,7 +286,7 @@ class Database {
         while (!itrData.done) {
 
             if (itrData.value.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
-                let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
+                let data = this.schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
 
                 for (let key in data) {
                     let uris = data[key]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
