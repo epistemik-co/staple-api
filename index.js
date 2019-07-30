@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const jsonld = require('jsonld');
 const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
+const { graphql } = require('graphql');
 
 const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema');
@@ -53,11 +54,6 @@ app.listen({ port: 4000 }, () =>
     console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
 );
 
-
-app.get('/', async (req, res, next) => {
-    res.send("HELLO WORLD!")
-})
-
 // This end-point should create data for qraphql mutation and run it.
 app.post('/api/upload', async (req, res) => { 
     var start = new Date().getTime();
@@ -100,11 +96,45 @@ class Staple {
             typeDefs: this.schemaString,
             resolvers: this.rootResolver,
         });
-        console.log("WORKIBNG ?")
+    }
+
+    async processQuery(query) {
+        let result = await graphql(this.schema, query, null, null, null);
+        return result;
     }
 }
 
-const test = new Staple('./schema/schema', './schema/schema-mapping', "");
+app.get('/', async (req, res, next) => {
+    const Query = `
+    mutation{
+        Organization(type: INSERT, input: {
+        _id: "http://subject"
+        _type: Organization
+        legalName: {
+            _value: "Nazwa firmy"
+            _type: Text
+        }
+        employee: {
+            _type: Person
+            _id: "http://johnnyB"
+        }
+        shareholderOf:{
+            _type: Organization
+            _id: "http://data/bluesB"
+        }
+        noOfEmployees: {
+            _type: Integer
+            _value: "0"
+        }
+        })
+    }
+    `
+    const test = new Staple('./schema/schema', './schema/schema-mapping', "");
+    let info = await test.processQuery(Query)
+
+    res.send(info)
+})
+
 
 module.exports = {
     app,
