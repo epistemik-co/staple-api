@@ -5,46 +5,62 @@ import './QueryDashboard.scss';
 import schemaString from '../../schema/schema'
 import SplitPane from 'react-split-pane'
 
+
 class QueryDashboard extends Component {
+
+  componentDidMount = () => {
+    this.setPlaygroundHeight(null);
+  }
+
+  setPlaygroundHeight = (e) => {
+    let element2 = document.getElementsByClassName("playground");
+    let element = document.getElementsByClassName("box-grid");
+    var space = window.innerHeight - (element[0].offsetHeight)
+    element2[0].style.height = space + "px";
+  }
+
   render() {
     return (
-      <div className="App">
-        <div className="box-left">
-          <h3>RDF</h3>
-          <p>
-            <SplitPane split="hotizontal" minSize={50} defaultSize={100}>
-              <div>a</div>
-              <div>b</div>
-            </SplitPane>
-            {/* <code>
-              CODE
-          </code> */}
-          </p>
+      <SplitPane split="hotizontal" minSize={50} defaultSize={100} onChange={this.setPlaygroundHeight} id="spliter">
+
+        <div className="box-grid">
+          <div className="box-left">
+            <h3>RDF</h3>
+            <p>
+              <code>
+                CODE
+          </code>
+            </p>
+          </div>
+          <div className="box-middle">
+            <h3>Schema</h3>
+            <p>
+              <code>
+                {schemaString.split('\n').map((item, i) => {
+                  return <p key={i}>{item}</p>;
+                })}
+              </code>
+            </p>
+          </div>
+          <div className="box-right">
+            <h3>Context</h3>
+            <p>
+              <code>
+                <div><pre>{JSON.stringify(require('../../schema/schema-mapping'), null, 2)}</pre></div>
+              </code>
+            </p>
+          </div>
         </div>
-        <div className="box-middle">
-          <h3>Schema</h3>
-          <p>
-            <code>
-              {schemaString.split('\n').map((item, i) => {
-                return <p key={i}>{item}</p>;
-              })}
-            </code>
-          </p>
+        <div className="box-grid">
+          <div className="bottom-box">
+            <Provider store={store}>
+              <Playground endpoint="http://localhost:4000/graphql" className="playground" id="playground" />
+            </Provider>
+          </div>
         </div>
-        <div className="box-right">
-          <h3>Context</h3>
-          <p>
-            <code>
-              <div><pre>{JSON.stringify(require('../../schema/schema-mapping'), null, 2)}</pre></div>
-            </code>
-          </p>
-        </div>
-        <div className="bottom-box">
-          <Provider store={store}>
-            <Playground endpoint="http://localhost:4000/graphql" className="playground" />
-          </Provider>
-        </div>
-      </div>
+      </SplitPane >
+
+
     )
   }
 }
