@@ -1,0 +1,121 @@
+.Pane {
+    display: block;
+  }
+  
+  .box-grid {
+      // overflow: hidden;
+      background-color: #162B3A;
+      margin: 0;
+      font-size: calc(10px + 2vmin);
+      color: white;
+      display: grid;
+      grid-template-columns: 33.3333% 33.3333% auto;
+      grid-template-rows: auto ;
+      width: 100%;
+    }
+    
+    h1{
+      margin: 0;
+    }
+    
+    .bottom-box {
+      grid-column-start: 1;
+      grid-column-end: 4;
+    }
+    
+    .playground{
+        width: 100%;
+        height: 400px;
+    }
+    
+    .JVBvg, .JVBvg:hover, .JVBvg:active{
+      overflow: visible;
+    }
+    
+    .box-left {
+      font-size: 12px;
+      overflow: scroll;
+      .rdf-textarea{
+        margin-top: 35px;
+        width: 100%;
+        height: 90%;
+        background-color: #162B3A;
+        padding: 5px 0;
+        border: 0;
+        color: white;
+        resize: none;
+        font-size: 12px;
+        font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+      }
+
+      .rdf-textarea:focus{
+        border: none;
+        outline: none;
+      }
+
+
+    }
+    
+    .box-left h3{
+      position: fixed;
+      width:100%;
+      background: #0F202E;
+      padding:10px 10px;
+      margin: 0;
+    } 
+    
+    .box-left p{
+      margin-top: 40px;
+    } 
+    
+    
+    .box-middle {
+      font-size: 12px;
+      overflow: scroll;
+    }
+    
+    .box-middle h3{
+      position: fixed;
+      width:100%;
+      background: #0F202E;
+      padding:10px 10px;
+      margin: 0;
+    } 
+    
+    .box-middle p{
+      margin: 0px;
+      padding-bottom: 10px;
+    } 
+      
+    .box-middle p:first-child{
+      margin-top: 30px;
+      // padding-bottom: 10px;
+    } 
+    
+    .box-right {
+      font-size: 12px;
+      overflow: scroll;
+    }
+    
+    .box-right h3{
+      position: fixed;
+      width:100%;
+      background: #0F202E;
+      padding:10px 10px;
+      margin: 0;
+    } 
+    
+    .box-right p{
+      margin-top: 40px;
+    } 
+  
+    .Resizer, .horizontal{
+      background: #353535;
+      width:100%;
+      min-height: 3px!important;
+      cursor: row-resize;
+  }
+  
+  .Resizer:hover, .horizontal:hover{
+    background: #494949;
+  }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.scss';
 import QueryDashboard from './components/queryDashboard/QueryDashboard'
+import PrivateDashboard from './components/privateDashboard/PrivateDashboard'
 
 
 class App extends Component {
@@ -23,7 +24,7 @@ class App extends Component {
 
          <QueryDashboard></QueryDashboard>
           : 
-          <h3>Not implemented</h3>
+          <PrivateDashboard></PrivateDashboard>
         }
 
 

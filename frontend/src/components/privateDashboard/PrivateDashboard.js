@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { Provider } from "react-redux";
 import { Playground, store } from "graphql-playground-react";
-import './QueryDashboard.scss';
+import './PrivateDashboard.scss';
 import schemaString from '../../schema/schema'
 import SplitPane from 'react-split-pane'
 
 
-class QueryDashboard extends Component {
+class PrivateDashboard extends Component {
 
   componentDidMount = () => {
     this.setPlaygroundHeight(null);
@@ -27,11 +27,7 @@ class QueryDashboard extends Component {
         <div className="box-grid">
           <div className="box-left">
             <h3>RDF</h3>
-            <p>
-              <code>
-                CODE
-          </code>
-            </p>
+            <textarea className="rdf-textarea" placeholder="CODE HERE"></textarea>
           </div>
           <div className="box-middle">
             <h3>Schema</h3>
@@ -67,5 +63,5 @@ class QueryDashboard extends Component {
 }
 
 
-export default QueryDashboard;
+export default PrivateDashboard;
 
