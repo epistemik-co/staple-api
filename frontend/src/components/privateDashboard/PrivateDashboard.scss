@@ -53,16 +53,44 @@
         outline: none;
       }
 
+      .fixed-top-bar{
+        position: fixed;
+
+        width:100%;
+        background: #0F202E;
+
+        padding:10px 10px;
+      }
+
+      h3{
+        width: auto;
+        padding:0 10px 0 10px;
+        margin: 0;
+      } 
+      
+
+      .rdf-compile {
+        float:left;
+        margin-left: 60px;
+        cursor: pointer;
+      }
+
+      .rdf-compile:focus {
+        outline: none;
+      }
+
+      .button.play {
+        border-style: solid;
+        box-sizing: border-box;
+        width: 12px;
+        height: 12px;
+        background:#0F202E;
+        border-color: #0F202E #0F202E #0F202E #f7f7f7;
+        border-width: 6px 0px 6px 12px;
+
+      }
 
     }
-    
-    .box-left h3{
-      position: fixed;
-      width:100%;
-      background: #0F202E;
-      padding:10px 10px;
-      margin: 0;
-    } 
     
     .box-left p{
       margin-top: 40px;

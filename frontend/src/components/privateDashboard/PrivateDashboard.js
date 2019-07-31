@@ -26,7 +26,10 @@ class PrivateDashboard extends Component {
 
         <div className="box-grid">
           <div className="box-left">
-            <h3>RDF</h3>
+            <div className="fixed-top-bar">
+              <h3>RDF</h3>
+              <button className="rdf-compile button play"></button>
+            </div>
             <textarea className="rdf-textarea" placeholder="CODE HERE"></textarea>
           </div>
           <div className="box-middle">
