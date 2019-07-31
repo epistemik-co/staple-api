@@ -10,6 +10,7 @@ class QueryDashboard extends Component {
 
   componentDidMount = () => {
     this.setPlaygroundHeight(null);
+    window.addEventListener("resize", this.setPlaygroundHeight);
   }
 
   setPlaygroundHeight = (e) => {
