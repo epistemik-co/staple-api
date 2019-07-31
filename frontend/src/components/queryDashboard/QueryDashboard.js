@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { Playground, store } from "graphql-playground-react";
 import './QueryDashboard.scss';
 import schemaString from '../../schema/schema'
+import SplitPane from 'react-split-pane'
 
 class QueryDashboard extends Component {
   render() {
@@ -11,16 +12,22 @@ class QueryDashboard extends Component {
         <div className="box-left">
           <h3>RDF</h3>
           <p>
-            <code>
+            <SplitPane split="hotizontal" minSize={50} defaultSize={100}>
+              <div>a</div>
+              <div>b</div>
+            </SplitPane>
+            {/* <code>
               CODE
-          </code>
+          </code> */}
           </p>
         </div>
         <div className="box-middle">
           <h3>Schema</h3>
           <p>
             <code>
-              {schemaString}
+              {schemaString.split('\n').map((item, i) => {
+                return <p key={i}>{item}</p>;
+              })}
             </code>
           </p>
         </div>
@@ -28,7 +35,7 @@ class QueryDashboard extends Component {
           <h3>Context</h3>
           <p>
             <code>
-              {JSON.stringify(require('../../schema/schema-mapping'), null, 2)}
+              <div><pre>{JSON.stringify(require('../../schema/schema-mapping'), null, 2)}</pre></div>
             </code>
           </p>
         </div>
