@@ -2,7 +2,8 @@ const read_graphy = require('graphy').content.nt.read;
 const dataset_tree = require('graphy').util.dataset.tree
 const factory = require('@graphy/core.data.factory');
 // const schemaMapping = require('../schema/schema-mapping');
-
+const MongoClient = require('mongodb').MongoClient;
+const format = require('util').format;
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
@@ -23,6 +24,19 @@ class Database {
 
         let quad = factory.quad(sub, pred, obj, gra);
 
+        MongoClient.connect('mongodb://127.0.0.1:27017', function(err, db) {
+            if(err){
+                throw err;
+            }else{
+                var dbo = db.db("staple");
+                var myobj = quad;
+                dbo.collection("quads").insertOne(myobj, function(err, res) {
+                    if (err) throw err;
+                    console.log("quad inserted");
+                    db.close();
+                });
+            }
+        })
         this.database.add(quad);
         return true;
     }

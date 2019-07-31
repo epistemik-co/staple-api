@@ -26,7 +26,7 @@ class QueryDashboard extends Component {
 
         <div className="box-grid">
           <div className="box-left">
-            <h3>RDF</h3>
+            <h3 className="box-left-query">RDF</h3>
             <p>
               <code>
                 CODE
