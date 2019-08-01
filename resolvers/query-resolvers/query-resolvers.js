@@ -42,11 +42,11 @@ handleClassTypeResolver = (tree, object, database) => {
             newResolverBody['_id'] = (parent) => { return parent };
         }
         else if (propertyName === '_type') {
-            newResolverBody['_type'] = (parent, args) => {
+            newResolverBody['_type'] = async (parent, args) => {
                 if (args.inferred) {
                     return database.getObjectsValueArray((parent), database.stampleDataType)
                 }
-                let types = database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                let types = await database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
 
                 types = types.map(x => {
                    for(let key in  schemaMapping['@context']){
@@ -59,7 +59,6 @@ handleClassTypeResolver = (tree, object, database) => {
                 return types
             };
         }
-
         else {
             let uri = schemaMapping["@context"][propertyName];
             if (uri === undefined) {
@@ -80,8 +79,9 @@ handleClassTypeResolver = (tree, object, database) => {
             }
             else {
                 const name = uri;
-                let constr = (name, isItList) => {
-                    return ((parent, args) => {
+                let type = currentObject.name;
+                let constr =  (name, isItList, type) => {
+                    return ( async (parent, args) => {
                         if (name === "@reverse") {
                             let data = database.getTriplesByObjectUri(parent);
                             return data;
@@ -90,15 +90,18 @@ handleClassTypeResolver = (tree, object, database) => {
                         if (parent.value) {
                             parent = parent.value;
                         }
+
                         if (isItList) {
+                            await database.loadFromDB((parent), (name), type)
                             return database.getObjectsValueArray((parent), (name));
                         }
                         else {
+                            // await database.loadFromDB((parent), (name), type)
                             return database.getSingleLiteral((parent), (name));
                         }
                     })
                 };
-                newResolverBody[propertyName] = constr(name, isItList);
+                newResolverBody[propertyName] = constr(name, isItList, type);
             }
         }
     }
@@ -195,8 +198,8 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"] }
         }
         else if (object === "_OBJECT") {
-            queryResolverBody["Query"]["_OBJECT"] = (obj, args, context, info) => {
-                let data = database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred);
+            queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
+                let data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred);
                 data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
                 data = data.map((id) => { return { '_id': id, '_type': database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;

@@ -84,7 +84,7 @@ class Database {
     }
 
     // Array of uri
-    getObjectsValueArray(sub, pred) {
+    async getObjectsValueArray(sub, pred) {
 
         sub = factory.namedNode(sub);
         pred = factory.namedNode(pred);
@@ -178,6 +178,7 @@ class Database {
 
     // returns array of uri
     async getSubjectsByType(type, predicate, inferred = false) {
+
         let url = 'mongodb://127.0.0.1:27017';
         const client = await MongoClient.connect(url, { useNewUrlParser: true })
             .catch(err => { console.log(err); });
@@ -187,92 +188,33 @@ class Database {
         }
 
         try {
-
             const db = client.db("staple");
-
             let collection = db.collection('quads');
+            let query = { _type: 'Thing' }
 
-            let query = { _type: 'Organization' }
-
-            let result = await collection.findOne(query);
-
-            result["@context"] = {
-                "_id": "@id",
-                "_value": "@value",
-                "_type": "@type",
-                "_reverse": "@reverse",
-                "Thing": "http://schema.org/Thing",
-                "Organization": "http://schema.org/Organization",
-                "Person": "http://schema.org/Person",
-                "Patient": "http://schema.org/Patient",
-                "Text": "http://schema.org/Text",
-                "Number": "http://schema.org/Number",
-                "Integer": "http://schema.org/Integer",
-                "legalName": "http://schema.org/legalName",
-                "hasShareholder": "http://schema.org/hasShareholder",
-                "shareholderOf": "http://schema.org/shareholderOf",
-                "employee": "http://schema.org/employee",
-                "affiliation": "http://schema.org/affiliation",
-                "noOfEmployees": "http://schema.org/noOfEmployees",
-                "name": "http://schema.org/name"
+            for(let key in this.schemaMapping['@context']){
+                if(this.schemaMapping['@context'][key] === type){
+                    query = { _type: key }
+                    break;
+                }
             }
 
+            let result = await collection.find(query).toArray();
+            result = result.map(x => {
+                x['@context'] = this.schemaMapping['@context'];
+                return x;
+            })
 
             const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-            // console.log(rdf)
-            await this.insertRDF(rdf, result['_id']);
-            console.log(this.getAllQuads());
-
+            for(let obj in result){
+                await this.insertRDF(rdf, result[obj]['_id']);
+            }
         } catch (err) {
-
             console.log(err);
         } finally {
 
             client.close();
         }
-
-        // MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true }, async function (err, db) {
-        //     if (err) {
-        //         throw err;
-        //     } else {
-        //         var dbo = db.db("staple");
-        //         console.log(await dbo.collection("quads").find({ _type: 'Organization' }).toArray())
-        //         await dbo.collection("quads").find({ _type: 'Organization' }).toArray(async function (err, result) {
-        //             if (err) throw err;
-        //             result = result.map(x => {
-        //                 return {
-        //                     ...x,
-        //                     ["@context"]: {
-        //                         "_id": "@id",
-        //                         "_value": "@value",
-        //                         "_type": "@type",
-        //                         "_reverse": "@reverse",
-        //                         "Thing": "http://schema.org/Thing",
-        //                         "Organization": "http://schema.org/Organization",
-        //                         "Person": "http://schema.org/Person",
-        //                         "Patient": "http://schema.org/Patient",
-        //                         "Text": "http://schema.org/Text",
-        //                         "Number": "http://schema.org/Number",
-        //                         "Integer": "http://schema.org/Integer",
-        //                         "legalName": "http://schema.org/legalName",
-        //                         "hasShareholder": "http://schema.org/hasShareholder",
-        //                         "shareholderOf": "http://schema.org/shareholderOf",
-        //                         "employee": "http://schema.org/employee",
-        //                         "affiliation": "http://schema.org/affiliation",
-        //                         "noOfEmployees": "http://schema.org/noOfEmployees",
-        //                         "name": "http://schema.org/name"
-        //                     }
-        //                 }
-        //             })
-
-        //             const rdf = await jsonld.toRDF(result[0], { format: 'application/n-quads' });
-        //             // console.log(rdf)
-        //             // this.insertRDF(rdf);
-
-        //         });
-        //         db.close();
-        //     }
-        // })
 
         type = factory.namedNode(type);
 
@@ -409,7 +351,30 @@ class Database {
                 throw err;
             } else {
                 var dbo = db.db("staple");
-                var myobj = quad
+                // var myobj = {
+                //     "_id": "http://data/elwoodB",
+                //     "_type": "Person",
+                //     "_inferred": [
+                //         "Person",
+                //         "Thing"
+                //     ],
+                //     "name": {
+                //         "_type": "Text",
+                //         "_value": "Blues"
+                //     },
+                //     "_reverse": {
+                //         "employee": [
+                //             {
+                //                 "_id": "http://data/bluesB"
+                //             }
+                //         ]
+                //     },
+                //     "affiliation": [
+                //             {
+                //                 "_id": "http://data/bluesB"
+                //             }
+                //     ]
+                // }
                 // dbo.collection("quads").insertOne(myobj, function(err, res) {
                 //     if (err) throw err;
                 //     console.log("quad inserted");
@@ -426,6 +391,55 @@ class Database {
 
     mongodbRemove() {
 
+    }
+
+    async loadFromDB(sub, pred, type) {
+        console.log(sub)
+        console.log(pred)
+        console.log(type)
+        console.log(" ")
+
+        let url = 'mongodb://127.0.0.1:27017';
+        const client = await MongoClient.connect(url, { useNewUrlParser: true })
+            .catch(err => { console.log(err); });
+
+        if (!client) {
+            return;
+        }
+
+        try {
+            const db = client.db("staple");
+            let collection = db.collection('quads');
+            let query = { _type: 'Thing' }
+
+            if(type != undefined){
+                query = { _type: type } 
+            }
+
+            for(let key in this.schemaMapping['@context']){
+                if(this.schemaMapping['@context'][key] === pred){
+                    query['_reverse'] = {};
+                    query['_reverse'][key] = [ {'_id': sub} ]
+                    break;
+                }
+            }
+
+            let result = await collection.find(query).toArray();
+            result = result.map(x => {
+                x['@context'] = this.schemaMapping['@context'];
+                return x;
+            })
+
+            const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
+            for(let obj in result){
+                await this.insertRDF(rdf, result[obj]['_id']);
+            }
+        } catch (err) {
+            console.log(err);
+        } finally {
+
+            client.close();
+        }
     }
 }
 
