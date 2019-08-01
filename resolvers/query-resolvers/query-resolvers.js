@@ -168,8 +168,8 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             // Core Query
             let uri = tree[object]['uri'];
             let constr = (uri) => {
-                return (parent, args) => {
-                    let data = database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred);
+                return async (parent, args) => {
+                    let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred);
                     data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
                     return data;
                 }

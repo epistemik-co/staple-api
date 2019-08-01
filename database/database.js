@@ -1,9 +1,11 @@
 const read_graphy = require('graphy').content.nt.read;
 const dataset_tree = require('graphy').util.dataset.tree
 const factory = require('@graphy/core.data.factory');
+const graphy_write = require('@graphy/content.nq.write');
 // const schemaMapping = require('../schema/schema-mapping');
 const MongoClient = require('mongodb').MongoClient;
 const format = require('util').format;
+const jsonld = require('jsonld');
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
@@ -24,20 +26,8 @@ class Database {
 
         let quad = factory.quad(sub, pred, obj, gra);
 
-        MongoClient.connect('mongodb://127.0.0.1:27017', function(err, db) {
-            if(err){
-                throw err;
-            }else{
-                var dbo = db.db("staple");
-                var myobj = quad;
-                dbo.collection("quads").insertOne(myobj, function(err, res) {
-                    if (err) throw err;
-                    console.log("quad inserted");
-                    db.close();
-                });
-            }
-        })
-        this.database.add(quad);
+        this.mongodbAdd(quad);
+        // this.database.add(quad);
         return true;
     }
 
@@ -187,7 +177,103 @@ class Database {
     };
 
     // returns array of uri
-    getSubjectsByType(type, predicate, inferred = false) {
+    async getSubjectsByType(type, predicate, inferred = false) {
+        let url = 'mongodb://127.0.0.1:27017';
+        const client = await MongoClient.connect(url, { useNewUrlParser: true })
+            .catch(err => { console.log(err); });
+
+        if (!client) {
+            return;
+        }
+
+        try {
+
+            const db = client.db("staple");
+
+            let collection = db.collection('quads');
+
+            let query = { _type: 'Organization' }
+
+            let result = await collection.findOne(query);
+
+            result["@context"] = {
+                "_id": "@id",
+                "_value": "@value",
+                "_type": "@type",
+                "_reverse": "@reverse",
+                "Thing": "http://schema.org/Thing",
+                "Organization": "http://schema.org/Organization",
+                "Person": "http://schema.org/Person",
+                "Patient": "http://schema.org/Patient",
+                "Text": "http://schema.org/Text",
+                "Number": "http://schema.org/Number",
+                "Integer": "http://schema.org/Integer",
+                "legalName": "http://schema.org/legalName",
+                "hasShareholder": "http://schema.org/hasShareholder",
+                "shareholderOf": "http://schema.org/shareholderOf",
+                "employee": "http://schema.org/employee",
+                "affiliation": "http://schema.org/affiliation",
+                "noOfEmployees": "http://schema.org/noOfEmployees",
+                "name": "http://schema.org/name"
+            }
+
+
+            const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
+            // console.log(rdf)
+            await this.insertRDF(rdf, result['_id']);
+            console.log(this.getAllQuads());
+
+        } catch (err) {
+
+            console.log(err);
+        } finally {
+
+            client.close();
+        }
+
+        // MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true }, async function (err, db) {
+        //     if (err) {
+        //         throw err;
+        //     } else {
+        //         var dbo = db.db("staple");
+        //         console.log(await dbo.collection("quads").find({ _type: 'Organization' }).toArray())
+        //         await dbo.collection("quads").find({ _type: 'Organization' }).toArray(async function (err, result) {
+        //             if (err) throw err;
+        //             result = result.map(x => {
+        //                 return {
+        //                     ...x,
+        //                     ["@context"]: {
+        //                         "_id": "@id",
+        //                         "_value": "@value",
+        //                         "_type": "@type",
+        //                         "_reverse": "@reverse",
+        //                         "Thing": "http://schema.org/Thing",
+        //                         "Organization": "http://schema.org/Organization",
+        //                         "Person": "http://schema.org/Person",
+        //                         "Patient": "http://schema.org/Patient",
+        //                         "Text": "http://schema.org/Text",
+        //                         "Number": "http://schema.org/Number",
+        //                         "Integer": "http://schema.org/Integer",
+        //                         "legalName": "http://schema.org/legalName",
+        //                         "hasShareholder": "http://schema.org/hasShareholder",
+        //                         "shareholderOf": "http://schema.org/shareholderOf",
+        //                         "employee": "http://schema.org/employee",
+        //                         "affiliation": "http://schema.org/affiliation",
+        //                         "noOfEmployees": "http://schema.org/noOfEmployees",
+        //                         "name": "http://schema.org/name"
+        //                     }
+        //                 }
+        //             })
+
+        //             const rdf = await jsonld.toRDF(result[0], { format: 'application/n-quads' });
+        //             // console.log(rdf)
+        //             // this.insertRDF(rdf);
+
+        //         });
+        //         db.close();
+        //     }
+        // })
+
         type = factory.namedNode(type);
 
         if (inferred) {
@@ -225,7 +311,7 @@ class Database {
     drop() {
         this.database.clear();
     }
- 
+
     insertRDFPromise(tree, ID, rdf) {
         return new Promise((resolve, reject) => {
             let data = (y_quad) => {
@@ -314,6 +400,31 @@ class Database {
             }
             itrData = itr.next();
         }
+
+    }
+
+    mongodbAdd(quad) {
+        MongoClient.connect('mongodb://127.0.0.1:27017', async function (err, db) {
+            if (err) {
+                throw err;
+            } else {
+                var dbo = db.db("staple");
+                var myobj = quad
+                // dbo.collection("quads").insertOne(myobj, function(err, res) {
+                //     if (err) throw err;
+                //     console.log("quad inserted");
+                //     db.close();
+                // });
+                db.close();
+            }
+        })
+    }
+
+    mongodbMatch() {
+
+    }
+
+    mongodbRemove() {
 
     }
 }
