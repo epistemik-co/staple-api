@@ -25,13 +25,13 @@ function showMemUsage() {
 }
 
 // init GraphQL server with makeExecutableSchema() which is the critical bit 
-const schema = makeExecutableSchema({
+let schema = makeExecutableSchema({
     typeDefs: schemaString,
     resolvers: rootResolver,
 });
 
 // Graphql ApolloSerwer init
-const server = new ApolloServer({
+let server = new ApolloServer({
     schema,
     formatResponse: response => {
         if (response.errors !== undefined) {
@@ -48,7 +48,10 @@ const server = new ApolloServer({
     },
 });
 
-server.applyMiddleware({ app });
+// app.use(path, jwtCheck);
+
+const path = '/graphql';
+server.applyMiddleware({ app, path });
 
 app.listen({ port: 4000 }, () =>
     console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
@@ -57,6 +60,34 @@ app.listen({ port: 4000 }, () =>
 let i = 0;
 function init(app){
     i = i + 1;
+    const database2 = new DatabaseInterface(require('./schema/schema-mapping'));
+    const rootResolver = new Resolver(database2, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
+    schema = makeExecutableSchema({
+        typeDefs: schemaString,
+        resolvers: rootResolver,
+    });
+    server = new ApolloServer({
+        schema,
+        formatResponse: response => {
+            if (response.errors !== undefined) {
+                response.data = false;
+            }
+            else {
+                if (response.data !== null && Warnings.length > 0) {
+                    response["extensions"] = {}
+                    response["extensions"]['Warning'] = [...Warnings];
+                    Warnings.length = 0;
+                }
+            }
+            return response;
+        },
+    });
+    
+    const path = '/graphql' + i;
+    server.applyMiddleware({ app, path });
+    console.log(`🚀 Server ready at http://localhost:4000${path}`)
+    
+    console.log("NEW SCHEMA AND DATABASE") 
     app.get('/api/myruntimeroute' + i, function(req,res) {
         res.send({"runtime" : "route"});
     })
