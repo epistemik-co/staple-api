@@ -54,6 +54,19 @@ app.listen({ port: 4000 }, () =>
     console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
 );
 
+let i = 0;
+function init(app){
+    i = i + 1;
+    app.get('/api/myruntimeroute' + i, function(req,res) {
+        res.send({"runtime" : "route"});
+    })
+}
+
+app.get('/api/dynamic', function(req,res) {
+    init(app);
+    res.send("done")
+});
+
 // This end-point should create data for qraphql mutation and run it.
 app.post('/api/upload', async (req, res) => { 
     var start = new Date().getTime();
