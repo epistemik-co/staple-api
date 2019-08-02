@@ -172,6 +172,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let constr = (uri) => {
                 return async (parent, args) => {
                     let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
+                    data = database.pages[args.page];
                     return data;
                 }
             };
@@ -198,6 +199,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
                 let data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred, args.page, {});
+                data = database.pages[args.page];
                 data = data.map((id) => { return { '_id': id, '_type': database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;
             }

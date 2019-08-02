@@ -10,6 +10,7 @@ class Database {
         this.schemaMapping = schemaMapping;
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
+        this.pages = [];
         // this.insertFakeDataToDB = false;
     }
 
@@ -384,6 +385,9 @@ class Database {
             else {
                 result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
             }
+
+            // save page conetnt
+            this.pages[page] = result.map(x => x['_id'])
 
             result = result.map(x => {
                 x['@context'] = this.schemaMapping['@context'];
