@@ -10,6 +10,7 @@ class Database {
         this.schemaMapping = schemaMapping;
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
+        // this.insertFakeDataToDB = false;
     }
 
     // ---
@@ -23,8 +24,11 @@ class Database {
 
         let quad = factory.quad(sub, pred, obj, gra);
 
-        this.mongodbAdd(quad);
         this.database.add(quad);
+        // if(this.insertFakeDataToDB === false){
+        //     this.insertFakeDataToDB = true;
+        //     this.mongodbAdd();
+        // }
         return true;
     }
 
@@ -177,7 +181,7 @@ class Database {
     async getSubjectsByType(type, predicate, inferred = false, page = undefined, query = undefined) {
 
         await this.loadCoreQueryDataFromDB(type, page, query)
-        
+
         type = factory.namedNode(type);
 
         if (inferred) {
@@ -351,7 +355,7 @@ class Database {
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = 1, query = undefined){
+    async loadCoreQueryDataFromDB(type, page = 1, query = undefined) {
         let url = 'mongodb://127.0.0.1:27017';
         const client = await MongoClient.connect(url, { useNewUrlParser: true })
             .catch(err => { console.log(err); });
@@ -364,7 +368,7 @@ class Database {
             const db = client.db("staple");
             let collection = db.collection('quads');
 
-            if(query === undefined){
+            if (query === undefined) {
                 for (let key in this.schemaMapping['@context']) {
                     if (this.schemaMapping['@context'][key] === type) {
                         query = { _type: key }
@@ -397,6 +401,110 @@ class Database {
             client.close();
         }
 
+    }
+
+    mongodbAdd() {
+        MongoClient.connect('mongodb://127.0.0.1:27017', async function (err, db) {
+            if (err) {
+                throw err;
+            } else {
+                var dbo = db.db("staple");
+                for (let i = 8; i < 1000; i++) {
+                    var myobj = [{
+                        "_id": "http://data/bluesB" + i,
+                        "_type": "Organization",
+                        "_inferred": [
+                            "Organization",
+                            "Thing"
+                        ],
+                        "employee": [
+                            {
+                                "_id": "http://data/elwoodB" + i
+                            },
+                            {
+                                "_id": "http://data/jakeB" + i
+                            }
+                        ],
+                        "legalName": {
+                            "_type": "Text",
+                            "_value": "Blues Brothers"
+                        },
+                        "noOfEmployees": {
+                            "_type": "Integer",
+                            "_value": "2"
+                        },
+                        "_reverse": {
+                            "affiliation": [
+                                {
+                                    "_id": "http://data/elwoodB" + i
+                                },
+                                {
+                                    "_id": "http://data/jakeB" + i
+                                }
+                            ]
+                        }
+                    },
+
+                    {
+                        "_id": "http://data/elwoodB" + i,
+                        "_type": "Person",
+                        "_inferred": [
+                            "Person",
+                            "Thing"
+                        ],
+                        "name": {
+                            "_type": "Text",
+                            "_value": "Blues"
+                        },
+                        "_reverse": {
+                            "employee": [
+                                {
+                                    "_id": "http://data/bluesB" + i
+                                }
+                            ]
+                        },
+                        "affiliation": [
+                            {
+                                "_id": "http://data/bluesB" + i
+                            }
+                        ]
+                    },
+
+                    {
+                        "_id": "http://data/jakeB" + i,
+                        "_type": "Person",
+                        "_inferred": [
+                            "Person",
+                            "Thing"
+                        ],
+                        "name": {
+                            "_type": "Text",
+                            "_value": "Brothers"
+                        },
+                        "_reverse": {
+                            "employee": [
+                                {
+                                    "_id": "http://data/bluesB" + i
+                                }
+                            ]
+                        },
+                        "affiliation": [
+                            {
+                                "_id": "http://data/bluesB" + i
+                            }
+                        ]
+                    }
+                    ]
+                    dbo.collection("quads").insertMany(myobj, function (err, res) {
+                        if (err) throw err;
+                        console.log("quad inserted");
+                        
+                    });
+                }
+                db.close();
+
+            }
+        })
     }
 }
 

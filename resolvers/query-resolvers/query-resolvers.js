@@ -92,7 +92,7 @@ handleClassTypeResolver = (tree, object, database) => {
                         }
 
                         if (isItList) {
-                            await database.loadFromDB((parent), (name), type)
+                            await database.loadChildObjectsFromDB((parent), (name), type)
                             return database.getObjectsValueArray((parent), (name));
                         }
                         else {
