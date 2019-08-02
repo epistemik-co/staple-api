@@ -1,10 +1,7 @@
 const read_graphy = require('graphy').content.nt.read;
 const dataset_tree = require('graphy').util.dataset.tree
 const factory = require('@graphy/core.data.factory');
-const graphy_write = require('@graphy/content.nq.write');
-// const schemaMapping = require('../schema/schema-mapping');
 const MongoClient = require('mongodb').MongoClient;
-const format = require('util').format;
 const jsonld = require('jsonld');
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
@@ -177,51 +174,10 @@ class Database {
     };
 
     // returns array of uri
-    async getSubjectsByType(type, predicate, inferred = false, page = undefined) {
+    async getSubjectsByType(type, predicate, inferred = false, page = undefined, query = undefined) {
 
-        let url = 'mongodb://127.0.0.1:27017';
-        const client = await MongoClient.connect(url, { useNewUrlParser: true })
-            .catch(err => { console.log(err); });
-
-        if (!client) {
-            return;
-        }
-
-        try {
-            const db = client.db("staple");
-            let collection = db.collection('quads');
-            let query = { _type: 'Thing' }
-
-            for (let key in this.schemaMapping['@context']) {
-                if (this.schemaMapping['@context'][key] === type) {
-                    query = { _type: key }
-                    break;
-                }
-            }
-
-            let result;
-            if (page === undefined) {
-                result = await collection.find(query).toArray();
-            }
-            else {
-                result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
-            }
-            result = result.map(x => {
-                x['@context'] = this.schemaMapping['@context'];
-                return x;
-            })
-
-            const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-            for (let obj in result) {
-                await this.insertRDF(rdf, result[obj]['_id']);
-            }
-        } catch (err) {
-            console.log(err);
-        } finally {
-
-            client.close();
-        }
-
+        await this.loadCoreQueryDataFromDB(type, page, query)
+        
         type = factory.namedNode(type);
 
         if (inferred) {
@@ -239,63 +195,6 @@ class Database {
             data.push(x.value.subject.value);
             x = itr.next();
         }
-
-        return data;
-    };
-
-    async getSubjectsByTypeForObjectQuery(type, predicate, inferred = false, page = 1) {
-
-        let url = 'mongodb://127.0.0.1:27017';
-        const client = await MongoClient.connect(url, { useNewUrlParser: true })
-            .catch(err => { console.log(err); });
-
-        if (!client) {
-            return;
-        }
-
-        try {
-            const db = client.db("staple");
-            let collection = db.collection('quads');
-
-            let result = await collection.find().skip(page * 10 - 10).limit(10).toArray();
-            console.log(result)
-            result = result.map(x => {
-                x['@context'] = this.schemaMapping['@context'];
-                return x;
-            })
-
-            const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-            for (let obj in result) {
-                await this.insertRDF(rdf, result[obj]['_id']);
-            }
-            console.log(this.getAllQuads())
-        } catch (err) {
-            console.log(err);
-        } finally {
-
-            client.close();
-        }
-
-        type = factory.namedNode(type);
-
-        if (inferred) {
-            predicate = factory.namedNode(this.stampleDataType);
-        }
-        else {
-            predicate = factory.namedNode(predicate);
-        }
-
-        console.log(predicate)
-        console.log(type)
-        const temp = this.database.match(null, predicate, type);
-        let data = [];
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            data.push(x.value.subject.value);
-            x = itr.next();
-        }
-        console.log(data)
 
         return data;
     };
@@ -369,6 +268,7 @@ class Database {
 
     async removeRDF(rdf, ID) {
         await this.removeRDFPromise(this.database, ID, rdf);
+        this.updateInference();
     }
 
     updateInference() {
@@ -407,55 +307,8 @@ class Database {
 
     }
 
-    mongodbAdd(quad) {
-        MongoClient.connect('mongodb://127.0.0.1:27017', async function (err, db) {
-            if (err) {
-                throw err;
-            } else {
-                var dbo = db.db("staple");
-                // var myobj = {
-                //     "_id": "http://data/elwoodB",
-                //     "_type": "Person",
-                //     "_inferred": [
-                //         "Person",
-                //         "Thing"
-                //     ],
-                //     "name": {
-                //         "_type": "Text",
-                //         "_value": "Blues"
-                //     },
-                //     "_reverse": {
-                //         "employee": [
-                //             {
-                //                 "_id": "http://data/bluesB"
-                //             }
-                //         ]
-                //     },
-                //     "affiliation": [
-                //             {
-                //                 "_id": "http://data/bluesB"
-                //             }
-                //     ]
-                // }
-                // dbo.collection("quads").insertOne(myobj, function(err, res) {
-                //     if (err) throw err;
-                //     console.log("quad inserted");
-                //     db.close();
-                // });
-                db.close();
-            }
-        })
-    }
-
-    mongodbMatch() {
-
-    }
-
-    mongodbRemove() {
-
-    }
-
-    async loadFromDB(sub, pred, type) {
+    // Based on reverse property
+    async loadChildObjectsFromDB(sub, pred, type) {
         let url = 'mongodb://127.0.0.1:27017';
         const client = await MongoClient.connect(url, { useNewUrlParser: true })
             .catch(err => { console.log(err); });
@@ -494,9 +347,56 @@ class Database {
         } catch (err) {
             console.log(err);
         } finally {
+            client.close();
+        }
+    }
+
+    async loadCoreQueryDataFromDB(type, page = 1, query = undefined){
+        let url = 'mongodb://127.0.0.1:27017';
+        const client = await MongoClient.connect(url, { useNewUrlParser: true })
+            .catch(err => { console.log(err); });
+
+        if (!client) {
+            return;
+        }
+
+        try {
+            const db = client.db("staple");
+            let collection = db.collection('quads');
+
+            if(query === undefined){
+                for (let key in this.schemaMapping['@context']) {
+                    if (this.schemaMapping['@context'][key] === type) {
+                        query = { _type: key }
+                        break;
+                    }
+                }
+            }
+
+            let result;
+            if (page === undefined) {
+                result = await collection.find(query).toArray();
+            }
+            else {
+                result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+            }
+
+            result = result.map(x => {
+                x['@context'] = this.schemaMapping['@context'];
+                return x;
+            })
+
+            const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
+            for (let obj in result) {
+                await this.insertRDF(rdf, result[obj]['_id']);
+            }
+        } catch (err) {
+            console.log(err);
+        } finally {
 
             client.close();
         }
+
     }
 }
 
