@@ -172,8 +172,8 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let uri = tree[object]['uri'];
             let constr = (uri) => {
                 return async (parent, args) => {
-                    let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred);
-                    data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
+                    let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
+                    // data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
                     return data;
                 }
             };
@@ -199,8 +199,8 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         }
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
-                let data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred);
-                data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
+                let data = await database.getSubjectsByTypeForObjectQuery("http://schema.org/Thing", database.stampleDataType, args.inferred, args.page);
+                // data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
                 data = data.map((id) => { return { '_id': id, '_type': database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;
             }
