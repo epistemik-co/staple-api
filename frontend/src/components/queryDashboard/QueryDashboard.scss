@@ -32,7 +32,9 @@
     overflow: visible;
   }
   
-  .box-left {
+  .box-left-middle {
+    grid-column-start: 1;
+    grid-column-end: 3;
     font-size: 12px;
     overflow: scroll;
   }
@@ -45,7 +47,7 @@
     margin: 0;
   } 
   
-  .box-left p{
+  .box-left-middle p:first-child{
     margin-top: 40px;
   } 
   
@@ -75,7 +77,6 @@
   
   .box-right {
     font-size: 12px;
-    overflow: scroll;
   }
   
   .box-right h3{
@@ -89,7 +90,7 @@
   .box-right p{
     margin-top: 40px;
   } 
-
+  
   .Resizer, .horizontal{
     background: #353535;
     width:100%;

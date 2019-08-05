@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { Playground, store } from "graphql-playground-react";
 import './QueryDashboard.scss';
 import schemaString from '../../schema/schema'
+import schemattl from '../../schema/schemattl'
 import SplitPane from 'react-split-pane'
 
 
@@ -18,6 +19,11 @@ class QueryDashboard extends Component {
     let topGrid = document.getElementsByClassName("box-grid");
     var space = window.innerHeight - (topGrid[0].offsetHeight)
     playground[0].style.height = space + "px";
+
+    let schemaContext = document.getElementsByClassName("schema-context-text");
+    schemaContext[0].style.overflow = "scroll";
+
+
   }
 
   render() {
@@ -25,27 +31,20 @@ class QueryDashboard extends Component {
       <SplitPane split="hotizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter">
 
         <div className="box-grid">
-          <div className="box-left">
+          <div className="box-left-middle">
             <h3 className="box-left-query">RDF</h3>
-            <p>
-              <code>
-                CODE
-          </code>
-            </p>
-          </div>
-          <div className="box-middle">
-            <h3>Schema</h3>
-            <p>
-              <code>
-                {schemaString.split('\n').map((item, i) => {
+            <div>
+              <code >
+                {schemattl.split('\n').map((item, i) => {
                   return <p key={i}>{item}</p>;
                 })}
               </code>
-            </p>
+            </div>
           </div>
+
           <div className="box-right">
             <h3>Context</h3>
-            <p>
+            <p className="schema-context-text">
               <code>
                 <div><pre>{JSON.stringify(require('../../schema/schema-mapping'), null, 2)}</pre></div>
               </code>
