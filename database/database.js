@@ -181,7 +181,7 @@ class Database {
     // returns array of uri
     async getSubjectsByType(type, predicate, inferred = false, page = undefined, query = undefined) {
 
-        await this.loadCoreQueryDataFromDB(type, page, query)
+        await this.loadCoreQueryDataFromDB(type, page, query, inferred)
 
         type = factory.namedNode(type);
 
@@ -356,7 +356,7 @@ class Database {
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = 1, query = undefined) {
+    async loadCoreQueryDataFromDB(type, page = 1, query = undefined, inferred = false) {
         let url = 'mongodb://127.0.0.1:27017';
         const client = await MongoClient.connect(url, { useNewUrlParser: true })
             .catch(err => { console.log(err); });
@@ -368,13 +368,23 @@ class Database {
         try {
             const db = client.db("staple");
             let collection = db.collection('quads');
+            let _type = undefined;
 
             if (query === undefined) {
                 for (let key in this.schemaMapping['@context']) {
                     if (this.schemaMapping['@context'][key] === type) {
-                        query = { _type: key }
+                        _type = key;
                         break;
                     }
+                }
+            }
+
+            if(_type !== undefined){
+                if(inferred){
+                    query = { _inferred: _type }
+                }
+                else{
+                    query = { _type: _type }
                 }
             }
 
@@ -502,7 +512,7 @@ class Database {
                     dbo.collection("quads").insertMany(myobj, function (err, res) {
                         if (err) throw err;
                         console.log("quad inserted");
-                        
+
                     });
                 }
                 db.close();
