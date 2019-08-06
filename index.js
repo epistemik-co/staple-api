@@ -6,17 +6,19 @@ const { makeExecutableSchema } = require('graphql-tools');
 const { graphql } = require('graphql');
 
 const DatabaseInterface = require('./database/Database');
-const schemaString = require('./schema/schema');
+const schemaString = require('./schema/schema2');
 const Resolver = require('./resolvers/resolvers');
 
 const app = express();
-const database = new DatabaseInterface(require('./schema/schema-mapping'));
+const database = new DatabaseInterface(require('./schema/schema-mapping2'));
 
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-const rootResolver = new Resolver(database, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
+const rootResolver = new Resolver(database, Warnings, require('./schema/schema-mapping2')).rootResolver; // Generate Resolvers for graphql
 
-app.use(bodyParser.json({ limit: '4000mb', extended: true }))
-app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
+app.use(bodyParser.json({ limit: '50mb', extended: true }))
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
+app.use(bodyParser.text({ limit: '50mb', extended: true }));
+
 
 function showMemUsage() {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
@@ -55,7 +57,7 @@ app.listen({ port: 4000 }, () =>
 );
 
 // This end-point should create data for qraphql mutation and run it.
-app.post('/api/upload', async (req, res) => { 
+app.post('/api/upload', async (req, res) => {
     var start = new Date().getTime();
     try {
         const todo = req.body;
@@ -81,17 +83,17 @@ app.post('/api/upload', async (req, res) => {
 });
 
 class Staple {
-    constructor(schemaLocation, contextLocation, configLocation){
+    constructor(schemaLocation, contextLocation, configLocation) {
         this.DatabaseInterface = require('./database/Database');
         this.schemaString = require(schemaLocation);//('./schema/schema');
         this.schemaMapping = require(contextLocation);//('schema/schema-mapping');
         this.Resolver = require('./resolvers/resolvers');
-        
+
         this.database = new DatabaseInterface(this.schemaMapping);
-        
+
         this.Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
         this.rootResolver = new Resolver(this.database, this.Warnings, this.schemaMapping).rootResolver; // Generate Resolvers for graphql
-        
+
         this.schema = makeExecutableSchema({
             typeDefs: this.schemaString,
             resolvers: this.rootResolver,
@@ -134,6 +136,26 @@ app.get('/', async (req, res, next) => {
 
     res.send(info)
 })
+
+// This end-point should create data for qraphql mutation and run it.
+app.post('/api/uploadRDF', async (req, res) => {
+
+    try {
+        const todo = req.body;
+        await database.insertRDF(todo);
+        console.log(database.database.size)
+    } catch (error) {
+        return res.status(500).send({
+            success: 'false',
+            message: error
+        })
+    }
+
+    return res.status(201).send({
+        success: 'true',
+        message: 'added successfully'
+    })
+});
 
 
 module.exports = {

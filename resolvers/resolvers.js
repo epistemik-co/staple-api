@@ -27,10 +27,11 @@ class rootResolver {
             this.rootResolver[key] = queryResolvers['Data'][key];
         }
 
-        const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings, schemaMapping);
-        this.rootResolver['Mutation'] = mutationResolvers;
+
+        // const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings, schemaMapping);
+        // this.rootResolver['Mutation'] = mutationResolvers;
         
-        // console.log(this.rootResolver)
+        // console.log(this.rootResolver["Continent"])
 
     }
 }

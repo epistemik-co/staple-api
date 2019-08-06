@@ -8,15 +8,16 @@ handleDataTypeResolver = (tree, object) => {
             newResolverBody['_value'] = async (parent) => { return parent.value }
         }
         else if (propertyName === '_type') {
-            newResolverBody['_type'] = (parent) => { 
-                let types = [parent.datatype.value] 
+            newResolverBody['_type'] = (parent) => {
+
+                let types = [parent.datatype.value]
 
                 types = types.map(x => {
-                   for(let key in  schemaMapping['@context']){
-                       if(schemaMapping['@context'][key] === x)
-                       return key;
-                   }
-                   return ""
+                    for (let key in schemaMapping['@context']) {
+                        if (schemaMapping['@context'][key] === x)
+                            return key;
+                    }
+                    return ""
                 })
 
                 return types;
@@ -44,16 +45,16 @@ handleClassTypeResolver = (tree, object, database) => {
         else if (propertyName === '_type') {
             newResolverBody['_type'] = async (parent, args) => {
                 if (args.inferred) {
-                    return database.getObjectsValueArray((parent), database.stampleDataType)
+                    return await database.getObjectsValueArray((parent), database.stampleDataType)
                 }
                 let types = await database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
 
                 types = types.map(x => {
-                   for(let key in  schemaMapping['@context']){
-                       if(schemaMapping['@context'][key] === x)
-                       return key;
-                   }
-                   return ""
+                    for (let key in schemaMapping['@context']) {
+                        if (schemaMapping['@context'][key] === x)
+                            return key;
+                    }
+                    return ""
                 })
 
                 return types
@@ -69,8 +70,8 @@ handleClassTypeResolver = (tree, object, database) => {
             if (tree[currentObject.name].type === "UnionType") {
                 const name = uri;
                 let constr = (name) => {
-                    return (parent) => {
-                        let data = database.getObjectsValueArray((parent), (name));
+                    return async (parent) => {
+                        let data = await database.getObjectsValueArray((parent), (name));
                         return data;
                     }
                 };
@@ -80,8 +81,9 @@ handleClassTypeResolver = (tree, object, database) => {
             else {
                 const name = uri;
                 let type = currentObject.name;
-                let constr =  (name, isItList, type) => {
-                    return ( async (parent, args) => {
+
+                let constr = (name, isItList, type, objectType) => {
+                    return (async (parent, args) => {
                         if (name === "@reverse") {
                             let data = database.getTriplesByObjectUri(parent);
                             return data;
@@ -92,15 +94,20 @@ handleClassTypeResolver = (tree, object, database) => {
                         }
 
                         if (isItList) {
-                            await database.loadChildObjectsFromDB((parent), (name), type)
-                            return database.getObjectsValueArray((parent), (name));
+                            // await database.loadChildObjectsFromDB((parent), (name), type)
+                            if (objectType === "http://schema.org/DataType") {
+                                return await database.getObjectsValueArray((parent), (name), true);
+                            }
+                            else {
+                                return await database.getObjectsValueArray((parent), (name), false);
+                            }
                         }
                         else {
                             return database.getSingleLiteral((parent), (name));
                         }
                     })
                 };
-                newResolverBody[propertyName] = constr(name, isItList, type);
+                newResolverBody[propertyName] = constr(name, isItList, type, tree[currentObject.name].type);
             }
         }
     }
@@ -110,16 +117,45 @@ handleUnionTypeResolver = (tree, object, database) => {
     let newResolverBody = {}
 
     let constr = (name) => {
-        return (parent) => {
+        return async (parent) => {
+
             let typesOfObject = tree[name].values.map(value => {
                 let uriToName = {};
                 uriToName[schemaMapping["@context"][value]] = value;
+
                 return uriToName;
             })
 
-            const typeOfObject = database.getObjectsValueArray(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")[0];
-            typesOfObject = typesOfObject.filter(x => x[typeOfObject] !== undefined)[0]
-            return typesOfObject[typeOfObject];
+            let typeOfInspectedObject = await database.getObjectsValueArray(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
+            typeOfInspectedObject = typeOfInspectedObject[0];
+
+            let searchedTypes = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0];
+
+            // Could not find exact type
+            if (searchedTypes === undefined) {
+                //look for infered types
+                let inferedTypes = [];
+                let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === typeOfInspectedObject });
+                for (let key in data) {
+                    let uris = data[key]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
+                    for (let x in uris) {
+                        inferedTypes.push(uris[x]['@id']);
+                    }
+
+                }
+
+                for (let key in inferedTypes) {
+                    for (let i in typesOfObject) {
+                        for (key2 in typesOfObject[i]) {
+                            if (key2 === inferedTypes[key]) {
+                                return typesOfObject[i][key2]
+                            }
+                        }
+                    }
+                }
+            }
+            typesOfObject = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0]
+            return typesOfObject[typeOfInspectedObject];
         };
 
     };
@@ -172,7 +208,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let constr = (uri) => {
                 return async (parent, args) => {
                     let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
-                    data = database.pages[args.page];
+                    // data = database.pages[args.page];
                     return data;
                 }
             };
@@ -188,6 +224,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         }
         else if (tree[object].type === "EnumType") {
             //....
+
         }
         else if (tree[object].type === "Reverse") {
             let newResolver = tree[object].name;
@@ -199,8 +236,8 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
                 let data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred, args.page, {});
-                data = database.pages[args.page];
-                data = data.map((id) => { return { '_id': id, '_type': database.getObjectsValueArray(id, database.stampleDataType) } });
+                // data = database.pages[args.page];
+                data = data.map(async (id) => { return { '_id': id, '_type': await database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;
             }
         }

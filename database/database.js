@@ -86,7 +86,10 @@ class Database {
     }
 
     // Array of uri
-    async getObjectsValueArray(sub, pred) {
+    async getObjectsValueArray(sub, pred, expectLiterals = false) {
+        // console.log("getObjectsValueArray looking for :")
+        // console.log(sub)
+        // console.log(pred)
 
         sub = factory.namedNode(sub);
         pred = factory.namedNode(pred);
@@ -96,9 +99,17 @@ class Database {
         var itr = temp.quads();
         var x = itr.next();
         while (!x.done) {
-            data.push(x.value.object.value);
+            if(expectLiterals){
+                data.push(x.value.object);
+            }
+            else{
+                data.push(x.value.object.value);
+            }
             x = itr.next();
         }
+        // console.log("Found:")
+        // console.log(data)
+        // console.log(" ")
         return data;
     };
 
@@ -181,8 +192,7 @@ class Database {
     // returns array of uri
     async getSubjectsByType(type, predicate, inferred = false, page = undefined, query = undefined) {
 
-        await this.loadCoreQueryDataFromDB(type, page, query, inferred)
-
+        //await this.loadCoreQueryDataFromDB(type, page, query, inferred)
         type = factory.namedNode(type);
 
         if (inferred) {
@@ -224,9 +234,9 @@ class Database {
     insertRDFPromise(tree, ID, rdf) {
         return new Promise((resolve, reject) => {
             let data = (y_quad) => {
-                if (y_quad.subject.value === ID) {
+                if (y_quad.subject.value === ID || ID === undefined) {
                     y_quad.graph = factory.namedNode(null);
-
+                    
                     // add inverses 
                     let inverse = this.schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
                     inverse = inverse[0]
