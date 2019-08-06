@@ -144,6 +144,7 @@ app.post('/api/uploadRDF', async (req, res) => {
         const todo = req.body;
         await database.insertRDF(todo);
         console.log(database.database.size)
+        console.log(await database.getFlatJson())
     } catch (error) {
         return res.status(500).send({
             success: 'false',

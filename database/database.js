@@ -85,6 +85,15 @@ class Database {
         return removed;
     }
 
+    findContextName(uri) {
+        for (let key in this.schemaMapping["@context"]) {
+            if (this.schemaMapping["@context"][key] === uri) {
+                return key;
+            }
+        }
+        return uri;
+    }
+
     // Array of uri
     async getObjectsValueArray(sub, pred, expectLiterals = false) {
         // console.log("getObjectsValueArray looking for :")
@@ -99,10 +108,10 @@ class Database {
         var itr = temp.quads();
         var x = itr.next();
         while (!x.done) {
-            if(expectLiterals){
+            if (expectLiterals) {
                 data.push(x.value.object);
             }
-            else{
+            else {
                 data.push(x.value.object.value);
             }
             x = itr.next();
@@ -236,7 +245,7 @@ class Database {
             let data = (y_quad) => {
                 if (y_quad.subject.value === ID || ID === undefined) {
                     y_quad.graph = factory.namedNode(null);
-                    
+
                     // add inverses 
                     let inverse = this.schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
                     inverse = inverse[0]
@@ -389,11 +398,11 @@ class Database {
                 }
             }
 
-            if(_type !== undefined){
-                if(inferred){
+            if (_type !== undefined) {
+                if (inferred) {
                     query = { _inferred: _type }
                 }
-                else{
+                else {
                     query = { _type: _type }
                 }
             }
@@ -427,108 +436,120 @@ class Database {
 
     }
 
-    mongodbAdd() {
+    mongodbAddOrUpdate(flatJson) {
         MongoClient.connect('mongodb://127.0.0.1:27017', async function (err, db) {
             if (err) {
                 throw err;
             } else {
                 var dbo = db.db("staple");
-                for (let i = 8; i < 1000; i++) {
-                    var myobj = [{
-                        "_id": "http://data/bluesB" + i,
-                        "_type": "Organization",
-                        "_inferred": [
-                            "Organization",
-                            "Thing"
-                        ],
-                        "employee": [
-                            {
-                                "_id": "http://data/elwoodB" + i
-                            },
-                            {
-                                "_id": "http://data/jakeB" + i
-                            }
-                        ],
-                        "legalName": {
-                            "_type": "Text",
-                            "_value": "Blues Brothers"
-                        },
-                        "noOfEmployees": {
-                            "_type": "Integer",
-                            "_value": "2"
-                        },
-                        "_reverse": {
-                            "affiliation": [
-                                {
-                                    "_id": "http://data/elwoodB" + i
-                                },
-                                {
-                                    "_id": "http://data/jakeB" + i
-                                }
-                            ]
-                        }
-                    },
+                let collection = dbo.collection('quadsTEST');
 
-                    {
-                        "_id": "http://data/elwoodB" + i,
-                        "_type": "Person",
-                        "_inferred": [
-                            "Person",
-                            "Thing"
-                        ],
-                        "name": {
-                            "_type": "Text",
-                            "_value": "Blues"
-                        },
-                        "_reverse": {
-                            "employee": [
-                                {
-                                    "_id": "http://data/bluesB" + i
-                                }
-                            ]
-                        },
-                        "affiliation": [
-                            {
-                                "_id": "http://data/bluesB" + i
-                            }
-                        ]
-                    },
+                let result = await collection.find({ "_id": flatJson['_id'] }).toArray();
 
-                    {
-                        "_id": "http://data/jakeB" + i,
-                        "_type": "Person",
-                        "_inferred": [
-                            "Person",
-                            "Thing"
-                        ],
-                        "name": {
-                            "_type": "Text",
-                            "_value": "Brothers"
-                        },
-                        "_reverse": {
-                            "employee": [
-                                {
-                                    "_id": "http://data/bluesB" + i
-                                }
-                            ]
-                        },
-                        "affiliation": [
-                            {
-                                "_id": "http://data/bluesB" + i
-                            }
-                        ]
-                    }
-                    ]
-                    dbo.collection("quads").insertMany(myobj, function (err, res) {
+                if (result[0] !== undefined) {
+                    collection.update({ _id: flatJson['_id'] }, flatJson);
+                }
+                else {
+                    dbo.collection("quadsTEST").insertOne(flatJson, function (err, res) {
                         if (err) throw err;
                         console.log("quad inserted");
-
                     });
                 }
                 db.close();
-
             }
         })
+    }
+
+    async getFlatJson() {
+        // find all objects
+        let ids = await this.getSubjectsByType("http://schema.org/Thing", this.stampleDataType);
+
+        // CHECK IF OBJECT ALREADY IN DATABASE IF SO, THEN UPDATE
+
+        for (let i in ids) {
+            let id = ids[i]
+            let allRelatedQuads = []
+
+            var temp = this.database.match(factory.namedNode(id), null, null);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                allRelatedQuads.push(x.value);
+                x = itr.next();
+            }
+
+            temp = this.database.match(null, null, factory.namedNode(id));
+            itr = temp.quads();
+            x = itr.next();
+            while (!x.done) {
+                allRelatedQuads.push(x.value);
+                x = itr.next();
+            }
+
+            // console.log(allRelatedQuads)
+            //create json
+            let newJson = {
+                "_id": id,
+                "_type": undefined,
+                "_inferred": [],
+                "_reverse": {},
+            }
+
+            for (let quad in allRelatedQuads) {
+                quad = allRelatedQuads[quad]
+                // console.log(quad)
+                if (quad.subject.value === id) {
+                    if (quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
+                        let contextKey = this.findContextName(quad.object.value)
+                        newJson["_type"] = contextKey;
+                    }
+                    else if (quad.object.datatype !== undefined) { //Literal
+                        //find key 
+                        let fieldKey = quad.predicate.value;
+                        if (quad.predicate.value === this.schemaMapping["@context"][quad.predicate.value.split("http://schema.org/")[1]]) {
+                            fieldKey = quad.predicate.value.split("http://schema.org/")[1];
+                        }
+                        else {
+                            fieldKey = this.findContextName(quad.predicate.value);
+                        }
+                        if (newJson[fieldKey] === undefined) {
+                            newJson[fieldKey] = []
+                        }
+
+                        newJson[fieldKey].push({
+                            _value: quad.object.value,
+                            _type: this.findContextName(quad.object.datatype.value),
+                        });
+                    }
+                    else if (quad.predicate.value === "http://staple-api.org/datamodel/type") { // _inferred
+                        let contextKey = this.findContextName(quad.object.value);
+                        newJson['_inferred'].push(contextKey)
+                    }
+                    else { // object
+                        let contextKey = this.findContextName(quad.predicate.value);
+
+                        if (newJson[contextKey] === undefined) {
+                            newJson[contextKey] = []
+                        }
+
+                        newJson[contextKey].push({ _id: quad.object.value });
+                    }
+                }
+
+                if (quad.object.value === id) { // _reverse
+                    let contextKey = this.findContextName(quad.predicate.value);
+
+                    if (newJson['_reverse'][contextKey] === undefined) {
+                        newJson['_reverse'][contextKey] = []
+                    }
+
+                    newJson['_reverse'][contextKey].push({ _id: quad.subject.value })
+                }
+            }
+            //add to mongo db
+            this.mongodbAddOrUpdate(newJson)
+        }
+        return "DONE"
     }
 }
 
