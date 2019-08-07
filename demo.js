@@ -9,9 +9,9 @@ const Resolver = require('./resolvers/resolvers');
 
 class Demo {
     constructor() {
-        const database = new DatabaseInterface(require('./schema/schema-mapping2'));
+        this.database = new DatabaseInterface(require('./schema/schema-mapping2'));
         const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-        const rootResolver = new Resolver(database, Warnings, require('./schema/schema-mapping2')).rootResolver; // Generate Resolvers for graphql
+        const rootResolver = new Resolver(this.database, Warnings, require('./schema/schema-mapping2')).rootResolver; // Generate Resolvers for graphql
         const schema = makeExecutableSchema({
             typeDefs: schemaString,
             resolvers: rootResolver,
@@ -57,7 +57,7 @@ class Demo {
                 const todo = req.body;
                 const rdf = await jsonld.toRDF(todo, { format: 'application/n-quads' });
                 console.log(rdf)
-                database.insertRDF(rdf);
+                this.database.insertRDF(rdf);
 
             } catch (error) {
                 return res.status(500).send({
@@ -76,16 +76,13 @@ class Demo {
             })
         });
 
-
-
         // This end-point should create data for qraphql mutation and run it.
         app.post('/api/uploadRDF', async (req, res) => {
-
             try {
                 const todo = req.body;
-                await database.insertRDF(todo);
-                console.log(database.database.size)
-                // console.log(await database.getFlatJson())
+                await this.database.insertRDF(todo);
+                console.log(this.database.database.size)
+                //console.log(await this.database.getFlatJson())
             } catch (error) {
                 return res.status(500).send({
                     success: 'false',

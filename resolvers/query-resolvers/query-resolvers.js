@@ -129,10 +129,6 @@ handleUnionTypeResolver = (tree, object, database) => {
     let constr = (name) => {
         return async (parent) => {
 
-            console.log("handleUnionTypeResolver")
-            console.log(parent)
-            console.log(name)
-
             let typesOfObject = tree[name].values.map(value => {
                 let uriToName = {};
                 uriToName[schemaMapping["@context"][value]] = value;
