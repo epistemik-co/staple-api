@@ -71,7 +71,12 @@ handleClassTypeResolver = (tree, object, database) => {
                 const name = uri;
                 let constr = (name) => {
                     return async (parent) => {
+                        console.log("NEED DATA")
+                        console.log(parent)
+                        console.log(name)
+                        // await database.loadChildObjectsFromDB((parent), (name), type)
                         let data = await database.getObjectsValueArray((parent), (name));
+                        console.log(data)
                         return data;
                     }
                 };
@@ -85,7 +90,11 @@ handleClassTypeResolver = (tree, object, database) => {
                 let constr = (name, isItList, type, objectType) => {
                     return (async (parent, args) => {
                         if (name === "@reverse") {
+                            console.log("LADUJE REVERSE :")
+                            console.log(parent)
                             let data = database.getTriplesByObjectUri(parent);
+                            console.log(data)
+                            console.log("\n\n")
                             return data;
                         }
 
@@ -94,7 +103,8 @@ handleClassTypeResolver = (tree, object, database) => {
                         }
 
                         if (isItList) {
-                            // await database.loadChildObjectsFromDB((parent), (name), type)
+                            console.log("LOAD CHILDREN")
+                            await database.loadChildObjectsFromDB((parent), (name), type)
                             if (objectType === "http://schema.org/DataType") {
                                 return await database.getObjectsValueArray((parent), (name), true);
                             }
@@ -118,6 +128,10 @@ handleUnionTypeResolver = (tree, object, database) => {
 
     let constr = (name) => {
         return async (parent) => {
+
+            console.log("handleUnionTypeResolver")
+            console.log(parent)
+            console.log(name)
 
             let typesOfObject = tree[name].values.map(value => {
                 let uriToName = {};
@@ -208,7 +222,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let constr = (uri) => {
                 return async (parent, args) => {
                     let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
-                    // data = database.pages[args.page];
+                    data = database.pages[args.page];
                     return data;
                 }
             };
@@ -236,7 +250,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
                 let data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred, args.page, {});
-                // data = database.pages[args.page];
+                data = database.pages[args.page];
                 data = data.map(async (id) => { return { '_id': id, '_type': await database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;
             }

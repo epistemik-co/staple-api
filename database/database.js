@@ -201,7 +201,13 @@ class Database {
     // returns array of uri
     async getSubjectsByType(type, predicate, inferred = false, page = undefined, query = undefined) {
 
-        //await this.loadCoreQueryDataFromDB(type, page, query, inferred)
+
+        console.log("Before")
+        console.log(this.database.size)
+        console.log(`Asking for type ${type} page ${page}`)
+        await this.loadCoreQueryDataFromDB(type, page, query, inferred)
+        console.log("After")
+        console.log(this.database.size)
         type = factory.namedNode(type);
 
         if (inferred) {
@@ -247,7 +253,13 @@ class Database {
                     y_quad.graph = factory.namedNode(null);
 
                     // add inverses 
+                    console.log("SZUKAM ID ")
+                    console.log(y_quad.object.value)
                     let inverse = this.schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
+                    if(ID === "http://staple-api.org/data/2d747982728e3641c1a24aed9eec7e330b2db2"){
+                        console.log("inverse")    
+                        console.log(inverse)
+                    }
                     inverse = inverse[0]
                     if (inverse !== undefined) {
                         inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
@@ -342,8 +354,9 @@ class Database {
         }
 
         try {
+            console.log("START CONNECTION")
             const db = client.db("staple");
-            let collection = db.collection('quads');
+            let collection = db.collection('quadsTEST');
             let query = { _type: 'Thing' }
 
             if (type != undefined) {
@@ -358,7 +371,12 @@ class Database {
                 }
             }
 
+
+            console.log(`finall query['_reverse']: `)
+            console.log(query['_reverse'])
+
             let result = await collection.find(query).toArray();
+
             result = result.map(x => {
                 x['@context'] = this.schemaMapping['@context'];
                 return x;
@@ -386,7 +404,7 @@ class Database {
 
         try {
             const db = client.db("staple");
-            let collection = db.collection('quads');
+            let collection = db.collection('quadsTEST');
             let _type = undefined;
 
             if (query === undefined) {
@@ -430,7 +448,6 @@ class Database {
         } catch (err) {
             console.log(err);
         } finally {
-
             client.close();
         }
 
