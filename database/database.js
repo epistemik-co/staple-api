@@ -249,17 +249,21 @@ class Database {
     insertRDFPromise(tree, ID, rdf) {
         return new Promise((resolve, reject) => {
             let data = (y_quad) => {
-                if (y_quad.subject.value === ID || ID === undefined) {
+                if(y_quad.subject.value ===  ID){
+                    console.log(y_quad.subject.value + " === " + ID)
+                    console.log(`predicate ${y_quad.predicate.value}`)
+                    console.log(`object ${y_quad.object.value}`)
+
+                }
+                if (y_quad.subject.value ===  ID) {
                     y_quad.graph = factory.namedNode(null);
 
                     // add inverses 
-                    console.log("SZUKAM ID ")
-                    console.log(y_quad.object.value)
                     let inverse = this.schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
-                    if(ID === "http://staple-api.org/data/2d747982728e3641c1a24aed9eec7e330b2db2"){
-                        console.log("inverse")    
-                        console.log(inverse)
-                    }
+                        // console.log("inverse") 
+                        // console.log(y_quad)
+                        // console.log(inverse)
+                        // console.log("\n")
                     inverse = inverse[0]
                     if (inverse !== undefined) {
                         inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
@@ -372,8 +376,8 @@ class Database {
             }
 
 
-            console.log(`finall query['_reverse']: `)
-            console.log(query['_reverse'])
+            // console.log(`finall query['_reverse']: `)
+            // console.log(query['_reverse'])
 
             let result = await collection.find(query).toArray();
 
@@ -443,6 +447,7 @@ class Database {
 
             const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
             for (let obj in result) {
+                console.log(result[obj]['_id'])
                 await this.insertRDF(rdf, result[obj]['_id']);
             }
         } catch (err) {

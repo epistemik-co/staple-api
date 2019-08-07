@@ -90,11 +90,11 @@ handleClassTypeResolver = (tree, object, database) => {
                 let constr = (name, isItList, type, objectType) => {
                     return (async (parent, args) => {
                         if (name === "@reverse") {
-                            console.log("LADUJE REVERSE :")
-                            console.log(parent)
+                            // console.log("LADUJE REVERSE :")
+                            // console.log(parent)
                             let data = database.getTriplesByObjectUri(parent);
-                            console.log(data)
-                            console.log("\n\n")
+                            // console.log(data)
+                            // console.log("\n\n")
                             return data;
                         }
 
@@ -103,7 +103,7 @@ handleClassTypeResolver = (tree, object, database) => {
                         }
 
                         if (isItList) {
-                            console.log("LOAD CHILDREN")
+                            // console.log("LOAD CHILDREN")
                             await database.loadChildObjectsFromDB((parent), (name), type)
                             if (objectType === "http://schema.org/DataType") {
                                 return await database.getObjectsValueArray((parent), (name), true);
