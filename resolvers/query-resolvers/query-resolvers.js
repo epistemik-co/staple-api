@@ -3,14 +3,18 @@ let schemaMapping = undefined; // require('../../schema/schema-mapping');
 handleDataTypeResolver = (tree, object) => {
     let newResolverBody = {}
 
+
     for (var propertyName in tree[object].data) {
         if (propertyName === '_value') {
-            newResolverBody['_value'] = async (parent) => { return parent.value }
+            newResolverBody['_value'] = async (parent) => { if(parent.value === undefined) return parent; return parent.value }
         }
         else if (propertyName === '_type') {
             newResolverBody['_type'] = (parent) => {
 
-                let types = [parent.datatype.value]
+                let types = ["http://schema.org/Text"];
+                if(parent.datatype !== undefined){
+                    types = [parent.datatype.value]
+                }
 
                 types = types.map(x => {
                     for (let key in schemaMapping['@context']) {
@@ -71,12 +75,19 @@ handleClassTypeResolver = (tree, object, database) => {
                 const name = uri;
                 let constr = (name) => {
                     return async (parent) => {
-                        console.log("NEED DATA")
-                        console.log(parent)
-                        console.log(name)
-                        // await database.loadChildObjectsFromDB((parent), (name), type)
+                        
                         let data = await database.getObjectsValueArray((parent), (name));
-                        console.log(data)
+                        await database.loadChildObjectsFromDBForUnion((data), (name), undefined)
+
+                        // console.log(data)
+                        // // if there is no data in object then do not passe it to the uniontype resolver
+                        // for(let item in data){
+                        //     if(database.getTriplesBySubject(data[item]).length === 0){
+                        //         data = data.filter(function(ele){
+                        //             return ele != data[item];
+                        //         });
+                        //     }
+                        // }
                         return data;
                     }
                 };
@@ -104,15 +115,21 @@ handleClassTypeResolver = (tree, object, database) => {
 
                         if (isItList) {
                             // console.log("LOAD CHILDREN")
-                            await database.loadChildObjectsFromDB((parent), (name), type)
                             if (objectType === "http://schema.org/DataType") {
-                                return await database.getObjectsValueArray((parent), (name), true);
+                                // console.log("O TO PYTAM")
+                                // console.log(name)
+                                let data = await database.getObjectsValueArray((parent), (name), true);
+                                // console.log(data)
+                                return data
                             }
                             else {
+                                await database.loadChildObjectsFromDB((parent), (name), type)
                                 return await database.getObjectsValueArray((parent), (name), false);
                             }
                         }
                         else {
+
+                            // console.log(parent)
                             return database.getSingleLiteral((parent), (name));
                         }
                     })
@@ -127,7 +144,8 @@ handleUnionTypeResolver = (tree, object, database) => {
     let newResolverBody = {}
 
     let constr = (name) => {
-        return async (parent) => {
+        return async (parent, args, context, info) => {
+            
 
             let typesOfObject = tree[name].values.map(value => {
                 let uriToName = {};
@@ -136,8 +154,10 @@ handleUnionTypeResolver = (tree, object, database) => {
                 return uriToName;
             })
 
+            
             let typeOfInspectedObject = await database.getObjectsValueArray(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
             typeOfInspectedObject = typeOfInspectedObject[0];
+
 
             let searchedTypes = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0];
 
@@ -164,7 +184,18 @@ handleUnionTypeResolver = (tree, object, database) => {
                     }
                 }
             }
-            typesOfObject = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0]
+            typesOfObject = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0];
+            if(typesOfObject === undefined){
+                // console.log(parent)
+                // console.log(typesOfObject)
+                // console.log(typeOfInspectedObject)
+                // try to resolve type ... some dumb shity magic
+                let possibleTypes = name.split('_')
+                if(possibleTypes.includes('Text')){
+                    return "Text"
+                }
+                return possibleTypes[0];
+            }
             return typesOfObject[typeOfInspectedObject];
         };
 
@@ -217,6 +248,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let uri = tree[object]['uri'];
             let constr = (uri) => {
                 return async (parent, args) => {
+
                     let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
                     data = database.pages[args.page];
                     return data;

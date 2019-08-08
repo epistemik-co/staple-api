@@ -1,27 +1,32 @@
-const read_graphy = require('graphy').content.nt.read;
+const read_graphy = require('graphy').content.nq.read;
 const factory = require('@graphy/core.data.factory');
 
-function createReverseContext(schemaMapping){
+function createReverseContext(schemaMapping) {
     schemaMapping['@revContext'] = {};
-    for(let key in schemaMapping['@context']){
+    for (let key in schemaMapping['@context']) {
         schemaMapping['@revContext'][schemaMapping['@context'][key]] = key;
     }
 }
 
-function insertRDFPromise(tree, ID, rdf, schemaMapping) {
+function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false) {
     return new Promise((resolve, reject) => {
         let data = (y_quad) => {
-            if (y_quad.subject.value ===  ID || ID === undefined) {
+            if (y_quad.subject.value === ID || ID === undefined) {
+                if (tryToFix) {
+                    y_quad = quadFix(y_quad)
+                }
                 y_quad.graph = factory.namedNode(null);
 
                 // add inverses 
                 let inverse = schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
                 inverse = inverse[0]
                 if (inverse !== undefined) {
-                    inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
-                        let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
-                        tree.add(quad);
-                    })
+                    if (inverse['http://schema.org/inverseOf'] !== undefined) {
+                        inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
+                            let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
+                            tree.add(quad);
+                        })
+                    }
                 }
 
                 tree.add(y_quad);
@@ -130,7 +135,7 @@ async function getFlatJson(databaseObject) {
 
             if (quad.object.value === id) { // _reverse
                 let contextKey = databaseObject.schemaMapping['@revContext'][quad.predicate.value];
-                if(contextKey === undefined){
+                if (contextKey === undefined) {
                     contextKey = quad.predicate.value;
                 }
 
@@ -142,9 +147,65 @@ async function getFlatJson(databaseObject) {
             }
         }
         //add to mongo db
-        databaseObject.mongodbAddOrUpdate(newJson)
+        databaseObject.flatJsons.push(newJson)
     }
+    databaseObject.mongodbAddOrUpdate()
     return "DONE"
+}
+
+function quadFix(quad) {
+    // stage 1 - blank node 
+    if (quad.subject.value.startsWith("genid")) {
+        let value = "http://staple-api.org/data/" + quad.subject.value.substring(5, quad.subject.value.length);
+        quad.subject = factory.namedNode(value)
+    }
+    if (quad.object.value.startsWith("genid")) {
+        let value = "http://staple-api.org/data/" + quad.object.value.substring(5, quad.object.value.length);
+        quad.object = factory.namedNode(value)
+    }
+    // stage 2 - unicode back to ascii
+    // it is working just fine for me
+
+    // stage 3 - after this validation 
+
+    // stage 4 - Fix http://schema.org/DataType
+    let typesURI = [
+        "http://schema.org/Boolean",
+        "http://schema.org/Date",
+        "http://schema.org/DateTime",
+        "http://schema.org/Float",
+        "http://schema.org/Integer",
+        "http://schema.org/Number",
+        "http://schema.org/Text",
+        "http://schema.org/Time",
+        "http://schema.org/URL",
+    ]
+
+    let typesMap = {
+        "http://www.w3.org/2001/XMLSchema#integer": "http://schema.org/Integer",
+        "http://www.w3.org/2001/XMLSchema#double": "http://schema.org/Float",
+        "http://www.w3.org/2001/XMLSchema#boolean": "http://schema.org/Boolean",
+        "http://www.w3.org/2001/XMLSchema#string": "http://schema.org/Text",
+    }
+
+
+    if (quad.object.datatype !== undefined) {
+
+        if (!typesURI.includes(quad.object.datatype.value)) {
+            if (typesMap[quad.object.datatype.value] !== undefined) {
+                quad.object.datatype.value = typesMap[quad.object.datatype.value];
+            }
+            else {
+                console.log(quad.object.datatype.value)
+                quad.object.datatype.value = "http://schema.org/Text";
+            }
+        }
+    }
+
+    // stage 5 - Remove the 4th element in the quad .
+    quad.graph = factory.namedNode(null);
+
+    return quad;
 }
 
 module.exports = {

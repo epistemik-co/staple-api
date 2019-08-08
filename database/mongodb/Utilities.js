@@ -1,9 +1,51 @@
 const MongoClient = require('mongodb').MongoClient;
 const jsonld = require('jsonld');
 
-const url = 'mongodb://127.0.0.1:27017';
-const dbName = 'staple'
-const collectionName = 'quadsTEST'
+const url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";
+const dbName = 'staple2'
+const collectionName = 'Buildings2'
+
+
+
+// Based on reverse property
+async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
+    // console.log("Someone wants data about ")
+    // console.log(sub)
+    // console.log(pred)
+    // console.log(type)
+
+    const client = await MongoClient.connect(url, { useNewUrlParser: true })
+        .catch(err => { console.log(err); });
+
+    if (!client) {
+        return;
+    }
+
+    try {
+        const db = client.db(dbName);
+        let collection = db.collection(collectionName);
+
+        let query = { "_id": { "$in": sub } }
+
+        let result = await collection.find(query).toArray();
+
+        result = result.map(x => {
+            x['@context'] = database.schemaMapping['@context'];
+            return x;
+        })
+
+        const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
+        for (let obj in result) {
+            await database.insertRDF(rdf, result[obj]['_id']);
+        }
+
+
+    } catch (err) {
+        console.log(err);
+    } finally {
+        client.close();
+    }
+}
 
 // Based on reverse property
 async function loadChildObjectsFromDB(database, sub, pred, type) {
@@ -23,17 +65,9 @@ async function loadChildObjectsFromDB(database, sub, pred, type) {
             query = { _type: type }
         }
 
-        // for (let key in database.schemaMapping['@context']) {
-        //     if (database.schemaMapping['@context'][key] === pred) {
-        //         query['_reverse'] = {};
-        //         query['_reverse'][key] = [{ '_id': sub }]
-        //         break;
-        //     }
-        // }
-
         let predicateContext = database.schemaMapping["@graph"].filter((x) => { return x['@id'] === pred })[0];
-        if (predicateContext !== undefined ) {
-            if(predicateContext["http://schema.org/inverseOf"].length > 0){
+        if (predicateContext !== undefined) {
+            if (predicateContext["http://schema.org/inverseOf"].length > 0) {
                 query['_reverse'] = {};
                 query['_reverse'][database.schemaMapping['@revContext'][pred]] = [{ '_id': sub }]
             }
@@ -72,7 +106,7 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
 
         if (query === undefined) {
             _type = database.schemaMapping['@revContext'][type];
-            console.log(_type)
+            // console.log(_type)
         }
 
         if (_type !== undefined) {
@@ -112,7 +146,7 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
 
 }
 
-function mongodbAddOrUpdate(flatJson) {
+async function mongodbAddOrUpdate(flatJsons) {
     MongoClient.connect(url, async function (err, db) {
         if (err) {
             throw err;
@@ -120,16 +154,21 @@ function mongodbAddOrUpdate(flatJson) {
             var dbo = db.db(dbName);
             let collection = dbo.collection(collectionName);
 
-            let result = await collection.find({ "_id": flatJson['_id'] }).toArray();
+            // let result = await collection.find({ "_id": flatJson['_id'] }).toArray();
 
-            if (result[0] !== undefined) {
-                collection.update({ _id: flatJson['_id'] }, flatJson);
-            }
-            else {
-                collection.insertOne(flatJson, function (err, res) {
-                    if (err) throw err;
-                });
-            }
+            // if (result[0] !== undefined) {
+            //     collection.update({ _id: flatJson['_id'] }, flatJson);
+            // }
+            // else {
+            //     collection.insertOne(flatJson, function (err, res) {
+            //         if (err) throw err;
+            //     });
+            // }
+            collection.insertMany(flatJsons, function (err, res) {
+                console.log("dodane do bazy")
+                console.log(err)
+                if (err) throw err;
+            });
             db.close();
         }
     })
@@ -139,4 +178,5 @@ module.exports = {
     loadChildObjectsFromDB,
     loadCoreQueryDataFromDB,
     mongodbAddOrUpdate,
+    loadChildObjectsFromDBForUnion,
 };

@@ -29,6 +29,16 @@ class Staple {
     }
 }
 
+function showMemUsage() {
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    return Math.round(used * 100) / 100;
+}
+
+// setInterval(showMemUsage, 1000); //time is in ms
+
+
+
 module.exports = {
     Staple
 };

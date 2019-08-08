@@ -15,6 +15,15 @@ class Database {
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
         this.pages = [];
+        this.flatJsons = [];
+        // const MongoClient = require(‘mongodb’).MongoClient;
+        // const uri = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";
+        // this.client = new MongoClient(uri, { useNewUrlParser: true });
+        // client.connect(err => {
+        // const collection = client.db("test").collection("devices");
+        // // perform actions on the collection object
+        // client.close();
+        // });
     }
 
     // ---
@@ -247,6 +256,26 @@ class Database {
         }
     }
 
+    countObjects(){
+        let type = "http://schema.org/Thing";
+        let predicate = this.stampleDataType;
+
+        type = factory.namedNode(type);
+        predicate = factory.namedNode(predicate);
+
+
+        const temp = this.database.match(null, predicate, type);
+        let counter = 0;
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            counter = counter + 1;
+            x = itr.next();
+        }
+        console.log(counter)
+        return counter;
+    }
+
     async getFlatJson() {
         return await databaseUtilities.getFlatJson(this);
     }
@@ -254,17 +283,23 @@ class Database {
     async loadChildObjectsFromDB(sub, pred, type) {
         await mongodbUtilities.loadChildObjectsFromDB(this, sub, pred, type)
     }
+    
+
+    async loadChildObjectsFromDBForUnion(sub, pred, type) {
+        await mongodbUtilities.loadChildObjectsFromDBForUnion(this, sub, pred, type)
+    }
 
     async loadCoreQueryDataFromDB(type, page = 1, query = undefined, inferred = false) {
         await mongodbUtilities.loadCoreQueryDataFromDB(this, type, page, query, inferred);
     }
 
-    mongodbAddOrUpdate(flatJson) {
-        mongodbUtilities.mongodbAddOrUpdate(flatJson);
+    async mongodbAddOrUpdate() {
+        mongodbUtilities.mongodbAddOrUpdate(this.flatJsons);
+        this.flatJsons = [];
     }
 
-    async insertRDF(rdf, ID) {
-        await databaseUtilities.insertRDFPromise(this.database, ID, rdf, this.schemaMapping);
+    async insertRDF(rdf, ID, tryToFix = false) {
+        await databaseUtilities.insertRDFPromise(this.database, ID, rdf, this.schemaMapping, tryToFix);
         this.updateInference();
     }
 
