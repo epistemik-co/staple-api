@@ -82,7 +82,7 @@ class Demo {
                 const todo = req.body;
                 await this.database.insertRDF(todo, undefined, true);
                 console.log(this.database.database.size)
-                console.log(await this.database.getFlatJson())
+                // console.log(await this.database.getFlatJson())
                 this.database.countObjects()
             } catch (error) {
                 return res.status(500).send({

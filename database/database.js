@@ -185,7 +185,7 @@ class Database {
 
     // returns array of uri - Core Query
     async getSubjectsByType(type, predicate, inferred = false, page = undefined, query = undefined) {
-        await this.loadCoreQueryDataFromDB(type, page, query, inferred);
+        // await this.loadCoreQueryDataFromDB(type, page, query, inferred);
 
         type = factory.namedNode(type);
 
@@ -205,6 +205,7 @@ class Database {
             x = itr.next();
         }
 
+        console.log(data)
         return data;
     };
 
@@ -256,7 +257,7 @@ class Database {
         }
     }
 
-    countObjects(){
+    countObjects() {
         let type = "http://schema.org/Thing";
         let predicate = this.stampleDataType;
 
@@ -283,9 +284,9 @@ class Database {
     async loadChildObjectsFromDB(sub, pred, type) {
         await mongodbUtilities.loadChildObjectsFromDB(this, sub, pred, type)
     }
-    
 
-    async loadChildObjectsFromDBForUnion(sub, pred, type) {
+
+    async loadChildObjectsFromDBForUnion(sub, pred = undefined, type = undefined) {
         await mongodbUtilities.loadChildObjectsFromDBForUnion(this, sub, pred, type)
     }
 
@@ -306,6 +307,168 @@ class Database {
     async removeRDF(rdf, ID) {
         await databaseUtilities.removeRDFPromise(this.database, ID, rdf);
         this.updateInference();
+    }
+
+    async loadQueryData(queryInfo, uri, page, inferred, tree) {
+        let coreIds = []
+        let resolverName = this.schemaMapping["@revContext"][uri];
+        if (resolverName === undefined) {
+            return;
+        }
+        //step 1 
+        let variables = queryInfo['variableDefinitions'];
+        // console.log(variables)
+        //step 2 
+        // console.log(page)
+        //step 3 find core object
+        let coreSelectionSet = queryInfo['selectionSet'];
+        for (let coreSelection in coreSelectionSet['selections']) {
+            if (resolverName == coreSelectionSet['selections'][coreSelection].name.value) {
+
+                await this.loadCoreQueryDataFromDB(uri, page, undefined, inferred);
+                coreIds = await this.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
+                // console.log(coreIds)
+
+                this.searchForDataRecursively(coreSelectionSet['selections'][coreSelection]['selectionSet'], coreIds, tree, resolverName)
+
+                // let selectionSet = coreSelection['selectionSet']
+                // selectionSet['selections'].forEach(async selection => {
+                //     if(resolverName == selection.name.value){
+                //         this.find
+
+                //     }
+                // })
+            }
+        }
+
+        // for(let selection in selectionSet['selections']){
+        //     console.log(selection)
+        // }
+
+        return coreIds;
+
+    }
+
+    async searchForDataRecursively(selectionSet, uri, tree, lastName = undefined) { // what if got _reverse ?
+        let name = undefined;
+        await selectionSet['selections'].forEach(async selection => {
+            if (selection['selectionSet'] !== undefined) {
+                // object or union
+                let isFragment = false;
+                if (selection.kind === 'InlineFragment') {
+                    isFragment = true;
+                }
+                if (selection.name !== undefined && selection.kind === "Field") {
+                    name = selection.name.value;
+
+                    console.log(name)
+                    // find in tree what this field returns...
+                    let type = {}
+                    if(tree[lastName] !== undefined) {
+
+                        let node = tree[lastName]["data"][name];
+                        if(node.kind === "ListType"){
+                            node = node.data;
+                        }
+                        type = this.findTypeInSchemaMappingGraph(node.name);
+                    }
+
+                    if (type !== undefined) {
+                        
+                        if (type['@type'] === "http://www.w3.org/2000/01/rdf-schema#Class" ) {
+                            console.log("CLASS NEED DATA\n")
+                            // loadChildObjectsFromDB uri + obecna nazwa predykatu do reverse + typ
+                            let newUris = []
+                            // let pred = 
+                            let type = this.schemaMapping["@context"][name];
+                            
+                            if (type === undefined) {
+                                return;
+                            }
+                            // get all uris
+                            for (let id in uri) {
+                                let data = await this.getObjectsValueArray(uri[id], type);
+                                for (let x in data) {
+                                    var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                                    if (!pattern.test(data[x])) {
+                                        continue;
+                                    }
+                                    newUris.push(data[x]);
+                                }
+                            }
+
+                            await this.loadChildObjectsFromDB(newUris, name, node.name) // need object return type ...
+                            uri = newUris; // nw czy to dobrze
+                        }
+                        else {
+                            console.log("NOT CLASS\n")
+
+                            if (selection['selectionSet']['selections'].filter(x => x.kind === "InlineFragment").length > 0) {
+                                console.log("UNION BETTER SEARCH FOR URIS")
+                                let newUris = []
+                                let type = this.schemaMapping["@context"][name];
+                                if (type === undefined) {
+                                    return;
+                                }
+                                // get all uris
+                                for (let id in uri) {
+                                    let data = await this.getObjectsValueArray(uri[id], type);
+                                    for (let x in data) {
+                                        var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                                        if (!pattern.test(data[x])) {
+                                            continue;
+                                        }
+                                        newUris.push(data[x]);
+                                    }
+                                }
+                                // console.log(newUris)
+                                // need to get data for all new uris
+                                await this.loadChildObjectsFromDBForUnion(newUris)
+                                uri = newUris; // nw czy to dobrze
+                            }
+                        }
+                    }
+                }
+                else if (isFragment) {
+                    name = selection.typeCondition.name.value;
+                    // let type = this.schemaMapping["@context"][lastName];
+                    // if (type === undefined) {
+                    //     return;
+                    // }
+                    // // dla uri znajdz wszystkie elementy z unii ktore maja id (uri) zbierz do kupy i odpytaj o obiekty
+                    // let newUris = []
+                    // for(let id in uri){
+                    //     let data = await this.getObjectsValueArray(uri[id], type)
+                    //     // await data.forEach(async x => await newUris.push(x));
+                    //     for(let x in data){
+                    //         newUris.push(data[x]);
+                    //     }
+                    //     // console.log(id)
+                    //     // console.log(type)
+                    //     // console.log(data)
+                    //     // console.log(newUris)
+                    // }
+                    // // console.log("\nCHCE POBRAC")
+                    // // console.log(newUris)
+                }
+
+
+                this.searchForDataRecursively(selection['selectionSet'], uri, name)
+            }
+        })
+
+    }
+
+
+    findTypeInSchemaMappingGraph(name) {
+
+        let uri = this.schemaMapping["@context"][name];
+        if (uri === undefined) {
+            return undefined;
+        }
+
+        let filtered = this.schemaMapping["@graph"].filter(x => x['@id'] === uri)[0]
+        return filtered
     }
 }
 

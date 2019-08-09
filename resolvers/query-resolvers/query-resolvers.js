@@ -1,4 +1,6 @@
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
+const qpl = require("graphql-tag")
+const util = require('util')
 
 handleDataTypeResolver = (tree, object) => {
     let newResolverBody = {}
@@ -77,17 +79,11 @@ handleClassTypeResolver = (tree, object, database) => {
                     return async (parent) => {
                         
                         let data = await database.getObjectsValueArray((parent), (name));
-                        await database.loadChildObjectsFromDBForUnion((data), (name), undefined)
-
+                        // console.log("\n DANE DO UNII SA Z:")
                         // console.log(data)
-                        // // if there is no data in object then do not passe it to the uniontype resolver
-                        // for(let item in data){
-                        //     if(database.getTriplesBySubject(data[item]).length === 0){
-                        //         data = data.filter(function(ele){
-                        //             return ele != data[item];
-                        //         });
-                        //     }
-                        // }
+                        // console.log(name)
+                        // await database.loadChildObjectsFromDBForUnion((data), (name), undefined)
+
                         return data;
                     }
                 };
@@ -123,7 +119,7 @@ handleClassTypeResolver = (tree, object, database) => {
                                 return data
                             }
                             else {
-                                await database.loadChildObjectsFromDB((parent), (name), type)
+                                // await database.loadChildObjectsFromDB((parent), (name), type)
                                 return await database.getObjectsValueArray((parent), (name), false);
                             }
                         }
@@ -247,9 +243,11 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             // Core Query
             let uri = tree[object]['uri'];
             let constr = (uri) => {
-                return async (parent, args) => {
-
-                    let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
+                return async (parent, args, context, info) => {
+                    console.log(util.inspect(info['operation'], false, null, true /* enable colors */))
+                    let data = await database.loadQueryData(info['operation'], uri, args.page, args.inferred, tree)
+                    // console.log("znowu")
+                    // let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
                     data = database.pages[args.page];
                     return data;
                 }

@@ -49,6 +49,10 @@ async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
 
 // Based on reverse property
 async function loadChildObjectsFromDB(database, sub, pred, type) {
+    // console.log("\noadChildObjectsFromDB")
+    // console.log(sub)
+    // console.log(pred)
+    // console.log(type)
     const client = await MongoClient.connect(url, { useNewUrlParser: true })
         .catch(err => { console.log(err); });
 

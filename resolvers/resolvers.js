@@ -31,7 +31,7 @@ class rootResolver {
         // const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings, schemaMapping);
         // this.rootResolver['Mutation'] = mutationResolvers;
         
-        // console.log(this.rootResolver["Continent"])
+        // console.log(this.rootResolver)
 
     }
 }
