@@ -244,8 +244,8 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let uri = tree[object]['uri'];
             let constr = (uri) => {
                 return async (parent, args, context, info) => {
-                    console.log(util.inspect(info['operation'], false, null, true /* enable colors */))
-                    let data = await database.loadQueryData(info['operation'], uri, args.page, args.inferred, tree)
+                    // console.log(util.inspect(info['operation'], false, null, true /* enable colors */))
+                    let data = await database.loadQueryData(info['operation'], uri, args.page, args.inferred, tree);
                     // console.log("znowu")
                     // let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
                     data = database.pages[args.page];
@@ -275,7 +275,9 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         }
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
-                let data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred, args.page, {});
+                console.log(util.inspect(info['operation'], false, null, true /* enable colors */))
+                let data = await database.loadQueryData(info['operation'], "http://schema.org/Thing", args.page, args.inferred, tree)
+                // data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred, args.page, {});
                 data = database.pages[args.page];
                 data = data.map(async (id) => { return { '_id': id, '_type': await database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;

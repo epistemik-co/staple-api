@@ -11,13 +11,14 @@ function createReverseContext(schemaMapping) {
 function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false) {
     return new Promise((resolve, reject) => {
         let data = (y_quad) => {
-            if (y_quad.subject.value === ID || ID === undefined) {
+            if (ID.includes(y_quad.subject.value) || ID === undefined) {
                 if (tryToFix) {
                     y_quad = quadFix(y_quad)
                 }
                 y_quad.graph = factory.namedNode(null);
 
                 // add inverses 
+                console.log("ADD INVERSES")
                 let inverse = schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
                 inverse = inverse[0]
                 if (inverse !== undefined) {
@@ -25,9 +26,12 @@ function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false) {
                         inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
                             let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
                             tree.add(quad);
+                            console.log(inversePredicate)
+                            console.log(quad)
                         })
                     }
                 }
+                console.log(" \n\n\n\n\n\n\n\n\n\n")
 
                 tree.add(y_quad);
             }

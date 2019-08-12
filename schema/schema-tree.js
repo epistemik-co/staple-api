@@ -1,5 +1,5 @@
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
-const schemaString = require('./schema2');
+const schemaString = require('./schema');
 let schemaMapping = undefined;//require('./schema-mapping');
 
 

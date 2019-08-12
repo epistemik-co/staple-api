@@ -1,9 +1,10 @@
 const MongoClient = require('mongodb').MongoClient;
 const jsonld = require('jsonld');
+const util = require('util')
 
-const url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";
-const dbName = 'staple2'
-const collectionName = 'Buildings2'
+const url = 'mongodb://127.0.0.1:27017' // "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";
+const dbName = 'staple'
+const collectionName = 'quads'
 
 
 
@@ -35,9 +36,9 @@ async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
         })
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-        for (let obj in result) {
-            await database.insertRDF(rdf, result[obj]['_id']);
-        }
+        let ids = result.map( x => x['_id'])
+      
+        await database.insertRDF(rdf, sub);
 
 
     } catch (err) {
@@ -47,12 +48,9 @@ async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
     }
 }
 
+
 // Based on reverse property
 async function loadChildObjectsFromDB(database, sub, pred, type) {
-    // console.log("\noadChildObjectsFromDB")
-    // console.log(sub)
-    // console.log(pred)
-    // console.log(type)
     const client = await MongoClient.connect(url, { useNewUrlParser: true })
         .catch(err => { console.log(err); });
 
@@ -85,9 +83,14 @@ async function loadChildObjectsFromDB(database, sub, pred, type) {
         })
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-        for (let obj in result) {
-            await database.insertRDF(rdf, result[obj]['_id']);
-        }
+
+        let ids = result.map( x => x['_id'])
+        console.log(`asking for query`)
+        console.log(query)
+        console.log(sub)
+      
+        await database.insertRDF(rdf, sub);
+
     } catch (err) {
         console.log(err);
     } finally {
@@ -127,8 +130,10 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
             result = await collection.find(query).toArray();
         }
         else {
-            result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+            result = await collection.find(query).skip(page * 10 - 10).limit(1).toArray();
         }
+
+        console.log(result)
 
         // save page conetnt
         database.pages[page] = result.map(x => x['_id'])
@@ -139,9 +144,17 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
         })
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-        for (let obj in result) {
-            await database.insertRDF(rdf, result[obj]['_id']);
-        }
+        console.log(rdf)
+        let ids = result.map( x => x['_id'])
+        result.map(async t => {
+            for(let key in t['_reverse']){
+                ids = [...ids, ...t['_reverse'][key].map(x => x['_id'])]
+            }
+        })
+        
+
+        console.log(ids)
+        await database.insertRDF(rdf, ids);
     } catch (err) {
         console.log(err);
     } finally {
@@ -183,4 +196,5 @@ module.exports = {
     loadCoreQueryDataFromDB,
     mongodbAddOrUpdate,
     loadChildObjectsFromDBForUnion,
+    // loadReversedObjectsFromDB,
 };
