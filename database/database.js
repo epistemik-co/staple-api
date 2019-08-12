@@ -325,6 +325,8 @@ class Database {
         for (let coreSelection in coreSelectionSet['selections']) {
             if (resolverName == coreSelectionSet['selections'][coreSelection].name.value) {
 
+                console.log(`Getting data for ${uri}`)
+
                 await this.loadCoreQueryDataFromDB(uri, page, undefined, inferred);
                 coreIds = await this.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
                 // console.log(coreIds)
@@ -361,27 +363,42 @@ class Database {
                 if (selection.name !== undefined && selection.kind === "Field") {
                     name = selection.name.value;
 
-                    console.log(name)
                     // find in tree what this field returns...
-                    let type = {}
-                    if(tree[lastName] !== undefined) {
+                    let type = {};
+                    let node = {};
+                    if (tree[lastName] !== undefined) {
 
-                        let node = tree[lastName]["data"][name];
-                        if(node.kind === "ListType"){
+                        node = tree[lastName]["data"][name];
+                        if (node.kind === "ListType") {
                             node = node.data;
                         }
                         type = this.findTypeInSchemaMappingGraph(node.name);
+                        // let filtered = this.schemaMapping["@graph"].filter(x => x['@id'] === node.uri)
+                        // console.log(type)
+                        // console.log(name)
+                        // console.log(lastName)
+                        // console.log(node)
+                        // // console.log(filtered)
+                        // console.log(tree[node.name])
+                        // console.log(' ')
+                        if(type === undefined){
+                            type = tree[node.name];
+                        }
+
                     }
 
+                    console.log(name)
+                    console.log(type);
+
                     if (type !== undefined) {
-                        
-                        if (type['@type'] === "http://www.w3.org/2000/01/rdf-schema#Class" ) {
+
+                        if (type['@type'] === "http://www.w3.org/2000/01/rdf-schema#Class") {
                             console.log("CLASS NEED DATA\n")
                             // loadChildObjectsFromDB uri + obecna nazwa predykatu do reverse + typ
                             let newUris = []
                             // let pred = 
                             let type = this.schemaMapping["@context"][name];
-                            
+
                             if (type === undefined) {
                                 return;
                             }
@@ -397,11 +414,14 @@ class Database {
                                 }
                             }
 
+                            console.log(`Getting data for ${name}`)
                             await this.loadChildObjectsFromDB(newUris, name, node.name) // need object return type ...
                             uri = newUris; // nw czy to dobrze
                         }
                         else {
                             console.log("NOT CLASS\n")
+
+                            console.log(selection['selectionSet']['selections'].filter(x => x.kind === "InlineFragment").length > 0)
 
                             if (selection['selectionSet']['selections'].filter(x => x.kind === "InlineFragment").length > 0) {
                                 console.log("UNION BETTER SEARCH FOR URIS")
@@ -423,6 +443,7 @@ class Database {
                                 }
                                 // console.log(newUris)
                                 // need to get data for all new uris
+                                console.log(`Getting data for Union ${type}`)
                                 await this.loadChildObjectsFromDBForUnion(newUris)
                                 uri = newUris; // nw czy to dobrze
                             }
@@ -458,7 +479,6 @@ class Database {
         })
 
     }
-
 
     findTypeInSchemaMappingGraph(name) {
 
