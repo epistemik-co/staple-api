@@ -125,8 +125,6 @@ class Database {
             }
             x = itr.next();
         }
-        console.log(data)
-
 
         return data;
     };
@@ -224,7 +222,6 @@ class Database {
             x = itr.next();
         }
 
-        console.log(data)
         return data;
     };
 
@@ -301,17 +298,20 @@ class Database {
     }
 
     async loadChildObjectsFromDB(sub, pred, type) {
+        console.log('\x1b[36m%s\x1b[0m', `loadChildObjectsFromDB was called with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
         this.dbCallCounter = this.dbCallCounter + 1;
         await mongodbUtilities.loadChildObjectsFromDB(this, sub, pred, type)
     }
 
 
     async loadChildObjectsFromDBForUnion(sub, pred = undefined, type = undefined) {
+        console.log('\x1b[36m%s\x1b[0m', `loadChildObjectsFromDBForUnion was called with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
         this.dbCallCounter = this.dbCallCounter + 1;
         await mongodbUtilities.loadChildObjectsFromDBForUnion(this, sub, pred, type)
     }
 
     async loadCoreQueryDataFromDB(type, page = 1, query = undefined, inferred = false) {
+        console.log('\x1b[36m%s\x1b[0m', `loadCoreQueryDataFromDB was called with arguments : type: ${type} page: ${page} query: ${query} inferred: ${inferred} `)
         this.dbCallCounter = this.dbCallCounter + 1;
         await mongodbUtilities.loadCoreQueryDataFromDB(this, type, page, query, inferred);
     }
@@ -335,7 +335,7 @@ class Database {
     }
 
     async loadQueryData(queryInfo, uri, page, inferred, tree, query = undefined) {
-        this.dbCallCounter = 0;
+        this.dbCallCounter = 0; // debug only
         this.drop(); // clear db before new query.
 
         let coreIds = []
@@ -359,15 +359,15 @@ class Database {
                 coreIds = await this.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
                 await this.searchForDataRecursively(coreSelectionSet['selections'][coreSelection]['selectionSet'], coreIds, tree, resolverName);
             }
-
         }
 
         return coreIds;
     }
 
     async searchForDataRecursively(selectionSet, uri, tree, lastName = undefined) {
+        console.log('\x1b[33m%s\x1b[0m', "\nsearchForDataRecursively")
         console.log(`Started function searchForDataRecursively with args: \nselectionSet: ${selectionSet}\nuri: ${uri}\ntree: ${tree}\nlastName: ${lastName}`)
-        console.log(`\nQUADS : ${this.database.size}`)
+        console.log(`QUADS : ${this.database.size}`)
         this.countObjects();
         console.log("\n\n")
 
@@ -377,144 +377,120 @@ class Database {
             selection = selectionSet['selections'][selection];
 
             if (selection['selectionSet'] !== undefined && selection.name !== undefined && selection.kind === "Field") {
-                // object or union
+                // object or union or reverse
                 name = selection.name.value;
 
                 // find in tree what this field returns...
-                let type = {};
+                let objectType = {};
                 let node = {};
                 if (tree[lastName] !== undefined) {
                     node = tree[lastName]["data"][name];
                     if (node.kind === "ListType") {
                         node = node.data;
                     }
-                    type = this.findTypeInSchemaMappingGraph(node.name);
+                    objectType = this.findTypeInSchemaMappingGraph(node.name);
 
                     // reverse
-                    if (type === undefined) {
-                        type = tree[node.name];
+                    if (objectType === undefined) {
+                        objectType = tree[node.name];
                     }
-
                 }
 
-                if (type !== undefined) {
+                if (objectType === undefined) {
+                    continue;
+                }
 
-                    if (type['@type'] === "http://www.w3.org/2000/01/rdf-schema#Class") {
-                        console.log("CLASS NEED DATA\n")
-                        let newUris = []
-                        let type = this.schemaMapping["@context"][name];
-
-                        if (type === undefined) {
-                            return;
+                let newUris = []
+                let type = this.schemaMapping["@context"][name];
+                
+                if (objectType['@type'] === "http://www.w3.org/2000/01/rdf-schema#Class" && objectType !== undefined) {
+                    // console.log("CLASS NEED DATA\n")
+                    
+                    for (let id in uri) {
+                        let data = await this.getObjectsValueArray(uri[id], type);
+                        for (let x in data) {
+                            var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                            if (pattern.test(data[x])) {
+                                newUris.push(data[x]);
+                            }
                         }
+                    }
+                    
+                    
+                    await this.loadChildObjectsFromDB(newUris, name, node.name);
+                    
+                    uri = [...new Set(newUris)];
+                    
+                    let returnedType = tree[lastName]["data"][name];
 
-
-
+                    returnedType = returnedType.kind === "ListType" ? returnedType.data.name : returnedType.name;
+                        
+                    await this.searchForDataRecursively(selection['selectionSet'], uri, tree, returnedType);
+                }
+                else {
+                    console.log("NOT CLASS\n")
+                    
+                    if (objectType.type === "UnionType" && objectType !== undefined) {
+                        // console.log("UNION BETTER SEARCH FOR URIS")
+                        
+                        // get all uris
                         for (let id in uri) {
                             let data = await this.getObjectsValueArray(uri[id], type);
                             for (let x in data) {
                                 var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                                if (!pattern.test(data[x])) {
-                                    continue;
-                                }
-                                newUris.push(data[x]);
-                            }
-                        }
-
-
-                        await this.loadChildObjectsFromDB(newUris, name, node.name);
-
-                        uri = [...new Set(newUris)];
-
-                        let returnedType = tree[lastName]["data"][name];
-                        if (returnedType.kind === "ListType") {
-                            returnedType = returnedType.data.name;
-                        }
-                        else {
-                            returnedType = returnedType.name;
-                        }
-
-                        await this.searchForDataRecursively(selection['selectionSet'], uri, tree, returnedType);
-                    }
-                    else {
-                        console.log("NOT CLASS\n")
-
-                        if (type.type === "UnionType") {
-                            console.log("UNION BETTER SEARCH FOR URIS")
-                            let newUris = []
-                            let type = this.schemaMapping["@context"][name];
-                            if (type === undefined) {
-                                return;
-                            }
-                            // get all uris
-                            for (let id in uri) {
-                                let data = await this.getObjectsValueArray(uri[id], type);
-                                for (let x in data) {
-                                    var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                                    if (!pattern.test(data[x])) {
-                                        continue;
-                                    }
+                                if (pattern.test(data[x])) {
                                     newUris.push(data[x]);
                                 }
                             }
-                            await this.loadChildObjectsFromDBForUnion(newUris)
-
-                            uri = [...new Set(newUris)];
-
-                            await this.searchForDataRecursively(selection['selectionSet'], uri, tree, name)
                         }
-                        else if (type.type === "Reverse") {
-                            console.log("Reverse - SEARCH FOR URIS")
-                            let newUris = []
-                            let revSelectionSet = selection.selectionSet.selections;
+                        await this.loadChildObjectsFromDBForUnion(newUris)
 
-                            for (let selection in revSelectionSet) {
-                                selection = revSelectionSet[selection] 
-                                let name = selection.name.value;
-                                let type = this.schemaMapping["@context"][name];
-                                type = this.schemaMapping["@graph"].filter(x => x["@id"] === type)[0];
+                        uri = [...new Set(newUris)];
 
-                                for (let id in uri) {
-                                    for (let typeId in type['http://schema.org/inverseOf']) {
-                                         let data = await this.getSubjectsValueArray( type['http://schema.org/inverseOf'][typeId], uri[id]);
+                        await this.searchForDataRecursively(selection['selectionSet'], uri, tree, name)
+                    }
+                    else if (objectType.type === "Reverse" && objectType !== undefined) {
+                        // console.log("Reverse - SEARCH FOR URIS")
+                        let revSelectionSet = selection.selectionSet.selections;
 
-                                        console.log("\n\n\n\n\n\n")
-                                        console.log(data)
-                                        data = await this.getTriplesBySubject(uri[id]);
-                                        console.log(data)
-                                        for(let quad in data){
-                                            quad = data[quad];
+                        for (let selection in revSelectionSet) {
+                            selection = revSelectionSet[selection] 
 
-                                            if(quad.predicate.value !== type['http://schema.org/inverseOf'][typeId]){
-                                                continue;
-                                            }
+                            let name = selection.name.value;
+                            let type = this.schemaMapping["@graph"].filter(x => x["@id"] === this.schemaMapping["@context"][name])[0];
 
-                                            var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                                            if (!pattern.test(quad.object.value)) {
-                                                continue;
-                                            }
+                            for (let id in uri) {
+                                for (let typeId in type['http://schema.org/inverseOf']) {
+                                    let data = await this.getSubjectsValueArray( type['http://schema.org/inverseOf'][typeId], uri[id]);
+
+                                    data = await this.getTriplesBySubject(uri[id]);
+                                    
+                                    for(let quad in data){
+                                        quad = data[quad];
+
+                                        if(quad.predicate.value !== type['http://schema.org/inverseOf'][typeId]){
+                                            continue;
+                                        }
+
+                                        var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                                        if (pattern.test(quad.object.value)) {
                                             newUris.push(quad.object.value);
                                         }
                                     }
                                 }
+                            }
 
+
+                            for (let typeId in type['http://schema.org/inverseOf']) {
+                                newUris = [...new Set(newUris)];
                                 
+                                await this.loadChildObjectsFromDBForUnion(newUris)
 
-                                // console.log(this.getAllQuads())
+                                let expectedType = tree[lastName]['data'][this.schemaMapping['@revContext'][type['http://schema.org/inverseOf'][typeId]]];
+               
+                                expectedType = expectedType.kind === "ListType" ? expectedType.data.name : expectedType.name;
 
-
-                                for (let typeId in type['http://schema.org/inverseOf']) {
-                                    newUris = [...new Set(newUris)];
-                                    console.log(newUris)
-                                    await this.loadChildObjectsFromDBForUnion(newUris)
-
-                                    let expectedType = tree[lastName]['data'][this.schemaMapping['@revContext'][type['http://schema.org/inverseOf'][typeId]]];
-                                    if (expectedType.kind === "ListType") {
-                                        expectedType = expectedType.data
-                                    }
-
-                                    await this.searchForDataRecursively(selection['selectionSet'], newUris, tree, expectedType.name)
-                                }
+                                await this.searchForDataRecursively(selection['selectionSet'], newUris, tree, expectedType)
                             }
                         }
                     }

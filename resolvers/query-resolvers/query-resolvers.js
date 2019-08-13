@@ -246,7 +246,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
                 return async (parent, args, context, info) => {
                     // console.log(util.inspect(info['operation'], false, null, true /* enable colors */))
                     let data = await database.loadQueryData(info['operation'], uri, args.page, args.inferred, tree);
-                    // console.log("znowu")
+                    console.log(`Finall db calls : ${database.dbCallCounter}`)
                     // let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
                     data = database.pages[args.page];
                     return data;

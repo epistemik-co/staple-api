@@ -8,12 +8,7 @@ const collectionName = 'quads'
 
 
 
-// Based on reverse property
 async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
-    // console.log("Someone wants data about ")
-    // console.log(sub)
-    // console.log(pred)
-    // console.log(type)
 
     const client = await MongoClient.connect(url, { useNewUrlParser: true })
         .catch(err => { console.log(err); });
@@ -37,8 +32,17 @@ async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
         let ids = result.map( x => x['_id'])
+        result.map(async t => {
+            let tempIds = []
+
+            for(let key in t['_reverse']){
+                tempIds = t['_reverse'][key].map(x => x['_id'])
+            }
+
+            ids = [...ids, ...tempIds]
+        })
       
-        await database.insertRDF(rdf, sub);
+        await database.insertRDF(rdf, ids);
 
 
     } catch (err) {
@@ -85,9 +89,15 @@ async function loadChildObjectsFromDB(database, sub, pred, type) {
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
 
         let ids = result.map( x => x['_id'])
-        console.log(`asking for query`)
-        console.log(query)
-        console.log(sub)
+        result.map(async t => {
+            let tempIds = []
+
+            for(let key in t['_reverse']){
+                tempIds = t['_reverse'][key].map(x => x['_id'])
+            }
+
+            ids = [...ids, ...tempIds]
+        })
       
         await database.insertRDF(rdf, sub);
 
@@ -130,10 +140,8 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
             result = await collection.find(query).toArray();
         }
         else {
-            result = await collection.find(query).skip(page * 10 - 10).limit(1).toArray();
+            result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
         }
-
-        console.log(result)
 
         // save page conetnt
         database.pages[page] = result.map(x => x['_id'])
@@ -144,16 +152,19 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
         })
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-        console.log(rdf)
         let ids = result.map( x => x['_id'])
+
         result.map(async t => {
+            let tempIds = []
+
             for(let key in t['_reverse']){
-                ids = [...ids, ...t['_reverse'][key].map(x => x['_id'])]
+                tempIds = t['_reverse'][key].map(x => x['_id'])
             }
+
+            ids = [...ids, ...tempIds]
         })
         
 
-        console.log(ids)
         await database.insertRDF(rdf, ids);
     } catch (err) {
         console.log(err);
