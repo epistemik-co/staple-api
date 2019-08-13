@@ -360,7 +360,7 @@ class Database {
             else if (resolverName == coreSelectionSet['selections'][coreSelection].name.value) {
                 await this.loadCoreQueryDataFromDB(uri, page, undefined, inferred);
                 coreIds = await this.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-                await this.searchForDataRecursively(coreSelectionSet['selections'][coreSelection]['selectionSet'], coreIds, tree, resolverName);
+                await this.searchForDataRecursively(coreSelectionSet['selections'][coreSelection]['selectionSet'], coreIds, tree, false);
             }
         }
 
@@ -377,11 +377,20 @@ class Database {
 
         let name = undefined;
         for (let selection of selectionSet['selections']) {
-            if (selection['selectionSet'] !== undefined && selection.name !== undefined && selection.kind === "Field") {
+
+            if(selection.kind === "InlineFragment"){
+                await this.searchForDataRecursively(selection['selectionSet'], uri, tree, false);
+            }
+
+            if (selection['selectionSet'] !== undefined && selection.name !== undefined) {
 
                 name = selection.name.value;
                 let newUris = [];
                 let type = this.schemaMapping["@context"][name];
+                // console.log("tego chcemy")
+                // console.log(uri)
+                // console.log(name)
+                // console.log(type)
 
                 if (type === "@reverse") {
                     await this.searchForDataRecursively(selection['selectionSet'], uri, tree, true);
@@ -405,11 +414,19 @@ class Database {
                     }
 
                     newUris = [...new Set(newUris)];
+                    // console.log("uris :")
+                    // console.log(newUris)
                     if (newUris.length > 0) {
                         await this.loadChildObjectsFromDBForUnion(newUris)
                         await this.searchForDataRecursively(selection['selectionSet'], newUris, tree)
                     }
+                    
                 }
+            }
+            else{
+                console.log("NOPE TEGO NIE CHCEMY")
+                console.log(selection.kind)
+                console.log(selection.name)
             }
         }
     }

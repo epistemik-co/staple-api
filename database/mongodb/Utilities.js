@@ -2,9 +2,9 @@ const MongoClient = require('mongodb').MongoClient;
 const jsonld = require('jsonld');
 const util = require('util')
 
-const url = 'mongodb://127.0.0.1:27017' // "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";  
-const dbName = 'staple'
-const collectionName = 'quads'
+const url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";  //'mongodb://127.0.0.1:27017' //  
+const dbName = 'staple2'
+const collectionName = 'Buildings2'
 
 
 async function loadChildObjectsByUris(database, sub, pred, type) {
@@ -87,7 +87,7 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
             result = await collection.find(query).toArray();
         }
         else {
-            result = await collection.find(query).skip(page * 10 - 10).limit(1).toArray();
+            result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
             console.log(query);
         }
         var elapsed = new Date().getTime() - start;

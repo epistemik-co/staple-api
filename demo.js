@@ -4,14 +4,14 @@ const jsonld = require('jsonld');
 const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
 const DatabaseInterface = require('./database/Database');
-const schemaString = require('./schema/schema');
+const schemaString = require('./schema/schema2');
 const Resolver = require('./resolvers/resolvers');
 
 class Demo {
     constructor() {
-        this.database = new DatabaseInterface(require('./schema/schema-mapping'));
+        this.database = new DatabaseInterface(require('./schema/schema-mapping2'));
         const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-        const rootResolver = new Resolver(this.database, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
+        const rootResolver = new Resolver(this.database, Warnings, require('./schema/schema-mapping2')).rootResolver; // Generate Resolvers for graphql
         const schema = makeExecutableSchema({
             typeDefs: schemaString,
             resolvers: rootResolver,
