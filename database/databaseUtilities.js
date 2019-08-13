@@ -31,13 +31,6 @@ function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false) {
 
                 tree.add(y_quad);
             }
-            else{
-                if(!ID.includes(y_quad.subject.value)){
-                    console.log(y_quad.subject.value)
-                    console.log(y_quad.subject.value)
-                    console.log(y_quad.subject.value)
-                }
-            }
         }
 
         let eof = (h_prefixes) => {

@@ -119,7 +119,6 @@ handleClassTypeResolver = (tree, object, database) => {
                                 return data
                             }
                             else {
-                                // await database.loadChildObjectsFromDB((parent), (name), type)
                                 return await database.getObjectsValueArray((parent), (name), false);
                             }
                         }

@@ -2,12 +2,12 @@ const MongoClient = require('mongodb').MongoClient;
 const jsonld = require('jsonld');
 const util = require('util')
 
-const url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority"; // 'mongodb://127.0.0.1:27017' // 
-const dbName = 'staple2'
-const collectionName = 'Buildings2'
+const url = 'mongodb://127.0.0.1:27017' // "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";  
+const dbName = 'staple'
+const collectionName = 'quads'
 
 
-async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
+async function loadChildObjectsByUris(database, sub, pred, type) {
 
     if (database.client === undefined) {
         database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { console.log(err); });
@@ -22,7 +22,7 @@ async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
 
         var start = new Date().getTime();
         let result = await collection.find(query).toArray();
-        // console.log(query);
+        console.log(query);
         var elapsed = new Date().getTime() - start;
         console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
 
@@ -52,69 +52,6 @@ async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
     } catch (err) {
         console.log(err);
     } 
-}
-
-
-// Based on reverse property
-async function loadChildObjectsFromDB(database, sub, pred, type) {
-
-    
-    if (database.client === undefined) {
-        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { console.log(err); });
-    }
-
-
-    try {
-        const db = database.client.db(dbName);
-        let collection = db.collection(collectionName);
-        let query = { _type: 'Thing' }
-
-        if (type != undefined) {
-            query = { _type: type }
-        }
-
-        // ???
-        let predicateContext = database.schemaMapping["@graph"].filter((x) => { return x['@id'] === pred })[0];
-        if (predicateContext !== undefined) {
-            if (predicateContext["http://schema.org/inverseOf"].length > 0) {
-                query['_reverse'] = {};
-                query['_reverse'][database.schemaMapping['@revContext'][pred]] = [{ '_id': sub }]
-            }
-        }
-
-        var start = new Date().getTime();
-        let result = await collection.find(query).toArray();
-        // console.log(query);
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
-
-        result = result.map(x => {
-            x['@context'] = database.schemaMapping['@context'];
-            return x;
-        })
-
-        const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-
-        let ids = result.map(x => x['_id'])
-        result.map(async t => {
-            let tempIds = []
-
-            for (let key in t['_reverse']) {
-                tempIds = t['_reverse'][key].map(x => x['_id'])
-            }
-
-            ids = [...ids, ...tempIds]
-        })
-
-
-        var start = new Date().getTime();
-        await database.insertRDF(rdf, sub);
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `insertRDF to database took ${elapsed} ms`)
-
-    } catch (err) {
-        console.log(err);
-    }
 }
 
 async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
@@ -150,8 +87,8 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
             result = await collection.find(query).toArray();
         }
         else {
-            result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
-            // console.log(query);
+            result = await collection.find(query).skip(page * 10 - 10).limit(1).toArray();
+            console.log(query);
         }
         var elapsed = new Date().getTime() - start;
         console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
@@ -220,8 +157,7 @@ async function mongodbAddOrUpdate(flatJsons) {
 }
 
 module.exports = {
-    loadChildObjectsFromDB,
     loadCoreQueryDataFromDB,
     mongodbAddOrUpdate,
-    loadChildObjectsFromDBForUnion,
+    loadChildObjectsByUris,
 };

@@ -4,7 +4,8 @@ const factory = require('@graphy/core.data.factory');
 const MongoClient = require('mongodb').MongoClient;
 const jsonld = require('jsonld');
 const databaseUtilities = require('./databaseUtilities')
-const mongodbUtilities = require('./mongodb/Utilities')
+const mongodbUtilities = require('./mongodb/Utilities');
+const util = require('util')
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
@@ -85,7 +86,7 @@ class Database {
     }
 
     // Array of uri
-    async getObjectsValueArray(sub, pred, expectLiterals = false) {
+    getObjectsValueArray(sub, pred, expectLiterals = false) {
         sub = factory.namedNode(sub);
         pred = factory.namedNode(pred);
 
@@ -95,19 +96,18 @@ class Database {
         var x = itr.next();
         while (!x.done) {
             if (expectLiterals) {
-                await data.push(x.value.object);
+                data.push(x.value.object);
             }
             else {
-                await data.push(x.value.object.value);
+                data.push(x.value.object.value);
             }
             x = itr.next();
         }
 
-
-        return data;
+        return data
     };
 
-       // Array of uri
+    // Array of uri
     async getSubjectsValueArray(pred, obj, expectLiterals = false) {
         pred = factory.namedNode(pred);
         obj = factory.namedNode(obj);
@@ -118,14 +118,13 @@ class Database {
         var x = itr.next();
         while (!x.done) {
             if (expectLiterals) {
-                await data.push(x.value.object);
+                await data.push(x.value.subject);
             }
             else {
-                await data.push(x.value.object.value);
+                await data.push(x.value.subject.value);
             }
             x = itr.next();
         }
-
         return data;
     };
 
@@ -297,26 +296,15 @@ class Database {
         return await databaseUtilities.getFlatJson(this);
     }
 
-    async loadChildObjectsFromDB(sub, pred, type) {
-        console.log('\x1b[36m%s\x1b[0m', `loadChildObjectsFromDB was called with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
-        this.dbCallCounter = this.dbCallCounter + 1;
-        var start = new Date().getTime();
-        await mongodbUtilities.loadChildObjectsFromDB(this, sub, pred, type);
-
-        var elapsed = new Date().getTime() - start;
-        console.log( "\x1b[31m", `This query took ${elapsed} ms`)
-        console.log("\x1b[0m", "\n");
-    }
-
 
     async loadChildObjectsFromDBForUnion(sub, pred = undefined, type = undefined) {
         console.log('\x1b[36m%s\x1b[0m', `loadChildObjectsFromDBForUnion was called with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
         this.dbCallCounter = this.dbCallCounter + 1;
         var start = new Date().getTime();
-        await mongodbUtilities.loadChildObjectsFromDBForUnion(this, sub, pred, type);
+        await mongodbUtilities.loadChildObjectsByUris(this, sub, pred, type);
 
         var elapsed = new Date().getTime() - start;
-        console.log( "\x1b[31m", `This query took ${elapsed} ms`)
+        console.log("\x1b[31m", `This query took ${elapsed} ms`)
         console.log("\x1b[0m", "\n");
     }
 
@@ -327,7 +315,7 @@ class Database {
         await mongodbUtilities.loadCoreQueryDataFromDB(this, type, page, query, inferred);
 
         var elapsed = new Date().getTime() - start;
-        console.log( "\x1b[31m", `This query took ${elapsed} ms`)
+        console.log("\x1b[31m", `This query took ${elapsed} ms`)
         console.log("\x1b[0m", "\n");
     }
 
@@ -337,7 +325,7 @@ class Database {
     }
 
     async insertRDF(rdf, ID, tryToFix = false) {
-        if (ID !== undefined && ID[0] === undefined ) {
+        if (ID !== undefined && ID[0] === undefined) {
             ID = [];
         }
         await databaseUtilities.insertRDFPromise(this.database, ID, rdf, this.schemaMapping, tryToFix);
@@ -379,152 +367,52 @@ class Database {
         return coreIds;
     }
 
-    async searchForDataRecursively(selectionSet, uri, tree, lastName = undefined) {
+    async searchForDataRecursively(selectionSet, uri, tree, reverse = false) {
         console.log('\x1b[33m%s\x1b[0m', "\nsearchForDataRecursively")
-        console.log(`Started function searchForDataRecursively with args: \nselectionSet: ${selectionSet}\nuri: ${uri}\ntree: ${tree}\nlastName: ${lastName}`)
+        console.log(`Started function searchForDataRecursively with args: \nselectionSet: ${selectionSet}\nuri: ${uri}\ntree: ${tree}\nlastName: ${reverse}`)
         console.log(`QUADS : ${this.database.size}`)
         this.countObjects();
+        // console.log(util.inspect(selectionSet, false, null, true /* enable colors */))
         console.log("\n\n")
 
         let name = undefined;
-
-        for (let selection in selectionSet['selections']) {
-            selection = selectionSet['selections'][selection];
-
+        for (let selection of selectionSet['selections']) {
             if (selection['selectionSet'] !== undefined && selection.name !== undefined && selection.kind === "Field") {
-                // object or union or reverse
+
                 name = selection.name.value;
-
-                // find in tree what this field returns...
-                let objectType = {};
-                let node = {};
-                if (tree[lastName] !== undefined) {
-                    node = tree[lastName]["data"][name];
-                    if (node.kind === "ListType") {
-                        node = node.data;
-                    }
-                    objectType = this.findTypeInSchemaMappingGraph(node.name);
-
-                    // reverse
-                    if (objectType === undefined) {
-                        objectType = tree[node.name];
-                    }
-                }
-
-                if (objectType === undefined) {
-                    continue;
-                }
-
-                let newUris = []
+                let newUris = [];
                 let type = this.schemaMapping["@context"][name];
-                
-                if (objectType['@type'] === "http://www.w3.org/2000/01/rdf-schema#Class" && objectType !== undefined) {
-                    // console.log("CLASS NEED DATA\n")
-                    
-                    for (let id in uri) {
-                        let data = await this.getObjectsValueArray(uri[id], type);
-                        for (let x in data) {
-                            var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                            if (pattern.test(data[x])) {
-                                newUris.push(data[x]);
-                            }
-                        }
-                    }
-                    
-                    
-                    await this.loadChildObjectsFromDB(newUris, name, node.name);
-                    
-                    uri = [...new Set(newUris)];
-                    
-                    let returnedType = tree[lastName]["data"][name];
 
-                    returnedType = returnedType.kind === "ListType" ? returnedType.data.name : returnedType.name;
-                        
-                    await this.searchForDataRecursively(selection['selectionSet'], uri, tree, returnedType);
+                if (type === "@reverse") {
+                    await this.searchForDataRecursively(selection['selectionSet'], uri, tree, true);
                 }
-                else {
-                    console.log("NOT CLASS\n")
-                    
-                    if (objectType.type === "UnionType" && objectType !== undefined) {
-                        // console.log("UNION BETTER SEARCH FOR URIS")
-                        
-                        // get all uris
-                        for (let id in uri) {
-                            let data = await this.getObjectsValueArray(uri[id], type);
-                            for (let x in data) {
-                                var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                                if (pattern.test(data[x])) {
-                                    newUris.push(data[x]);
-                                }
+                else{
+                    for (let id of uri) {
+                        let data = [];
+                        if(reverse){
+                             data = await this.getSubjectsValueArray( type, id);
+                        }
+                        else{
+                             data = await this.getObjectsValueArray(id, type);
+                        }
+
+                        for (let x of data) {
+                            var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                            if (pattern.test(x)) {
+                                newUris.push(x);
                             }
                         }
-                        await this.loadChildObjectsFromDBForUnion(newUris)
-
-                        uri = [...new Set(newUris)];
-
-                        await this.searchForDataRecursively(selection['selectionSet'], uri, tree, name)
                     }
-                    else if (objectType.type === "Reverse" && objectType !== undefined) {
-                        // console.log("Reverse - SEARCH FOR URIS")
-                        let revSelectionSet = selection.selectionSet.selections;
 
-                        for (let selection in revSelectionSet) {
-                            selection = revSelectionSet[selection] 
-
-                            let name = selection.name.value;
-                            let type = this.schemaMapping["@graph"].filter(x => x["@id"] === this.schemaMapping["@context"][name])[0];
-
-                            for (let id in uri) {
-                                for (let typeId in type['http://schema.org/inverseOf']) {
-                                    //  data = await this.getSubjectsValueArray( type['http://schema.org/inverseOf'][typeId], uri[id]);
-
-                                    let data = await this.getTriplesBySubject(uri[id]);
-                                    
-                                    for(let quad in data){
-                                        quad = data[quad];
-
-                                        if(quad.predicate.value !== type['http://schema.org/inverseOf'][typeId]){
-                                            continue;
-                                        }
-
-                                        var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                                        if (pattern.test(quad.object.value)) {
-                                            newUris.push(quad.object.value);
-                                        }
-                                    }
-                                }
-                            }
-
-
-                            for (let typeId in type['http://schema.org/inverseOf']) {
-                                newUris = [...new Set(newUris)];
-                                
-                                await this.loadChildObjectsFromDBForUnion(newUris)
-
-                                let expectedType = tree[lastName]['data'][this.schemaMapping['@revContext'][type['http://schema.org/inverseOf'][typeId]]];
-               
-                                expectedType = expectedType.kind === "ListType" ? expectedType.data.name : expectedType.name;
-                                await this.searchForDataRecursively(selection['selectionSet'], newUris, tree, expectedType)
-                            }
-                        }
+                    newUris = [...new Set(newUris)];
+                    if (newUris.length > 0) {
+                        await this.loadChildObjectsFromDBForUnion(newUris)
+                        await this.searchForDataRecursively(selection['selectionSet'], newUris, tree)
                     }
                 }
             }
         }
     }
-
-    findTypeInSchemaMappingGraph(name) {
-
-        let uri = this.schemaMapping["@context"][name];
-        if (uri === undefined) {
-            return undefined;
-        }
-
-        let filtered = this.schemaMapping["@graph"].filter(x => x['@id'] === uri)[0]
-        return filtered
-    }
-
-    
 }
 
 module.exports = Database
