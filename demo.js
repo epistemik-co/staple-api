@@ -4,14 +4,14 @@ const jsonld = require('jsonld');
 const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
 const DatabaseInterface = require('./database/Database');
-const schemaString = require('./schema/schema');
+const schemaString = require('./schema/schema2');
 const Resolver = require('./resolvers/resolvers');
 
 class Demo {
     constructor() {
-        this.database = new DatabaseInterface(require('./schema/schema-mapping'));
+        this.database = new DatabaseInterface(require('./schema/schema-mapping2'));
         const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-        const rootResolver = new Resolver(this.database, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
+        const rootResolver = new Resolver(this.database, Warnings, require('./schema/schema-mapping2')).rootResolver; // Generate Resolvers for graphql
         const schema = makeExecutableSchema({
             typeDefs: schemaString,
             resolvers: rootResolver,
@@ -79,10 +79,11 @@ class Demo {
         // This end-point should create data for qraphql mutation and run it.
         app.post('/api/uploadRDF', async (req, res) => {
             try {
+                console.log("RECIVED RDF")
                 const todo = req.body;
                 await this.database.insertRDF(todo, undefined, true);
                 console.log(this.database.database.size)
-                // console.log(await this.database.getFlatJson())
+                console.log(await this.database.getFlatJson())
                 this.database.countObjects()
             } catch (error) {
                 return res.status(500).send({

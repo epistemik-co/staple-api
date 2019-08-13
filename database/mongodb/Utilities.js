@@ -2,28 +2,29 @@ const MongoClient = require('mongodb').MongoClient;
 const jsonld = require('jsonld');
 const util = require('util')
 
-const url = 'mongodb://127.0.0.1:27017' // "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";
-const dbName = 'staple'
-const collectionName = 'quads'
-
+const url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority"; // 'mongodb://127.0.0.1:27017' // 
+const dbName = 'staple2'
+const collectionName = 'Buildings2'
 
 
 async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
 
-    const client = await MongoClient.connect(url, { useNewUrlParser: true })
-        .catch(err => { console.log(err); });
-
-    if (!client) {
-        return;
+    if (database.client === undefined) {
+        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { console.log(err); });
     }
 
     try {
-        const db = client.db(dbName);
+        const db = database.client.db(dbName);
         let collection = db.collection(collectionName);
 
         let query = { "_id": { "$in": sub } }
 
+
+        var start = new Date().getTime();
         let result = await collection.find(query).toArray();
+        // console.log(query);
+        var elapsed = new Date().getTime() - start;
+        console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
 
         result = result.map(x => {
             x['@context'] = database.schemaMapping['@context'];
@@ -31,39 +32,40 @@ async function loadChildObjectsFromDBForUnion(database, sub, pred, type) {
         })
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-        let ids = result.map( x => x['_id'])
+        let ids = result.map(x => x['_id'])
         result.map(async t => {
             let tempIds = []
 
-            for(let key in t['_reverse']){
+            for (let key in t['_reverse']) {
                 tempIds = t['_reverse'][key].map(x => x['_id'])
             }
 
             ids = [...ids, ...tempIds]
         })
-      
+
+        var start = new Date().getTime();
         await database.insertRDF(rdf, ids);
+        var elapsed = new Date().getTime() - start;
+        console.log("\x1b[31m", `insertRDF to database took ${elapsed} ms`)
 
 
     } catch (err) {
         console.log(err);
-    } finally {
-        client.close();
-    }
+    } 
 }
 
 
 // Based on reverse property
 async function loadChildObjectsFromDB(database, sub, pred, type) {
-    const client = await MongoClient.connect(url, { useNewUrlParser: true })
-        .catch(err => { console.log(err); });
 
-    if (!client) {
-        return;
+    
+    if (database.client === undefined) {
+        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { console.log(err); });
     }
 
+
     try {
-        const db = client.db(dbName);
+        const db = database.client.db(dbName);
         let collection = db.collection(collectionName);
         let query = { _type: 'Thing' }
 
@@ -71,6 +73,7 @@ async function loadChildObjectsFromDB(database, sub, pred, type) {
             query = { _type: type }
         }
 
+        // ???
         let predicateContext = database.schemaMapping["@graph"].filter((x) => { return x['@id'] === pred })[0];
         if (predicateContext !== undefined) {
             if (predicateContext["http://schema.org/inverseOf"].length > 0) {
@@ -79,7 +82,11 @@ async function loadChildObjectsFromDB(database, sub, pred, type) {
             }
         }
 
+        var start = new Date().getTime();
         let result = await collection.find(query).toArray();
+        // console.log(query);
+        var elapsed = new Date().getTime() - start;
+        console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
 
         result = result.map(x => {
             x['@context'] = database.schemaMapping['@context'];
@@ -88,36 +95,38 @@ async function loadChildObjectsFromDB(database, sub, pred, type) {
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
 
-        let ids = result.map( x => x['_id'])
+        let ids = result.map(x => x['_id'])
         result.map(async t => {
             let tempIds = []
 
-            for(let key in t['_reverse']){
+            for (let key in t['_reverse']) {
                 tempIds = t['_reverse'][key].map(x => x['_id'])
             }
 
             ids = [...ids, ...tempIds]
         })
-      
+
+
+        var start = new Date().getTime();
         await database.insertRDF(rdf, sub);
+        var elapsed = new Date().getTime() - start;
+        console.log("\x1b[31m", `insertRDF to database took ${elapsed} ms`)
 
     } catch (err) {
         console.log(err);
-    } finally {
-        client.close();
     }
 }
 
 async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
-    const client = await MongoClient.connect(url, { useNewUrlParser: true })
-        .catch(err => { console.log(err); });
-
-    if (!client) {
-        return;
+    
+    if (database.client === undefined) {
+        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { console.log(err); });
     }
 
+
     try {
-        const db = client.db(dbName);
+        var start2 = new Date().getTime();
+        const db = database.client.db(dbName);
         let collection = db.collection(collectionName);
         let _type = undefined;
 
@@ -135,13 +144,17 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
             }
         }
 
+        var start = new Date().getTime();
         let result;
         if (page === undefined) {
             result = await collection.find(query).toArray();
         }
         else {
             result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+            // console.log(query);
         }
+        var elapsed = new Date().getTime() - start;
+        console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
 
         // save page conetnt
         database.pages[page] = result.map(x => x['_id'])
@@ -152,25 +165,29 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
         })
 
         const rdf = await jsonld.toRDF(result, { format: 'application/n-quads' });
-        let ids = result.map( x => x['_id'])
+        let ids = result.map(x => x['_id'])
 
         result.map(async t => {
             let tempIds = []
 
-            for(let key in t['_reverse']){
+            for (let key in t['_reverse']) {
                 tempIds = t['_reverse'][key].map(x => x['_id'])
             }
 
             ids = [...ids, ...tempIds]
         })
-        
 
+
+        var start = new Date().getTime();
         await database.insertRDF(rdf, ids);
+        var elapsed = new Date().getTime() - start;
+        console.log("\x1b[31m", `insertRDF to database took ${elapsed} ms`)
+        var elapsed = new Date().getTime() - start2;
+        console.log("\x1b[31m", `loadCoreQueryDataFromDB without connecting took  ${elapsed} ms`)
+
     } catch (err) {
         console.log(err);
-    } finally {
-        client.close();
-    }
+    } 
 
 }
 
@@ -207,5 +224,4 @@ module.exports = {
     loadCoreQueryDataFromDB,
     mongodbAddOrUpdate,
     loadChildObjectsFromDBForUnion,
-    // loadReversedObjectsFromDB,
 };

@@ -11,7 +11,7 @@ function createReverseContext(schemaMapping) {
 function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false) {
     return new Promise((resolve, reject) => {
         let data = (y_quad) => {
-            if (ID.includes(y_quad.subject.value) || ID === undefined) {
+            if (ID === undefined || ID.includes(y_quad.subject.value)) {
                 if (tryToFix) {
                     y_quad = quadFix(y_quad)
                 }
@@ -30,6 +30,13 @@ function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false) {
                 }
 
                 tree.add(y_quad);
+            }
+            else{
+                if(!ID.includes(y_quad.subject.value)){
+                    console.log(y_quad.subject.value)
+                    console.log(y_quad.subject.value)
+                    console.log(y_quad.subject.value)
+                }
             }
         }
 
@@ -155,12 +162,21 @@ async function getFlatJson(databaseObject) {
 
 function quadFix(quad) {
     // stage 1 - blank node 
-    if (quad.subject.value.startsWith("genid")) {
-        let value = "http://staple-api.org/data/" + quad.subject.value.substring(5, quad.subject.value.length);
+    // if (quad.subject.value.startsWith("genid") || quad.subject.value.startsWith("node")) {
+    //     let value = "http://staple-api.org/data/" + quad.subject.value.substring(5, quad.subject.value.length);
+    //     quad.subject = factory.namedNode(value)
+    // }
+    // if (quad.object.value.startsWith("genid") || quad.object.value.startsWith("node")) {
+    //     let value = "http://staple-api.org/data/" + quad.object.value.substring(5, quad.object.value.length);
+    //     quad.object = factory.namedNode(value)
+    // }
+    var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+    if (!pattern.test(quad.subject.value)) {
+        let value = "http://staple-api.org/data/" + quad.subject.value;
         quad.subject = factory.namedNode(value)
     }
-    if (quad.object.value.startsWith("genid")) {
-        let value = "http://staple-api.org/data/" + quad.object.value.substring(5, quad.object.value.length);
+    if (!pattern.test(quad.object.value)) {
+        let value = "http://staple-api.org/data/" + quad.object.value;
         quad.object = factory.namedNode(value)
     }
     // stage 2 - unicode back to ascii
@@ -205,6 +221,7 @@ function quadFix(quad) {
     // stage 5 - Remove the 4th element in the quad .
     quad.graph = factory.namedNode(null);
 
+    console.log(quad)
     return quad;
 }
 

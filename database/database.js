@@ -300,20 +300,35 @@ class Database {
     async loadChildObjectsFromDB(sub, pred, type) {
         console.log('\x1b[36m%s\x1b[0m', `loadChildObjectsFromDB was called with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
         this.dbCallCounter = this.dbCallCounter + 1;
-        await mongodbUtilities.loadChildObjectsFromDB(this, sub, pred, type)
+        var start = new Date().getTime();
+        await mongodbUtilities.loadChildObjectsFromDB(this, sub, pred, type);
+
+        var elapsed = new Date().getTime() - start;
+        console.log( "\x1b[31m", `This query took ${elapsed} ms`)
+        console.log("\x1b[0m", "\n");
     }
 
 
     async loadChildObjectsFromDBForUnion(sub, pred = undefined, type = undefined) {
         console.log('\x1b[36m%s\x1b[0m', `loadChildObjectsFromDBForUnion was called with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
         this.dbCallCounter = this.dbCallCounter + 1;
-        await mongodbUtilities.loadChildObjectsFromDBForUnion(this, sub, pred, type)
+        var start = new Date().getTime();
+        await mongodbUtilities.loadChildObjectsFromDBForUnion(this, sub, pred, type);
+
+        var elapsed = new Date().getTime() - start;
+        console.log( "\x1b[31m", `This query took ${elapsed} ms`)
+        console.log("\x1b[0m", "\n");
     }
 
     async loadCoreQueryDataFromDB(type, page = 1, query = undefined, inferred = false) {
         console.log('\x1b[36m%s\x1b[0m', `loadCoreQueryDataFromDB was called with arguments : type: ${type} page: ${page} query: ${query} inferred: ${inferred} `)
         this.dbCallCounter = this.dbCallCounter + 1;
+        var start = new Date().getTime();
         await mongodbUtilities.loadCoreQueryDataFromDB(this, type, page, query, inferred);
+
+        var elapsed = new Date().getTime() - start;
+        console.log( "\x1b[31m", `This query took ${elapsed} ms`)
+        console.log("\x1b[0m", "\n");
     }
 
     async mongodbAddOrUpdate() {
@@ -322,7 +337,7 @@ class Database {
     }
 
     async insertRDF(rdf, ID, tryToFix = false) {
-        if (ID[0] === undefined && ID !== undefined) {
+        if (ID !== undefined && ID[0] === undefined ) {
             ID = [];
         }
         await databaseUtilities.insertRDFPromise(this.database, ID, rdf, this.schemaMapping, tryToFix);
@@ -461,9 +476,9 @@ class Database {
 
                             for (let id in uri) {
                                 for (let typeId in type['http://schema.org/inverseOf']) {
-                                    let data = await this.getSubjectsValueArray( type['http://schema.org/inverseOf'][typeId], uri[id]);
+                                    //  data = await this.getSubjectsValueArray( type['http://schema.org/inverseOf'][typeId], uri[id]);
 
-                                    data = await this.getTriplesBySubject(uri[id]);
+                                    let data = await this.getTriplesBySubject(uri[id]);
                                     
                                     for(let quad in data){
                                         quad = data[quad];
@@ -489,7 +504,6 @@ class Database {
                                 let expectedType = tree[lastName]['data'][this.schemaMapping['@revContext'][type['http://schema.org/inverseOf'][typeId]]];
                
                                 expectedType = expectedType.kind === "ListType" ? expectedType.data.name : expectedType.name;
-
                                 await this.searchForDataRecursively(selection['selectionSet'], newUris, tree, expectedType)
                             }
                         }
@@ -509,6 +523,8 @@ class Database {
         let filtered = this.schemaMapping["@graph"].filter(x => x['@id'] === uri)[0]
         return filtered
     }
+
+    
 }
 
 module.exports = Database
