@@ -1,6 +1,8 @@
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
 const qpl = require("graphql-tag")
 const util = require('util')
+var appRoot = require('app-root-path');
+const logger = require(`${appRoot}/config/winston`);
 
 handleDataTypeResolver = (tree, object) => {
     let newResolverBody = {}
@@ -77,13 +79,7 @@ handleClassTypeResolver = (tree, object, database) => {
                 const name = uri;
                 let constr = (name) => {
                     return async (parent) => {
-                        
                         let data = await database.getObjectsValueArray((parent), (name));
-                        // console.log("\n DANE DO UNII SA Z:")
-                        // console.log(data)
-                        // console.log(name)
-                        // await database.loadChildObjectsFromDBForUnion((data), (name), undefined)
-
                         return data;
                     }
                 };
@@ -97,11 +93,7 @@ handleClassTypeResolver = (tree, object, database) => {
                 let constr = (name, isItList, type, objectType) => {
                     return (async (parent, args) => {
                         if (name === "@reverse") {
-                            // console.log("LADUJE REVERSE :")
-                            // console.log(parent)
                             let data = database.getTriplesByObjectUri(parent);
-                            // console.log(data)
-                            // console.log("\n\n")
                             return data;
                         }
 
@@ -110,12 +102,8 @@ handleClassTypeResolver = (tree, object, database) => {
                         }
 
                         if (isItList) {
-                            // console.log("LOAD CHILDREN")
                             if (objectType === "http://schema.org/DataType") {
-                                // console.log("O TO PYTAM")
-                                // console.log(name)
                                 let data = await database.getObjectsValueArray((parent), (name), true);
-                                // console.log(data)
                                 return data
                             }
                             else {
@@ -123,8 +111,6 @@ handleClassTypeResolver = (tree, object, database) => {
                             }
                         }
                         else {
-
-                            // console.log(parent)
                             return database.getSingleLiteral((parent), (name));
                         }
                     })
@@ -181,10 +167,6 @@ handleUnionTypeResolver = (tree, object, database) => {
             }
             typesOfObject = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0];
             if(typesOfObject === undefined){
-                // console.log(parent)
-                // console.log(typesOfObject)
-                // console.log(typeOfInspectedObject)
-                // try to resolve type ... some dumb shity magic
                 let possibleTypes = name.split('_')
                 if(possibleTypes.includes('Text')){
                     return "Text"
@@ -229,10 +211,8 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     // -------------------------------------------------- CREATE RESOLVERS
     let objectsFromSchemaObjectTree = [];
     for (var propertyName in tree) { objectsFromSchemaObjectTree.push(tree[propertyName]); };
-    // console.log(objectsFromSchemaTree)
 
     for (var object in tree) {
-        // console.log("\nNEW OBJECT\n")
 
         if (tree[object].type === "http://schema.org/DataType") {
             let newResolver = tree[object].name;
@@ -243,10 +223,10 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let uri = tree[object]['uri'];
             let constr = (uri) => {
                 return async (parent, args, context, info) => {
-                    // console.log(util.inspect(info['operation'], false, null, true /* enable colors */))
+                    logger.debug(util.inspect(info['operation'], false, null, true /* enable colors */))
+                    logger.info(`Query started for ${uri}`)
                     let data = await database.loadQueryData(info['operation'], uri, args.page, args.inferred, tree);
-                    console.log(`Finall db calls : ${database.dbCallCounter}`)
-                    // let data = await database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred, args.page);
+                    logger.info(`Finall db calls : ${database.dbCallCounter}`)
                     data = database.pages[args.page];
                     return data;
                 }
@@ -274,21 +254,19 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         }
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
-                console.log(util.inspect(info['operation'], false, null, true /* enable colors */))
+                logger.debug(util.inspect(info['operation'], false, null, true /* enable colors */))
                 let data = await database.loadQueryData(info['operation'], "http://schema.org/Thing", args.page, args.inferred, tree)
-                // data = await database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred, args.page, {});
                 data = database.pages[args.page];
                 data = data.map(async (id) => { return { '_id': id, '_type': await database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;
             }
         }
         else {
-            console.log("UNHANDLED TYPE")
-            console.log(object)
-            console.log(tree[object].type)
+            logger.warn("UNHANDLED TYPE")
+            logger.warn(object)
+            logger.warn(tree[object].type)
         }
     }
-    //console.log(queryResolverBody);
     return queryResolverBody;
 }
 

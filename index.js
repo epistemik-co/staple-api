@@ -1,6 +1,7 @@
 const { makeExecutableSchema } = require('graphql-tools');
 const { graphql } = require('graphql');
 const Demo = require('./demo')
+const winston = require('./config/winston');
 
 let demo = new Demo();
 demo.run()
@@ -31,12 +32,11 @@ class Staple {
 
 function showMemUsage() {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
-    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    logger.info(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     return Math.round(used * 100) / 100;
 }
 
 // setInterval(showMemUsage, 1000); //time is in ms
-
 
 
 module.exports = {

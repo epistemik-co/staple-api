@@ -1,6 +1,9 @@
 const read_graphy = require('graphy').content.nq.read;
 const factory = require('@graphy/core.data.factory');
 
+var appRoot = require('app-root-path');
+const logger = require(`${appRoot}/config/winston`);
+
 function createReverseContext(schemaMapping) {
     schemaMapping['@revContext'] = {};
     for (let key in schemaMapping['@context']) {
@@ -83,7 +86,7 @@ async function getFlatJson(databaseObject) {
             x = itr.next();
         }
 
-        // console.log(allRelatedQuads)
+        // logger.debug(allRelatedQuads)
         //create json
         let newJson = {
             "_id": id,
@@ -94,7 +97,7 @@ async function getFlatJson(databaseObject) {
 
         for (let quad in allRelatedQuads) {
             quad = allRelatedQuads[quad]
-            // console.log(quad)
+            // logger.debug(quad)
             if (quad.subject.value === id) {
                 if (quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
                     let contextKey = databaseObject.schemaMapping['@revContext'][quad.object.value]
@@ -205,7 +208,7 @@ function quadFix(quad) {
                 quad.object.datatype.value = typesMap[quad.object.datatype.value];
             }
             else {
-                console.log(quad.object.datatype.value)
+                debug.warn(quad.object.datatype.value)
                 quad.object.datatype.value = "http://schema.org/Text";
             }
         }
@@ -214,7 +217,6 @@ function quadFix(quad) {
     // stage 5 - Remove the 4th element in the quad .
     quad.graph = factory.namedNode(null);
 
-    console.log(quad)
     return quad;
 }
 

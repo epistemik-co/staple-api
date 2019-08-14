@@ -6,6 +6,8 @@ const jsonld = require('jsonld');
 const databaseUtilities = require('./databaseUtilities')
 const mongodbUtilities = require('./mongodb/Utilities');
 const util = require('util')
+var appRoot = require('app-root-path');
+const logger = require(`${appRoot}/config/winston`);
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
@@ -18,6 +20,8 @@ class Database {
         this.pages = [];
         this.flatJsons = [];
         this.dbCallCounter = 0;
+
+        logger.log('info', "Database is ready to use");
     }
 
     // ---
@@ -288,7 +292,6 @@ class Database {
             counter = counter + 1;
             x = itr.next();
         }
-        console.log(counter)
         return counter;
     }
 
@@ -298,25 +301,19 @@ class Database {
 
 
     async loadChildObjectsFromDBForUnion(sub, pred = undefined, type = undefined) {
-        console.log('\x1b[36m%s\x1b[0m', `loadChildObjectsFromDBForUnion was called with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
+        logger.info(`loadChildObjectsFromDBForUnion was called`)
+        logger.debug(`with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
+        
         this.dbCallCounter = this.dbCallCounter + 1;
-        var start = new Date().getTime();
         await mongodbUtilities.loadChildObjectsByUris(this, sub, pred, type);
-
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `This query took ${elapsed} ms`)
-        console.log("\x1b[0m", "\n");
     }
 
     async loadCoreQueryDataFromDB(type, page = 1, query = undefined, inferred = false) {
-        console.log('\x1b[36m%s\x1b[0m', `loadCoreQueryDataFromDB was called with arguments : type: ${type} page: ${page} query: ${query} inferred: ${inferred} `)
-        this.dbCallCounter = this.dbCallCounter + 1;
-        var start = new Date().getTime();
-        await mongodbUtilities.loadCoreQueryDataFromDB(this, type, page, query, inferred);
+        logger.info(`loadCoreQueryDataFromDB was called`)
+        logger.debug(`with arguments : type: ${type} page: ${page} query: ${query} inferred: ${inferred} `)
 
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `This query took ${elapsed} ms`)
-        console.log("\x1b[0m", "\n");
+        this.dbCallCounter = this.dbCallCounter + 1;
+        await mongodbUtilities.loadCoreQueryDataFromDB(this, type, page, query, inferred);
     }
 
     async mongodbAddOrUpdate() {
@@ -368,12 +365,16 @@ class Database {
     }
 
     async searchForDataRecursively(selectionSet, uri, tree, reverse = false) {
-        console.log('\x1b[33m%s\x1b[0m', "\nsearchForDataRecursively")
-        console.log(`Started function searchForDataRecursively with args: \nselectionSet: ${selectionSet}\nuri: ${uri}\ntree: ${tree}\nlastName: ${reverse}`)
-        console.log(`QUADS : ${this.database.size}`)
-        this.countObjects();
-        // console.log(util.inspect(selectionSet, false, null, true /* enable colors */))
-        console.log("\n\n")
+
+        logger.info(`searchForDataRecursively was called`)
+        logger.debug(`Started function searchForDataRecursively with args:\n
+        selectionSet: ${selectionSet}\n
+        uri: ${uri}\n
+        tree: ${tree}\n
+        reverse: ${reverse}\n
+        QUADS : ${this.database.size}\n
+        Objects : ${this.countObjects()}\n
+        \n`);
 
         let name = undefined;
         for (let selection of selectionSet['selections']) {
@@ -381,16 +382,11 @@ class Database {
             if(selection.kind === "InlineFragment"){
                 await this.searchForDataRecursively(selection['selectionSet'], uri, tree, false);
             }
-
-            if (selection['selectionSet'] !== undefined && selection.name !== undefined) {
+            else if (selection['selectionSet'] !== undefined && selection.name !== undefined) {
 
                 name = selection.name.value;
                 let newUris = [];
-                let type = this.schemaMapping["@context"][name];
-                // console.log("tego chcemy")
-                // console.log(uri)
-                // console.log(name)
-                // console.log(type)
+                let type = this.schemaMapping["@context"][name]; 
 
                 if (type === "@reverse") {
                     await this.searchForDataRecursively(selection['selectionSet'], uri, tree, true);
@@ -414,8 +410,6 @@ class Database {
                     }
 
                     newUris = [...new Set(newUris)];
-                    // console.log("uris :")
-                    // console.log(newUris)
                     if (newUris.length > 0) {
                         await this.loadChildObjectsFromDBForUnion(newUris)
                         await this.searchForDataRecursively(selection['selectionSet'], newUris, tree)
@@ -424,9 +418,9 @@ class Database {
                 }
             }
             else{
-                console.log("NOPE TEGO NIE CHCEMY")
-                console.log(selection.kind)
-                console.log(selection.name)
+                logger.debug("Skiped object from query")
+                logger.debug(selection.kind)
+                logger.debug(selection.name)
             }
         }
     }

@@ -7,6 +7,9 @@ const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema2');
 const Resolver = require('./resolvers/resolvers');
 
+var morgan = require('morgan');
+const logger = require('./config/winston');
+
 class Demo {
     constructor() {
         this.database = new DatabaseInterface(require('./schema/schema-mapping2'));
@@ -32,6 +35,7 @@ class Demo {
                 return response;
             },
         });
+        logger.info("Endpoint is ready")
     }
 
     run() {
@@ -39,10 +43,16 @@ class Demo {
         app.use(bodyParser.json({ limit: '50mb', extended: true }))
         app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
         app.use(bodyParser.text({ limit: '50mb', extended: true }));
+        //app.use(morgan('combined', { stream: winston.stream }));
+
+
+        // winston.log('silly', "127.0.0.1 - there's no place like home");
+        // winston.log('debug', "127.0.0.1 - there's no place like home");
+        // winston.log('info', "127.0.0.1 - there's no place like home");
 
         this.server.applyMiddleware({ app });
         app.listen({ port: 4000 }, () =>
-            console.log(`🚀 Server ready at http://localhost:4000${this.server.graphqlPath}`)
+            logger.log('info', `🚀 Server ready at http://localhost:4000${this.server.graphqlPath}`)
         );
 
         this.addEndPoints(app);
@@ -56,7 +66,7 @@ class Demo {
             try {
                 const todo = req.body;
                 const rdf = await jsonld.toRDF(todo, { format: 'application/n-quads' });
-                console.log(rdf)
+                logger.silly(rdf)
                 this.database.insertRDF(rdf);
 
             } catch (error) {
@@ -65,10 +75,6 @@ class Demo {
                     message: error
                 })
             }
-
-            var end = new Date().getTime();
-            var time = end - start;
-            console.log('Execution time on local of data loading: ' + time / 1000 + ' s.');
 
             return res.status(201).send({
                 success: 'true',
@@ -79,11 +85,11 @@ class Demo {
         // This end-point should create data for qraphql mutation and run it.
         app.post('/api/uploadRDF', async (req, res) => {
             try {
-                console.log("RECIVED RDF")
+                logger.info("Recived RDF")
                 const todo = req.body;
                 await this.database.insertRDF(todo, undefined, true);
-                console.log(this.database.database.size)
-                console.log(await this.database.getFlatJson())
+                logger.info(`Database size: ${this.database.database.size}`)
+                // logger.info(await this.database.getFlatJson())
                 this.database.countObjects()
             } catch (error) {
                 return res.status(500).send({
@@ -98,7 +104,6 @@ class Demo {
             })
         });
     }
-
 }
 
 module.exports = Demo

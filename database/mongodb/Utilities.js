@@ -1,6 +1,9 @@
 const MongoClient = require('mongodb').MongoClient;
 const jsonld = require('jsonld');
-const util = require('util')
+const util = require('util');
+
+var appRoot = require('app-root-path');
+const logger = require(`${appRoot}/config/winston`);
 
 const url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";  //'mongodb://127.0.0.1:27017' //  
 const dbName = 'staple2'
@@ -8,9 +11,9 @@ const collectionName = 'Buildings2'
 
 
 async function loadChildObjectsByUris(database, sub, pred, type) {
-
+    logger.log('info', 'loadChildObjectsByUris was called')
     if (database.client === undefined) {
-        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { console.log(err); });
+        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
     }
 
     try {
@@ -20,11 +23,8 @@ async function loadChildObjectsByUris(database, sub, pred, type) {
         let query = { "_id": { "$in": sub } }
 
 
-        var start = new Date().getTime();
+        logger.debug(`Mongo db query:\n${ util.inspect(query, false, null, true /* enable colors */) }`);
         let result = await collection.find(query).toArray();
-        console.log(query);
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
 
         result = result.map(x => {
             x['@context'] = database.schemaMapping['@context'];
@@ -43,21 +43,20 @@ async function loadChildObjectsByUris(database, sub, pred, type) {
             ids = [...ids, ...tempIds]
         })
 
-        var start = new Date().getTime();
+        logger.debug(`Graphy database rdf insert start`);
         await database.insertRDF(rdf, ids);
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `insertRDF to database took ${elapsed} ms`)
+        logger.debug(`Graphy database rdf insert end`);
 
 
     } catch (err) {
-        console.log(err);
-    } 
+        logger.error(err);
+    }
 }
 
 async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
-    
+
     if (database.client === undefined) {
-        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { console.log(err); });
+        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
     }
 
 
@@ -69,7 +68,6 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
 
         if (query === undefined) {
             _type = database.schemaMapping['@revContext'][type];
-            // console.log(_type)
         }
 
         if (_type !== undefined) {
@@ -81,17 +79,14 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
             }
         }
 
-        var start = new Date().getTime();
         let result;
         if (page === undefined) {
             result = await collection.find(query).toArray();
         }
         else {
+            logger.debug(`Mongo db query:\n${ util.inspect(query, false, null, true /* enable colors */) }`);
             result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
-            console.log(query);
         }
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `MONGO db call took ${elapsed} ms`)
 
         // save page conetnt
         database.pages[page] = result.map(x => x['_id'])
@@ -113,18 +108,14 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
 
             ids = [...ids, ...tempIds]
         })
-
-
-        var start = new Date().getTime();
+        
+        logger.debug(`Graphy database rdf insert start`);
         await database.insertRDF(rdf, ids);
-        var elapsed = new Date().getTime() - start;
-        console.log("\x1b[31m", `insertRDF to database took ${elapsed} ms`)
-        var elapsed = new Date().getTime() - start2;
-        console.log("\x1b[31m", `loadCoreQueryDataFromDB without connecting took  ${elapsed} ms`)
+        logger.debug(`Graphy database rdf insert end`);
 
     } catch (err) {
-        console.log(err);
-    } 
+        logger.error(err);
+    }
 
 }
 
@@ -147,9 +138,12 @@ async function mongodbAddOrUpdate(flatJsons) {
             //     });
             // }
             collection.insertMany(flatJsons, function (err, res) {
-                console.log("dodane do bazy")
-                console.log(err)
-                if (err) throw err;
+                logger.info("Dodano flatJson do bazy")
+                logger.debug(flatJsons)
+                if (err) {
+                    logger.error(err);
+                    throw err;
+                }
             });
             db.close();
         }
