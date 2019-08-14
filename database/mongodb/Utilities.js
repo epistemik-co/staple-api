@@ -4,26 +4,27 @@ const util = require('util');
 
 var appRoot = require('app-root-path');
 const logger = require(`${appRoot}/config/winston`);
+const databaseCredentials = require(`${appRoot}/config/database`);
 
-const url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";  //'mongodb://127.0.0.1:27017' //  
-const dbName = 'staple2'
-const collectionName = 'Buildings2'
+// const databaseCredentials.url = "mongodb+srv://Artur:LR04f444qjPAa6Ul@staple-ximll.mongodb.net/test?retryWrites=true&w=majority";  //'mongodb://127.0.0.1:27017' //  
+// const databaseCredentials.dbName = 'staple2'
+// const databaseCredentials.collectionName = 'Buildings2'
 
 
 async function loadChildObjectsByUris(database, sub, pred, type) {
     logger.log('info', 'loadChildObjectsByUris was called')
     if (database.client === undefined) {
-        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        database.client = await MongoClient.connect(databaseCredentials.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
     }
 
     try {
-        const db = database.client.db(dbName);
-        let collection = db.collection(collectionName);
+        const db = database.client.db(databaseCredentials.dbName);
+        let collection = db.collection(databaseCredentials.collectionName);
 
         let query = { "_id": { "$in": sub } }
 
 
-        logger.debug(`Mongo db query:\n${ util.inspect(query, false, null, true /* enable colors */) }`);
+        logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
         let result = await collection.find(query).toArray();
 
         result = result.map(x => {
@@ -56,14 +57,14 @@ async function loadChildObjectsByUris(database, sub, pred, type) {
 async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
 
     if (database.client === undefined) {
-        database.client = await MongoClient.connect(url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        database.client = await MongoClient.connect(databaseCredentials.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
     }
 
 
     try {
         var start2 = new Date().getTime();
-        const db = database.client.db(dbName);
-        let collection = db.collection(collectionName);
+        const db = database.client.db(databaseCredentials.dbName);
+        let collection = db.collection(databaseCredentials.collectionName);
         let _type = undefined;
 
         if (query === undefined) {
@@ -84,7 +85,7 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
             result = await collection.find(query).toArray();
         }
         else {
-            logger.debug(`Mongo db query:\n${ util.inspect(query, false, null, true /* enable colors */) }`);
+            logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
             result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
         }
 
@@ -108,7 +109,7 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
 
             ids = [...ids, ...tempIds]
         })
-        
+
         logger.debug(`Graphy database rdf insert start`);
         await database.insertRDF(rdf, ids);
         logger.debug(`Graphy database rdf insert end`);
@@ -120,12 +121,12 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
 }
 
 async function mongodbAddOrUpdate(flatJsons) {
-    MongoClient.connect(url, async function (err, db) {
+    MongoClient.connect(databaseCredentials.url, async function (err, db) {
         if (err) {
             throw err;
         } else {
-            var dbo = db.db(dbName);
-            let collection = dbo.collection(collectionName);
+            var dbo = db.db(databaseCredentials.dbName);
+            let collection = dbo.collection(databaseCredentials.collectionName);
 
             // let result = await collection.find({ "_id": flatJson['_id'] }).toArray();
 
@@ -137,13 +138,14 @@ async function mongodbAddOrUpdate(flatJsons) {
             //         if (err) throw err;
             //     });
             // }
-            collection.insertMany(flatJsons, function (err, res) {
-                logger.info("Dodano flatJson do bazy")
-                logger.debug(flatJsons)
+            await collection.insertMany(flatJsons, function (err, res) {
                 if (err) {
                     logger.error(err);
-                    throw err;
                 }
+                else {
+                    logger.info("Dodano flatJson do bazy")
+                }
+                logger.debug(util.inspect(flatJsons, false, null, true))
             });
             db.close();
         }

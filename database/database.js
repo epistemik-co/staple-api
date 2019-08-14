@@ -13,6 +13,8 @@ const logger = require(`${appRoot}/config/winston`);
 class Database {
     constructor(schemaMapping) {
         databaseUtilities.createReverseContext(schemaMapping)
+        databaseUtilities.createGraphMap(schemaMapping)
+        console.log(schemaMapping['@graphMap']['http://schema.org/warranty'])
         this.schemaMapping = schemaMapping;
 
         this.database = dataset_tree();
@@ -303,7 +305,7 @@ class Database {
     async loadChildObjectsFromDBForUnion(sub, pred = undefined, type = undefined) {
         logger.info(`loadChildObjectsFromDBForUnion was called`)
         logger.debug(`with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
-        
+
         this.dbCallCounter = this.dbCallCounter + 1;
         await mongodbUtilities.loadChildObjectsByUris(this, sub, pred, type);
     }
@@ -321,11 +323,11 @@ class Database {
         this.flatJsons = [];
     }
 
-    async insertRDF(rdf, ID, tryToFix = false) {
+    async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
         if (ID !== undefined && ID[0] === undefined) {
             ID = [];
         }
-        await databaseUtilities.insertRDFPromise(this.database, ID, rdf, this.schemaMapping, tryToFix);
+        await databaseUtilities.insertRDFPromise(this.database, ID, rdf, this.schemaMapping, tryToFix, uuid);
         this.updateInference();
     }
 
@@ -369,7 +371,7 @@ class Database {
         logger.info(`searchForDataRecursively was called`)
         logger.debug(`Started function searchForDataRecursively with args:
         \tselectionSet: ${selectionSet}
-        \turi: ${util.inspect(uri, false, null, true /* enable colors */)  }
+        \turi: ${util.inspect(uri, false, null, true /* enable colors */)}
         \ttree: ${tree}
         \treverse: ${reverse}
         \tQUADS : ${this.database.size}
@@ -379,26 +381,26 @@ class Database {
         let name = undefined;
         for (let selection of selectionSet['selections']) {
 
-            if(selection.kind === "InlineFragment"){
+            if (selection.kind === "InlineFragment") {
                 await this.searchForDataRecursively(selection['selectionSet'], uri, tree, false);
             }
             else if (selection['selectionSet'] !== undefined && selection.name !== undefined) {
 
                 name = selection.name.value;
                 let newUris = [];
-                let type = this.schemaMapping["@context"][name]; 
+                let type = this.schemaMapping["@context"][name];
 
                 if (type === "@reverse") {
                     await this.searchForDataRecursively(selection['selectionSet'], uri, tree, true);
                 }
-                else{
+                else {
                     for (let id of uri) {
                         let data = [];
-                        if(reverse){
-                             data = await this.getSubjectsValueArray( type, id);
+                        if (reverse) {
+                            data = await this.getSubjectsValueArray(type, id);
                         }
-                        else{
-                             data = await this.getObjectsValueArray(id, type);
+                        else {
+                            data = await this.getObjectsValueArray(id, type);
                         }
 
                         for (let x of data) {
@@ -414,10 +416,10 @@ class Database {
                         await this.loadChildObjectsFromDBForUnion(newUris)
                         await this.searchForDataRecursively(selection['selectionSet'], newUris, tree)
                     }
-                    
+
                 }
             }
-            else{
+            else {
                 logger.debug("Skiped object from query")
                 logger.debug(selection.kind)
                 logger.debug(selection.name)

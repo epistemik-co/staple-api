@@ -6,9 +6,10 @@ const { makeExecutableSchema } = require('graphql-tools');
 const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema2');
 const Resolver = require('./resolvers/resolvers');
-
+const uuidv1 = require('uuid/v1');
 var morgan = require('morgan');
 const logger = require('./config/winston');
+const util = require('util')
 
 class Demo {
     constructor() {
@@ -85,11 +86,14 @@ class Demo {
         // This end-point should create data for qraphql mutation and run it.
         app.post('/api/uploadRDF', async (req, res) => {
             try {
+                this.database.drop();
                 logger.info("Recived RDF")
                 const todo = req.body;
-                await this.database.insertRDF(todo, undefined, true);
+                let uuid = uuidv1();
+                logger.info(`UUID FOR NEW RDF ${uuid}`)
+                await this.database.insertRDF(todo, undefined, true, uuid);
                 logger.info(`Database size: ${this.database.database.size}`)
-                // logger.info(await this.database.getFlatJson())
+                logger.info(await this.database.getFlatJson())
                 this.database.countObjects()
             } catch (error) {
                 return res.status(500).send({
