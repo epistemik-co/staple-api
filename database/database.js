@@ -367,14 +367,14 @@ class Database {
     async searchForDataRecursively(selectionSet, uri, tree, reverse = false) {
 
         logger.info(`searchForDataRecursively was called`)
-        logger.debug(`Started function searchForDataRecursively with args:\n
-        selectionSet: ${selectionSet}\n
-        uri: ${uri}\n
-        tree: ${tree}\n
-        reverse: ${reverse}\n
-        QUADS : ${this.database.size}\n
-        Objects : ${this.countObjects()}\n
-        \n`);
+        logger.debug(`Started function searchForDataRecursively with args:
+        \tselectionSet: ${selectionSet}
+        \turi: ${util.inspect(uri, false, null, true /* enable colors */)  }
+        \ttree: ${tree}
+        \treverse: ${reverse}
+        \tQUADS : ${this.database.size}
+        \tObjects : ${this.countObjects()}
+        `);
 
         let name = undefined;
         for (let selection of selectionSet['selections']) {
