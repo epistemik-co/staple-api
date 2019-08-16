@@ -78,7 +78,7 @@ handleClassTypeResolver = (tree, object, database) => {
             if (tree[currentObject.name].type === "UnionType") {
                 const name = uri;
                 let constr = (name) => {
-                    return async (parent) => {
+                    return async (parent, args) => {
                         let data = await database.getObjectsValueArray((parent), (name));
                         return data;
                     }
@@ -107,7 +107,10 @@ handleClassTypeResolver = (tree, object, database) => {
                                 return data
                             }
                             else {
-                                return await database.getObjectsValueArray((parent), (name), false);
+                                let data = await getFilteredObjectsUri(database, parent, name, args)
+
+
+                                return data;
                             }
                         }
                         else {
@@ -148,7 +151,7 @@ handleUnionTypeResolver = (tree, object, database) => {
                 let inferedTypes = [];
                 // let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === typeOfInspectedObject });
                 let data = schemaMapping['@graphMap'][typeOfInspectedObject]
-                if(data !== undefined){
+                if (data !== undefined) {
                     let uris = data["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
                     for (let x in uris) {
                         inferedTypes.push(uris[x]['@id']);
@@ -200,6 +203,50 @@ handleReverseDataTypeResolver = (tree, object) => {
         newResolverBody[propertyName] = constr(uri);
     }
     return newResolverBody;
+}
+getFilteredObjectsUri = async (database, parent, name, args) => {
+    let tempData = await database.getObjectsValueArray((parent), (name), false);
+    // add ignoring bad filter fields !! ( from tree )
+    
+    let data = [];
+    if (args.filter !== undefined ){
+
+        for(let prop in args.filter){
+            let propUri = schemaMapping["@context"][prop];
+            
+            if(prop === "_id"){
+                for (let uri of tempData) {
+                    if (args.filter['_id'].includes(uri)) {
+                        data.push(uri)
+                    }
+                }
+            }
+            // else{
+            //     for(let uri of tempData){
+            //         let result = await database.getObjectsValueArray(uri, propUri, false);
+            //         console.log("--------------------------")
+            //         console.log(args.filter[prop])
+            //         console.log(result)
+            //         console.log("--------------------------")
+            //         console.log(result.filter(x=> args.filter[prop].includes(x)).length)
+            //         if (result.filter(x=> args.filter[prop].includes(x)).length === 0) {
+            //             console.log("jaja")
+            //             console.log("jaja")
+            //             console.log("jaja")
+            //             console.log("jaja")
+            //             data.push(uri)
+            //         }
+            //     }
+            // }
+
+        }
+    }
+    else {
+        data = tempData;
+    }
+    console.log(data)
+    
+    return data;
 }
 
 createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {

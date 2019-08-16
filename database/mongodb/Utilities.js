@@ -11,7 +11,7 @@ const databaseCredentials = require(`${appRoot}/config/database`);
 // const databaseCredentials.collectionName = 'Buildings2'
 
 
-async function loadChildObjectsByUris(database, sub, pred, type) {
+async function loadChildObjectsByUris(database, sub, filter) {
     logger.log('info', 'loadChildObjectsByUris was called')
     if (database.client === undefined) {
         database.client = await MongoClient.connect(databaseCredentials.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
@@ -21,8 +21,13 @@ async function loadChildObjectsByUris(database, sub, pred, type) {
         const db = database.client.db(databaseCredentials.dbName);
         let collection = db.collection(databaseCredentials.collectionName);
 
-        let query = { "_id": { "$in": sub } }
-
+        let query = filter;
+        if(query['_id'] === undefined){
+            query['_id'] = { "$in": sub } ;
+        } else{
+            // ???? remove rest of ids from sub from graphy ???
+            // apply filter in resolver !
+        }
 
         logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
         let result = await collection.find(query).toArray();

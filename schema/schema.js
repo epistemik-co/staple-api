@@ -315,13 +315,13 @@ type Organization {
   shareholderOf: [Organization]
 
   """An employee of an organization."""
-  employee: [Person]
+  employee(
+    """Include inferred types for this project."""
+    filter: Filter
+  ): [Person]
 
   """The number of employees in an organization."""
   noOfEmployees: Integer
-
-  """The name of an entity."""
-  name: Text
 
   """The URI identfier of the object."""
   _id(
@@ -480,7 +480,10 @@ type Person {
   shareholderOf: [Organization]
 
   """Affiliation of a person."""
-  affiliation: [Organization]
+  affiliation(
+    """Include inferred types for this project."""
+    filter: Filter
+  ): [Organization]
 
   """The name of an entity."""
   name: Text
@@ -664,10 +667,19 @@ input Thing_INPUT {
 
 """Filter."""
 input Filter {
+  """id"""
   _id: [ ID ]
+
+  """http://schema.org/legalName"""
+  legalName: [String]
+
+  """http://schema.org/noOfEmployees"""
+  noOfEmployees: [String] 
+
+  """http://schema.org/name"""
+  name: [String]
 }
 
 `
 
 module.exports = schemaString
-

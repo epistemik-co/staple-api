@@ -267,7 +267,7 @@ class Database {
             if (itrData.value.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
                 // let data = this.schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
                 let data = this.schemaMapping['@graphMap'][itrData.value.object.value];
-                if(data !== undefined){
+                if (data !== undefined) {
                     let uris = data["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
                     for (let x in uris) {
                         this.create(itrData.value.subject.value, this.stampleDataType, uris[x]['@id'])
@@ -303,12 +303,12 @@ class Database {
     }
 
 
-    async loadChildObjectsFromDBForUnion(sub, pred = undefined, type = undefined) {
+    async loadChildObjectsFromDBForUnion(sub, filter) {
         logger.info(`loadChildObjectsFromDBForUnion was called`)
-        logger.debug(`with arguments : sub: ${sub}  pred: ${pred}  type: ${type} `)
+        logger.debug(`with arguments : sub: ${sub}  query: ${filter} `)
 
         this.dbCallCounter = this.dbCallCounter + 1;
-        await mongodbUtilities.loadChildObjectsByUris(this, sub, pred, type);
+        await mongodbUtilities.loadChildObjectsByUris(this, sub, filter);
     }
 
     async loadCoreQueryDataFromDB(type, page = 1, query = undefined, inferred = false) {
@@ -361,14 +361,14 @@ class Database {
             else if (resolverName == coreSelectionSet['selections'][coreSelection].name.value) {
                 await this.loadCoreQueryDataFromDB(uri, page, filters, inferred);
                 coreIds = await this.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-                await this.searchForDataRecursively(coreSelectionSet['selections'][coreSelection]['selectionSet'], coreIds, tree, false);
+                await this.searchForDataRecursively(coreSelectionSet['selections'][coreSelection]['selectionSet'], coreIds, tree, false, resolverName);
             }
         }
 
         return coreIds;
     }
 
-    async searchForDataRecursively(selectionSet, uri, tree, reverse = false) {
+    async searchForDataRecursively(selectionSet, uri, tree, reverse = false, parentName = undefined) {
 
         logger.info(`searchForDataRecursively was called`)
         logger.debug(`Started function searchForDataRecursively with args:
@@ -383,26 +383,35 @@ class Database {
         let name = undefined;
         for (let selection of selectionSet['selections']) {
 
+
             if (selection.kind === "InlineFragment") {
-                await this.searchForDataRecursively(selection['selectionSet'], uri, tree, false);
+                await this.searchForDataRecursively(selection['selectionSet'], uri, tree, false, parentName);
             }
             else if (selection['selectionSet'] !== undefined && selection.name !== undefined) {
+                
+                logger.debug("Looking for:")
+                logger.debug(selection.kind)
+                logger.debug(util.inspect(selection.name,false,null,true))
 
                 name = selection.name.value;
                 let newUris = [];
                 let type = this.schemaMapping["@context"][name];
 
-                if (type === "@reverse") {
-                    await this.searchForDataRecursively(selection['selectionSet'], uri, tree, true);
+                if (type === "@reverse") { 
+                    await this.searchForDataRecursively(selection['selectionSet'], uri, tree, true, parentName);
                 }
                 else {
                     for (let id of uri) {
-                        let data = [];
+                        let data = []; 
                         if (reverse) {
                             data = await this.getSubjectsValueArray(type, id);
                         }
                         else {
+
                             data = await this.getObjectsValueArray(id, type);
+                            logger.debug(`Asked for ID TYPE`)
+                            logger.debug(util.inspect(id,false,null,true))
+                            logger.debug(util.inspect(type,false,null,true))
                         }
 
                         for (let x of data) {
@@ -414,9 +423,23 @@ class Database {
                     }
 
                     newUris = [...new Set(newUris)];
+                    
                     if (newUris.length > 0) {
-                        await this.loadChildObjectsFromDBForUnion(newUris)
-                        await this.searchForDataRecursively(selection['selectionSet'], newUris, tree)
+                        let filters = this.preparefilters(selection, tree, parentName);
+                        await this.loadChildObjectsFromDBForUnion(newUris, filters);
+                         
+                        let newParentName = tree[parentName].data[name];
+                        if (newParentName === undefined) {
+                            newParentName = {};
+                        }
+                        if (newParentName.kind === "ListType") {
+                            newParentName = newParentName.data.name
+                        }
+                        else {
+                            newParentName =  newParentName.name
+                        } 
+
+                        await this.searchForDataRecursively(selection['selectionSet'], newUris, tree, false, newParentName)
                     }
 
                 }
@@ -424,49 +447,84 @@ class Database {
             else {
                 logger.debug("Skiped object from query")
                 logger.debug(selection.kind)
-                logger.debug(selection.name)
+                logger.debug(util.inspect(selection.name,false,null,true))
             }
         }
     }
 
-    preparefilters(selection, tree) {
-        // console.log(util.inspect(selection,false,null,true))
+    preparefilters(selection, tree, parentName) { 
+        // console.log(util.inspect(selection,false,null,true)) 
         let query = {};
         let fieldName = selection.name.value;
-        let fieldData = tree[fieldName]
-        
-        if(fieldData === undefined){
-            return {};
+        let fieldData = tree[fieldName];
+
+        if (fieldData === undefined) {
+            fieldData = tree[parentName].data[fieldName];
+            if (fieldData === undefined) {
+                return {};
+            }
+            if (fieldData.kind === "ListType") {
+                fieldData = tree[fieldData.data.name]
+            }
+            else {
+                fieldData = tree[fieldData.name]
+            }
         }
-        for(let argument of selection.arguments){
-            if(argument.name.value === "filter"){
-                for(let filterField of argument.value.fields){
+
+
+
+
+        for (let argument of selection.arguments) {
+            if (argument.name.value === "filter") {
+                for (let filterField of argument.value.fields) {
                     console.log("OBJECT")
                     console.log(filterField)
                     console.log("\n\n")
-                    if(fieldData.data[filterField.name.value] !== undefined){
+                    if (fieldData.data[filterField.name.value] !== undefined) {
                         console.log("ADD TO THE FILTER QUERY")
 
-                        if(filterField.value.kind === "ListValue"){
-                            query[filterField.name.value] = {}
-                            query[filterField.name.value]['$in'] = []
-                            for(let elem of filterField.value.values){
-                                query[filterField.name.value]['$in'].push(elem.value)
+
+                        if (filterField.value.kind === "ListValue") {
+                            let objectFilterName = filterField.name.value;
+
+                            if (filterField.name.value !== '_id') {
+                                objectFilterName = objectFilterName + '._value';
+                            }
+
+                            query[objectFilterName] = {}
+                            query[objectFilterName]['$in'] = []
+
+                            for (let elem of filterField.value.values) {
+
+                                if (filterField.name.value === '_id') {
+                                    query[objectFilterName]['$in'].push(elem.value)
+                                }
+                                else {
+                                    query[objectFilterName]['$in'].push(elem.value)
+
+                                }
                             }
                         }
-                        else{
-                            query[filterField.name.value] = filterField.value.value;
+                        else {
+                            if (filterField.name.value === '_id') {
+                                query[filterField.name.value] = { '_value': filterField.value.value };
+                            }
+                            else {
+
+                                query[filterField.name.value] = filterField.value.value;
+                            }
                         }
 
                     }
-                    else{
+                    else {
                         console.log("SKIPPPPPP")
                     }
                 }
             }
         }
         console.log("FINAL QUERY FILETRS")
-        console.log(query)
+
+        console.log(util.inspect(query, false, null, true))
         // domyslnie taka postac
         // { _id: 'http://data/bluesB4', "legalName": {$in : [{ "_type":"Text", "_value":"Blues Brothers" }]} }
         return query
