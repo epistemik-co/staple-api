@@ -664,7 +664,7 @@ input Thing_INPUT {
 
 """Filter."""
 input Filter {
-  _id: ID
+  _id: [ ID ]
 }
 
 `

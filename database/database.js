@@ -446,7 +446,18 @@ class Database {
                     console.log("\n\n")
                     if(fieldData.data[filterField.name.value] !== undefined){
                         console.log("ADD TO THE FILTER QUERY")
-                        query[filterField.name.value] = filterField.value.value;
+
+                        if(filterField.value.kind === "ListValue"){
+                            query[filterField.name.value] = {}
+                            query[filterField.name.value]['$in'] = []
+                            for(let elem of filterField.value.values){
+                                query[filterField.name.value]['$in'].push(elem.value)
+                            }
+                        }
+                        else{
+                            query[filterField.name.value] = filterField.value.value;
+                        }
+
                     }
                     else{
                         console.log("SKIPPPPPP")
