@@ -73,10 +73,10 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
 
         if (_type !== undefined) {
             if (inferred) {
-                query = { _inferred: _type }
+                query['_inferred'] = _type 
             }
             else {
-                query = { _type: _type }
+                query['_type'] = _type 
             }
         }
 

@@ -553,6 +553,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
   ): [_OBJECT]
 
   """Get objects of type: Thing."""
@@ -561,6 +562,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -572,6 +574,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -583,6 +586,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -594,6 +598,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -656,6 +661,13 @@ input Thing_INPUT {
   """Types of the object."""
   _type: [_OBJECT_TYPES]
 }
+
+"""Filter."""
+input Filter {
+  _id: ID
+}
+
 `
 
 module.exports = schemaString
+

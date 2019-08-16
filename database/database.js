@@ -14,7 +14,6 @@ class Database {
     constructor(schemaMapping) {
         databaseUtilities.createReverseContext(schemaMapping)
         databaseUtilities.createGraphMap(schemaMapping)
-        console.log(schemaMapping['@graphMap']['http://schema.org/warranty'])
         this.schemaMapping = schemaMapping;
 
         this.database = dataset_tree();
@@ -266,13 +265,15 @@ class Database {
 
         while (!itrData.done) {
             if (itrData.value.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
-                let data = this.schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
-                for (let key in data) {
-                    let uris = data[key]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
+                // let data = this.schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
+                let data = this.schemaMapping['@graphMap'][itrData.value.object.value];
+                if(data !== undefined){
+                    let uris = data["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
                     for (let x in uris) {
                         this.create(itrData.value.subject.value, this.stampleDataType, uris[x]['@id'])
                     }
                 }
+
             }
             itrData = itr.next();
         }
@@ -352,12 +353,13 @@ class Database {
 
 
         for (let coreSelection in coreSelectionSet['selections']) {
+            let filters = this.preparefilters(coreSelectionSet['selections'][coreSelection], tree)
             if (coreSelectionSet["selections"][0].name.value === "_OBJECT") {
-                await this.loadCoreQueryDataFromDB(uri, page, {}, inferred);
+                await this.loadCoreQueryDataFromDB(uri, page, filters, inferred);
                 coreIds = await this.getSubjectsByType(uri, this.stampleDataType, inferred, page);
             }
             else if (resolverName == coreSelectionSet['selections'][coreSelection].name.value) {
-                await this.loadCoreQueryDataFromDB(uri, page, undefined, inferred);
+                await this.loadCoreQueryDataFromDB(uri, page, filters, inferred);
                 coreIds = await this.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
                 await this.searchForDataRecursively(coreSelectionSet['selections'][coreSelection]['selectionSet'], coreIds, tree, false);
             }
@@ -425,6 +427,38 @@ class Database {
                 logger.debug(selection.name)
             }
         }
+    }
+
+    preparefilters(selection, tree) {
+        // console.log(util.inspect(selection,false,null,true))
+        let query = {};
+        let fieldName = selection.name.value;
+        let fieldData = tree[fieldName]
+        
+        if(fieldData === undefined){
+            return {};
+        }
+        for(let argument of selection.arguments){
+            if(argument.name.value === "filter"){
+                for(let filterField of argument.value.fields){
+                    console.log("OBJECT")
+                    console.log(filterField)
+                    console.log("\n\n")
+                    if(fieldData.data[filterField.name.value] !== undefined){
+                        console.log("ADD TO THE FILTER QUERY")
+                        query[filterField.name.value] = filterField.value.value;
+                    }
+                    else{
+                        console.log("SKIPPPPPP")
+                    }
+                }
+            }
+        }
+        console.log("FINAL QUERY FILETRS")
+        console.log(query)
+        // domyslnie taka postac
+        // { _id: 'http://data/bluesB4', "legalName": {$in : [{ "_type":"Text", "_value":"Blues Brothers" }]} }
+        return query
     }
 }
 

@@ -31,8 +31,7 @@ function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false, uuid) 
                 y_quad.graph = factory.namedNode(null);
 
                 // add inverses 
-                let inverse = schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
-                inverse = inverse[0]
+                let inverse = schemaMapping['@graphMap'][y_quad.predicate.value]
                 if (inverse !== undefined) {
                     if (inverse['http://schema.org/inverseOf'] !== undefined) {
                         inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {

@@ -16,7 +16,7 @@ var options = {
         colorize: false,
     },
     console: {
-        level: 'info',
+        level: 'debug',
         handleExceptions: true,
         json: true,
         colorize: true,

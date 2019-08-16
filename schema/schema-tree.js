@@ -1,5 +1,5 @@
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
-const schemaString = require('./schema2');
+const schemaString = require('./schema');
 let schemaMapping = undefined;//require('./schema-mapping');
 var appRoot = require('app-root-path');
 const logger = require(`${appRoot}/config/winston`);
@@ -67,7 +67,8 @@ handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUnions) 
     else{
         newNode['uri'] = id;
 
-        let tempNewNodeType = schemaMapping["@graph"].filter((x) => { return x["@id"] === id })[0];
+        // let tempNewNodeType = schemaMapping["@graph"].filter((x) => { return x["@id"] === id })[0];
+        let tempNewNodeType = schemaMapping['@graphMap'][id];
 
         if (tempNewNodeType === undefined) {
             newNode['type'] = undefined;

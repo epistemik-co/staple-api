@@ -10,13 +10,13 @@ handleDataTypeResolver = (tree, object) => {
 
     for (var propertyName in tree[object].data) {
         if (propertyName === '_value') {
-            newResolverBody['_value'] = async (parent) => { if(parent.value === undefined) return parent; return parent.value }
+            newResolverBody['_value'] = async (parent) => { if (parent.value === undefined) return parent; return parent.value }
         }
         else if (propertyName === '_type') {
             newResolverBody['_type'] = (parent) => {
 
                 let types = ["http://schema.org/Text"];
-                if(parent.datatype !== undefined){
+                if (parent.datatype !== undefined) {
                     types = [parent.datatype.value]
                 }
 
@@ -126,7 +126,7 @@ handleUnionTypeResolver = (tree, object, database) => {
 
     let constr = (name) => {
         return async (parent, args, context, info) => {
-            
+
 
             let typesOfObject = tree[name].values.map(value => {
                 let uriToName = {};
@@ -135,7 +135,7 @@ handleUnionTypeResolver = (tree, object, database) => {
                 return uriToName;
             })
 
-            
+
             let typeOfInspectedObject = await database.getObjectsValueArray(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
             typeOfInspectedObject = typeOfInspectedObject[0];
 
@@ -146,14 +146,16 @@ handleUnionTypeResolver = (tree, object, database) => {
             if (searchedTypes === undefined) {
                 //look for infered types
                 let inferedTypes = [];
-                let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === typeOfInspectedObject });
-                for (let key in data) {
-                    let uris = data[key]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
+                // let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === typeOfInspectedObject });
+                let data = schemaMapping['@graphMap'][typeOfInspectedObject]
+                if(data !== undefined){
+                    let uris = data["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
                     for (let x in uris) {
                         inferedTypes.push(uris[x]['@id']);
                     }
-
                 }
+
+
 
                 for (let key in inferedTypes) {
                     for (let i in typesOfObject) {
@@ -166,9 +168,9 @@ handleUnionTypeResolver = (tree, object, database) => {
                 }
             }
             typesOfObject = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0];
-            if(typesOfObject === undefined){
+            if (typesOfObject === undefined) {
                 let possibleTypes = name.split('_')
-                if(possibleTypes.includes('Text')){
+                if (possibleTypes.includes('Text')) {
                     return "Text"
                 }
                 return possibleTypes[0];
@@ -223,7 +225,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             let uri = tree[object]['uri'];
             let constr = (uri) => {
                 return async (parent, args, context, info) => {
-                    logger.info(util.inspect(info['operation'], false, null, true /* enable colors */))
+                    logger.debug(util.inspect(info['operation'], false, null, true /* enable colors */))
                     logger.info(`Query started for ${uri}`)
                     let data = await database.loadQueryData(info['operation'], uri, args.page, args.inferred, tree);
                     logger.info(
