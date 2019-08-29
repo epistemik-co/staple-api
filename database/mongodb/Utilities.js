@@ -66,24 +66,26 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
     }
 
 
-    try {
-        var start2 = new Date().getTime();
+    try { 
         const db = database.client.db(databaseCredentials.dbName);
         let collection = db.collection(databaseCredentials.collectionName);
         let _type = undefined;
-
+ 
         if (query === undefined) {
             _type = database.schemaMapping['@revContext'][type];
+            query = {};
         }
 
         if (_type !== undefined) {
+
             if (inferred) {
                 query['_inferred'] = _type 
             }
             else {
                 query['_type'] = _type 
             }
-        }
+             
+        } 
 
         let result;
         if (page === undefined) {

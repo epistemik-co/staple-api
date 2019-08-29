@@ -278,8 +278,9 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
                     logger.info(
                         `Finall db calls : ${database.dbCallCounter}
                         \tQuads in graphy : ${database.database.size}
-                        \tObjects in graphy : ${database.countObjects()}`)
-                    data = database.pages[args.page];
+                        \tObjects in graphy : ${database.countObjects()}`) 
+                    // data = database.pages[args.page];
+                    console.log(data)
                     return data;
                 }
             };
@@ -308,7 +309,7 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
                 logger.debug(util.inspect(info['operation'], false, null, true /* enable colors */))
                 let data = await database.loadQueryData(info['operation'], "http://schema.org/Thing", args.page, args.inferred, tree)
-                data = database.pages[args.page];
+                // data = database.pages[args.page];
                 data = data.map(async (id) => { return { '_id': id, '_type': await database.getObjectsValueArray(id, database.stampleDataType) } });
                 return data;
             }

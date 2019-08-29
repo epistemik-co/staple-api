@@ -388,21 +388,21 @@ class Database {
                 await this.searchForDataRecursively(selection['selectionSet'], uri, tree, false, parentName);
             }
             else if (selection['selectionSet'] !== undefined && selection.name !== undefined) {
-                
+
                 logger.debug("Looking for:")
                 logger.debug(selection.kind)
-                logger.debug(util.inspect(selection.name,false,null,true))
+                logger.debug(util.inspect(selection.name, false, null, true))
 
                 name = selection.name.value;
                 let newUris = [];
                 let type = this.schemaMapping["@context"][name];
 
-                if (type === "@reverse") { 
+                if (type === "@reverse") {
                     await this.searchForDataRecursively(selection['selectionSet'], uri, tree, true, parentName);
                 }
                 else {
                     for (let id of uri) {
-                        let data = []; 
+                        let data = [];
                         if (reverse) {
                             data = await this.getSubjectsValueArray(type, id);
                         }
@@ -410,8 +410,8 @@ class Database {
 
                             data = await this.getObjectsValueArray(id, type);
                             logger.debug(`Asked for ID TYPE`)
-                            logger.debug(util.inspect(id,false,null,true))
-                            logger.debug(util.inspect(type,false,null,true))
+                            logger.debug(util.inspect(id, false, null, true))
+                            logger.debug(util.inspect(type, false, null, true))
                         }
 
                         for (let x of data) {
@@ -423,11 +423,11 @@ class Database {
                     }
 
                     newUris = [...new Set(newUris)];
-                    
+
                     if (newUris.length > 0) {
                         let filters = this.preparefilters(selection, tree, parentName);
                         await this.loadChildObjectsFromDBForUnion(newUris, filters);
-                         
+
                         let newParentName = tree[parentName].data[name];
                         if (newParentName === undefined) {
                             newParentName = {};
@@ -436,8 +436,8 @@ class Database {
                             newParentName = newParentName.data.name
                         }
                         else {
-                            newParentName =  newParentName.name
-                        } 
+                            newParentName = newParentName.name
+                        }
 
                         await this.searchForDataRecursively(selection['selectionSet'], newUris, tree, false, newParentName)
                     }
@@ -447,12 +447,12 @@ class Database {
             else {
                 logger.debug("Skiped object from query")
                 logger.debug(selection.kind)
-                logger.debug(util.inspect(selection.name,false,null,true))
+                logger.debug(util.inspect(selection.name, false, null, true))
             }
         }
     }
 
-    preparefilters(selection, tree, parentName) { 
+    preparefilters(selection, tree, parentName) {
         // console.log(util.inspect(selection,false,null,true)) 
         let query = {};
         let fieldName = selection.name.value;
@@ -527,6 +527,10 @@ class Database {
         console.log(util.inspect(query, false, null, true))
         // domyslnie taka postac
         // { _id: 'http://data/bluesB4', "legalName": {$in : [{ "_type":"Text", "_value":"Blues Brothers" }]} }
+
+        if(Object.keys(query).length === 0 && query.constructor === Object){
+            return undefined;
+        }
         return query
     }
 }
