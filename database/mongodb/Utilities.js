@@ -22,6 +22,9 @@ async function loadChildObjectsByUris(database, sub, filter) {
         let collection = db.collection(databaseCredentials.collectionName);
 
         let query = filter;
+        if(query === undefined){
+            query = {};
+        }
         if (query['_id'] === undefined) {
             query['_id'] = { "$in": sub };
         } else {
