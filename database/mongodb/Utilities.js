@@ -22,9 +22,9 @@ async function loadChildObjectsByUris(database, sub, filter) {
         let collection = db.collection(databaseCredentials.collectionName);
 
         let query = filter;
-        if(query['_id'] === undefined){
-            query['_id'] = { "$in": sub } ;
-        } else{
+        if (query['_id'] === undefined) {
+            query['_id'] = { "$in": sub };
+        } else {
             // ???? remove rest of ids from sub from graphy ???
             // apply filter in resolver !
         }
@@ -66,11 +66,11 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
     }
 
 
-    try { 
+    try {
         const db = database.client.db(databaseCredentials.dbName);
         let collection = db.collection(databaseCredentials.collectionName);
         let _type = undefined;
- 
+
         if (query === undefined) {
             _type = database.schemaMapping['@revContext'][type];
             query = {};
@@ -79,13 +79,13 @@ async function loadCoreQueryDataFromDB(database, type, page = 1, query = undefin
         if (_type !== undefined) {
 
             if (inferred) {
-                query['_inferred'] = _type 
+                query['_inferred'] = _type
             }
             else {
-                query['_type'] = _type 
+                query['_type'] = _type
             }
-             
-        } 
+
+        }
 
         let result;
         if (page === undefined) {
@@ -135,16 +135,36 @@ async function mongodbAddOrUpdate(flatJsons) {
             var dbo = db.db(databaseCredentials.dbName);
             let collection = dbo.collection(databaseCredentials.collectionName);
 
-            // let result = await collection.find({ "_id": flatJson['_id'] }).toArray();
+            let ids = flatJsons.map(flatJson => flatJson['_id'])
+            collection.deleteMany(
+                {"_id": { "$in" : ids}},
+                // flatJsons,
+                // {upsert: true}, 
+                // function (err, res) {
+                //     if (err) {
+                //         logger.error(err);
+                //     }
+                //     else {
+                //         logger.info("Dodano flatJson do bazy")
+                //     }
+                //     logger.debug(util.inspect(flatJsons, false, null, true))
+                // }
+                );
+            
+            // let newFlatJsons = [];
 
-            // if (result[0] !== undefined) {
-            //     collection.update({ _id: flatJson['_id'] }, flatJson);
+            // for (let flatJson of flatJsons) {
+                
+            //     let result = await collection.find({ "_id": flatJson['_id'] }).toArray();
+
+            //     if (result[0] !== undefined) {
+            //         collection.updateOne({ _id: flatJson['_id'] }, flatJson);
+            //     }
+            //     else{
+            //         newFlatJsons.push(flatJson)
+            //     }
             // }
-            // else {
-            //     collection.insertOne(flatJson, function (err, res) {
-            //         if (err) throw err;
-            //     });
-            // }
+
             await collection.insertMany(flatJsons, function (err, res) {
                 if (err) {
                     logger.error(err);
@@ -154,6 +174,8 @@ async function mongodbAddOrUpdate(flatJsons) {
                 }
                 logger.debug(util.inspect(flatJsons, false, null, true))
             });
+
+
             db.close();
         }
     })

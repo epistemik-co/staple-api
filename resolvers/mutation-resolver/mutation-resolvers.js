@@ -65,25 +65,28 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
             fieldFromSchemaTree = fieldFromSchemaTree[0];
 
             if (req.type === "INSERT") {
+                console.log("INSERT")
                 beforeInsert(database, objectID, fieldFromSchemaTree, req);
             }
             else if (req.type === "UPDATE") {
                 beforeUpdate(database, objectID, fieldFromSchemaTree);
             }
-
+            console.log("After insert")
             validators.validateUnion(fieldFromSchemaTree, schemaMapping, req, objectsFromSchemaObjectTree);
 
             let dataForQuads = req.input;
             dataForQuads["@context"] = schemaMapping["@context"];
             const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' });
-
-            await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings)
-
+            console.log("AFTER RDF")
+            // await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings)
+            console.log("After data validation")
             req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
 
 
             // Inference
             database.updateInference();
+            console.log("await this.database.getFlatJson()")
+            await database.getFlatJson()
             console.log(database.getAllQuads())
             return true;
         };

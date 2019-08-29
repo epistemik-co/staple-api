@@ -62,7 +62,7 @@ const validateIsIdDefined = (id) => {
 const validateData = async (database, objectID, rdf, ensureExists, reqType, Warnings) => {
     let dataForValidation = dataset_tree();
 
-    await database.insertRDFPromise(dataForValidation, objectID, rdf);
+    await database.insertRDF(dataForValidation, objectID, rdf);
 
     let temp = dataForValidation.match(null, null, null);
     let data = {};
