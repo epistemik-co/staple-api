@@ -13,6 +13,7 @@
     "graphy": "^3.2.2",
     "jsonld": "^1.6.2",
     "mongodb": "^3.3.0-beta2",
+    "uuid": "^3.3.3",
     "validator": "^11.0.0"
   },
   "devDependencies": {

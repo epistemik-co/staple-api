@@ -4,13 +4,37 @@ import { Playground, store } from "graphql-playground-react";
 import './PrivateDashboard.scss';
 import schemaString from '../../schema/schema'
 import SplitPane from 'react-split-pane'
-
+import axios from 'axios';
 
 class PrivateDashboard extends Component {
+
+  state = {
+    id: ""
+  }
 
   componentDidMount = () => {
     this.setPlaygroundHeight(null);
     window.addEventListener("resize", this.setPlaygroundHeight);
+
+
+    /// send request
+    console.log("send get")
+    // Make a request for a user with a given ID
+    this.getId();
+      // .then(function (response) {
+      //   // handle success
+      //   console.log(response);
+      //   this.setState({id: response})
+      // })
+
+
+  }
+
+  getId = async () => {
+    let res = await axios.get('http://localhost:4000/api/dynamic');
+    if(res.status === 200){
+      this.setState({id: res.data})
+    }
   }
 
   setPlaygroundHeight = (e) => {
@@ -34,27 +58,27 @@ class PrivateDashboard extends Component {
           </div>
           <div className="box-middle">
             <h3>Schema</h3>
-            <p>
+            <div>
               <code>
                 {schemaString.split('\n').map((item, i) => {
                   return <p key={i}>{item}</p>;
                 })}
               </code>
-            </p>
+            </div>
           </div>
           <div className="box-right">
             <h3>Context</h3>
-            <p>
+            <div>
               <code>
                 <div><pre>{JSON.stringify(require('../../schema/schema-mapping'), null, 2)}</pre></div>
               </code>
-            </p>
+            </div>
           </div>
         </div>
         <div className="box-grid">
           <div className="bottom-box">
             <Provider store={store}>
-              <Playground endpoint="http://localhost:4000/graphql" className="playground" id="playground" />
+              <Playground endpoint={"http://localhost:4000/graphql"+this.state.id} className="playground" id="playground" />
             </Provider>
           </div>
         </div>

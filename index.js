@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const uuidv1 = require('uuid/v1');
 const jsonld = require('jsonld');
 const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
@@ -17,6 +18,12 @@ const rootResolver = new Resolver(database, Warnings, require('./schema/schema-m
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
 
 function showMemUsage() {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
@@ -57,9 +64,7 @@ app.listen({ port: 4000 }, () =>
     console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
 );
 
-let i = 0;
-function init(app){
-    i = i + 1;
+function init(app, index){ 
     const database2 = new DatabaseInterface(require('./schema/schema-mapping'));
     const rootResolver = new Resolver(database2, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
     schema = makeExecutableSchema({
@@ -83,104 +88,19 @@ function init(app){
         },
     });
     
-    const path = '/graphql' + i;
+    const path = '/graphql' + index;
     server.applyMiddleware({ app, path });
-    console.log(`🚀 Server ready at http://localhost:4000${path}`)
-    
-    console.log("NEW SCHEMA AND DATABASE") 
-    app.get('/api/myruntimeroute' + i, function(req,res) {
+    app.get('/api/myruntimeroute' + index, function(req,res) {
         res.send({"runtime" : "route"});
     })
 }
 
 app.get('/api/dynamic', function(req,res) {
-    init(app);
-    res.send("done")
+    let id = uuidv1();
+    init(app, id);
+    res.send(id)
 });
-
-// This end-point should create data for qraphql mutation and run it.
-app.post('/api/upload', async (req, res) => { 
-    var start = new Date().getTime();
-    try {
-        const todo = req.body;
-        const rdf = await jsonld.toRDF(todo, { format: 'application/n-quads' });
-        console.log(rdf)
-        database.insertRDF(rdf);
-
-    } catch (error) {
-        return res.status(500).send({
-            success: 'false',
-            message: error
-        })
-    }
-
-    var end = new Date().getTime();
-    var time = end - start;
-    console.log('Execution time on local of data loading: ' + time / 1000 + ' s.');
-
-    return res.status(201).send({
-        success: 'true',
-        message: 'added successfully'
-    })
-});
-
-class Staple {
-    constructor(schemaLocation, contextLocation, configLocation){
-        this.DatabaseInterface = require('./database/Database');
-        this.schemaString = require(schemaLocation);//('./schema/schema');
-        this.schemaMapping = require(contextLocation);//('schema/schema-mapping');
-        this.Resolver = require('./resolvers/resolvers');
-        
-        this.database = new DatabaseInterface(this.schemaMapping);
-        
-        this.Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-        this.rootResolver = new Resolver(this.database, this.Warnings, this.schemaMapping).rootResolver; // Generate Resolvers for graphql
-        
-        this.schema = makeExecutableSchema({
-            typeDefs: this.schemaString,
-            resolvers: this.rootResolver,
-        });
-    }
-
-    async processQuery(query) {
-        let result = await graphql(this.schema, query, null, null, null);
-        return result;
-    }
-}
-
-app.get('/', async (req, res, next) => {
-    const Query = `
-    mutation{
-        Organization(type: INSERT, input: {
-        _id: "http://subject"
-        _type: Organization
-        legalName: {
-            _value: "Nazwa firmy"
-            _type: Text
-        }
-        employee: {
-            _type: Person
-            _id: "http://johnnyB"
-        }
-        shareholderOf:{
-            _type: Organization
-            _id: "http://data/bluesB"
-        }
-        noOfEmployees: {
-            _type: Integer
-            _value: "0"
-        }
-        })
-    }
-    `
-    const test = new Staple('./schema/schema', './schema/schema-mapping', "");
-    let info = await test.processQuery(Query)
-
-    res.send(info)
-})
-
 
 module.exports = {
-    app,
-    Staple
+    app, 
 };
