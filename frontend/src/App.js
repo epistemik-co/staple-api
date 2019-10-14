@@ -7,7 +7,7 @@ import PrivateDashboard from './components/privateDashboard/PrivateDashboard'
 class App extends Component {
   state = {
     queryDashboard: undefined,
-    privateDashboard: undefined
+    privateDashboard: true
   }
 
   render() {
