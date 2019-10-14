@@ -6,10 +6,12 @@ import schemaString from '../../schema/schema'
 import SplitPane from 'react-split-pane'
 import axios from 'axios';
 
+
 class PrivateDashboard extends Component {
 
   state = {
-    id: ""
+    id: "",
+    tabs: undefined
   }
 
   componentDidMount = () => {
@@ -21,19 +23,32 @@ class PrivateDashboard extends Component {
     console.log("send get")
     // Make a request for a user with a given ID
     this.getId();
-      // .then(function (response) {
-      //   // handle success
-      //   console.log(response);
-      //   this.setState({id: response})
-      // })
+    // .then(function (response) {
+    //   // handle success
+    //   console.log(response);
+    //   this.setState({id: response})
+    // })
 
 
   }
 
   getId = async () => {
     let res = await axios.get('http://localhost:4000/api/dynamic');
-    if(res.status === 200){
-      this.setState({id: res.data})
+    if (res.status === 200) {
+      this.setState({ id: res.data , tabs: [
+        {
+          "endpoint": "http://localhost:4000/graphql" + res.data,
+          "query": "defaultQuery",
+        },
+        {
+          "endpoint": "http://localhost:4000/graphql" + res.data,
+          "query": "defaultQuery",
+        },
+        {
+          "endpoint": "http://localhost:4000/graphql" + res.data,
+          "query": "defaultQuery",
+        },
+      ] })
     }
   }
 
@@ -78,7 +93,13 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box">
             <Provider store={store}>
-              <Playground endpoint={"http://localhost:4000/graphql"+this.state.id} className="playground" id="playground" />
+              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"
+                 
+                tabs= {this.state.tabs}
+                  
+                
+
+              />
             </Provider>
           </div>
         </div>

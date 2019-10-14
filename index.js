@@ -19,11 +19,11 @@ const rootResolver = new Resolver(database, Warnings, require('./schema/schema-m
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
-  });
+});
 
 function showMemUsage() {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
@@ -64,7 +64,7 @@ app.listen({ port: 4000 }, () =>
     console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
 );
 
-function init(app, index){ 
+function init(app, index) {
     const database2 = new DatabaseInterface(require('./schema/schema-mapping'));
     const rootResolver = new Resolver(database2, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
     schema = makeExecutableSchema({
@@ -86,21 +86,29 @@ function init(app, index){
             }
             return response;
         },
+        playground: {
+            tabs: [
+                    {
+                        endpoint: "http://localhost:4000/graphqlf6979840-ee82-11e9-aab9-b1c1091f3c88",
+                        query: "{Person}"
+                    }
+                ]
+            }
     });
-    
-    const path = '/graphql' + index;
-    server.applyMiddleware({ app, path });
-    app.get('/api/myruntimeroute' + index, function(req,res) {
-        res.send({"runtime" : "route"});
-    })
+
+const path = '/graphql' + index;
+server.applyMiddleware({ app, path });
+app.get('/api/myruntimeroute' + index, function (req, res) {
+    res.send({ "runtime": "route" });
+})
 }
 
-app.get('/api/dynamic', function(req,res) {
+app.get('/api/dynamic', function (req, res) {
     let id = uuidv1();
     init(app, id);
     res.send(id)
 });
 
 module.exports = {
-    app, 
+    app,
 };
