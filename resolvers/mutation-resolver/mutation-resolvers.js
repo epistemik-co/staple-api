@@ -5,7 +5,10 @@ const { GraphQLError } = require('graphql');
 const jsonld = require('jsonld');
 const validators = require('./validate-functions');
 
+const quadlimit = 500;
+
 beforeInsert = (database, objectID, fieldFromSchemaTree, req) => {
+    if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
     database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
     // Validation for single value types
     for (let propertyName in fieldFromSchemaTree.data) {
@@ -28,6 +31,7 @@ beforeInsert = (database, objectID, fieldFromSchemaTree, req) => {
 }
 
 beforeUpdate = (database, objectID, fieldFromSchemaTree) => {
+    if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
     database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
     // Remove old fields
     for (let propertyName in fieldFromSchemaTree.data) {
@@ -41,6 +45,7 @@ beforeUpdate = (database, objectID, fieldFromSchemaTree) => {
 }
 
 createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
+    if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
     schemaMapping = schemaMappingArg;
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let objectsFromSchemaObjectTree = [];
@@ -73,11 +78,11 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
 
             validators.validateUnion(fieldFromSchemaTree, schemaMapping, req, objectsFromSchemaObjectTree);
 
-            let dataForQuads = req.input;
+            let dataForQuads = req.input; 
             dataForQuads["@context"] = schemaMapping["@context"];
-            const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' });
+            const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' }); 
 
-            await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings)
+            await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings, quadlimit)
 
             req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
 
@@ -103,6 +108,7 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
     }
 
     newResolverBody['CREATE'] = (args, req) => {
+        if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
         const objectID = req.id;
         validators.validateIsIdDefined(objectID);
         validators.validateURI(objectID, "id");

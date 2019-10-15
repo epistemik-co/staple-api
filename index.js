@@ -85,15 +85,7 @@ function init(app, index) {
                 }
             }
             return response;
-        },
-        playground: {
-            tabs: [
-                    {
-                        endpoint: "http://localhost:4000/graphqlf6979840-ee82-11e9-aab9-b1c1091f3c88",
-                        query: "{Person}"
-                    }
-                ]
-            }
+        } 
     });
 
 const path = '/graphql' + index;

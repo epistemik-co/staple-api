@@ -59,10 +59,14 @@ const validateIsIdDefined = (id) => {
     }
 }
 
-const validateData = async (database, objectID, rdf, ensureExists, reqType, Warnings) => {
+const validateData = async (database, objectID, rdf, ensureExists, reqType, Warnings, quadlimit) => {
     let dataForValidation = dataset_tree();
 
     await database.insertRDFPromise(dataForValidation, objectID, rdf);
+
+    if(dataForValidation.size > quadlimit){
+         throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });
+    }
 
     let temp = dataForValidation.match(null, null, null);
     let data = {};
