@@ -71,7 +71,7 @@ class PrivateDashboard extends Component {
             </div>
             <textarea className="rdf-textarea" placeholder="CODE HERE"></textarea>
           </div>
-          <div className="box-middle">
+          {/* <div className="box-middle">
             <h3>Schema</h3>
             <div>
               <code>
@@ -80,12 +80,12 @@ class PrivateDashboard extends Component {
                 })}
               </code>
             </div>
-          </div>
+          </div> */}
           <div className="box-right">
             <h3>Context</h3>
-            <div>
+            <div class="context-box">
               <code>
-                <div><pre>{JSON.stringify(require('../../schema/schema-mapping'), null, 2)}</pre></div>
+                <div><pre>{JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2)}</pre></div>
               </code>
             </div>
           </div>
