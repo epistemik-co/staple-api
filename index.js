@@ -10,12 +10,9 @@ const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema');
 const Resolver = require('./resolvers/resolvers');
 
-const app = express();
-const database = new DatabaseInterface(require('./schema/schema-mapping'));
+const app = express(); 
 
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-const rootResolver = new Resolver(database, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
-const servers = []
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
@@ -26,43 +23,8 @@ app.use(function (req, res, next) {
     next();
 });
 
-function showMemUsage() {
-    const used = process.memoryUsage().heapUsed / 1024 / 1024;
-    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
-    return Math.round(used * 100) / 100;
-}
-
-// init GraphQL server with makeExecutableSchema() which is the critical bit 
-let schema = makeExecutableSchema({
-    typeDefs: schemaString,
-    resolvers: rootResolver,
-});
-
-// Graphql ApolloSerwer init
-let server = new ApolloServer({
-    schema,
-    formatResponse: response => {
-        if (response.errors !== undefined) {
-            response.data = false;
-        }
-        else {
-            if (response.data !== null && Warnings.length > 0) {
-                response["extensions"] = {}
-                response["extensions"]['Warning'] = [...Warnings];
-                Warnings.length = 0;
-            }
-        }
-        return response;
-    },
-});
-
-// app.use(path, jwtCheck);
-
-const path = '/graphql';
-server.applyMiddleware({ app, path });
-
 app.listen({ port: 4000 }, () =>
-    console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+    console.log(`🚀 Server ready`)
 );
 
 function init(app, index) {
@@ -88,14 +50,11 @@ function init(app, index) {
             return response;
         } 
     });
-
-    servers.push(server)
+ 
 
 const path = '/graphql' + index;
 server.applyMiddleware({ app, path });
-app.get('/api/myruntimeroute' + index, function (req, res) {
-    res.send({ "runtime": "route" });
-})
+ 
 }
 
 app.get('/api/dynamic', function (req, res) {
@@ -104,11 +63,15 @@ app.get('/api/dynamic', function (req, res) {
     res.send(id)
 });
 
-// setInterval(function(){
-//     const used = process.memoryUsage().heapUsed / 1024 / 1024;
-//     console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
-//     return Math.round(used * 100) / 100;
-//   }, 5000);
+setInterval(function(){
+    const used = process.memoryUsage().heapUsed / 1024 / 1024;
+    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    if(used > 100){
+        console.log("need to clear!")
+        
+    }
+    return Math.round(used * 100) / 100;
+  }, 5000);
 
 module.exports = {
     app,

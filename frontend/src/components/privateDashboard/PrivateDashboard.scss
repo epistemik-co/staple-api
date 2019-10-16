@@ -9,7 +9,7 @@
       font-size: calc(10px + 2vmin);
       color: white;
       display: grid;
-      grid-template-columns: 50% auto;
+      grid-template-columns: auto 33% auto;
       grid-template-rows: auto ;
       width: 100%;
     }
@@ -160,4 +160,15 @@
   
   .Resizer:hover, .horizontal:hover{
     background: #494949;
+  }
+
+  .button-close{
+    z-index: 999;
+    position: absolute;
+    right:0.7rem;
+    top:0.7rem;
+    background:none;
+    color:white;
+    font-weight: 700;
+    border-radius: 10%;
   }

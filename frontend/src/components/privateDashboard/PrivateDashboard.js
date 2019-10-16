@@ -11,7 +11,8 @@ class PrivateDashboard extends Component {
 
   state = {
     id: "",
-    tabs: undefined
+    tabs: undefined,
+    showObjects: true,
   }
 
   componentDidMount = () => {
@@ -86,21 +87,12 @@ class PrivateDashboard extends Component {
             </div> */}
 
             <div class="context-box"> {JSON.stringify(require('../../schema/raw-schema'), null, 2).split("\\n").map((item, i) => {
-                  return <p key={i}>{item}</p>;
-                })} 
+              return <p key={i}>{item}</p>;
+            })}
             </div>
           </div>
-          
-          {/* <div className="box-middle">
-            <h3>Schema</h3>
-            <div>
-              <code>
-                {schemaString.split('\n').map((item, i) => {
-                  return <p key={i}>{item}</p>;
-                })}
-              </code>
-            </div>
-          </div> */}
+
+
           <div className="box-right">
             <h3>Context</h3>
             <div class="context-box">
@@ -109,6 +101,23 @@ class PrivateDashboard extends Component {
               </code>
             </div>
           </div>
+
+          {this.state.showObjects ?
+            <div className="box-middle">
+              <h3>Objects</h3>
+              <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
+              <div>
+                <code>
+                  {schemaString.split('\n').map((item, i) => {
+                    return <p key={i}>{item}</p>;
+                  })}
+                </code>
+              </div>
+            </div> :
+            <React.Fragment>
+              <button className="button-close" onClick={x => this.setState({ showObjects: true })}>Show example objects</button>
+            </React.Fragment>
+          }
         </div>
         <div className="box-grid">
           <div className="bottom-box">
