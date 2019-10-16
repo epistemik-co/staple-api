@@ -27,7 +27,7 @@ class PrivateDashboard extends Component {
     //   // handle success
     //   console.log(response);
     //   this.setState({id: response})
-    // })
+    // }) 
 
 
   }
@@ -35,20 +35,22 @@ class PrivateDashboard extends Component {
   getId = async () => {
     let res = await axios.get('http://localhost:4000/api/dynamic');
     if (res.status === 200) {
-      this.setState({ id: res.data , tabs: [
-        {
-          "endpoint": "http://localhost:4000/graphql" + res.data,
-          "query": "defaultQuery",
-        },
-        {
-          "endpoint": "http://localhost:4000/graphql" + res.data,
-          "query": "defaultQuery",
-        },
-        {
-          "endpoint": "http://localhost:4000/graphql" + res.data,
-          "query": "defaultQuery",
-        },
-      ] })
+      this.setState({
+        id: res.data, tabs: [
+          {
+            "endpoint": "http://localhost:4000/graphql" + res.data,
+            "query": "defaultQuery",
+          },
+          {
+            "endpoint": "http://localhost:4000/graphql" + res.data,
+            "query": "defaultQuery",
+          },
+          {
+            "endpoint": "http://localhost:4000/graphql" + res.data,
+            "query": "defaultQuery",
+          },
+        ]
+      })
     }
   }
 
@@ -69,8 +71,26 @@ class PrivateDashboard extends Component {
               <h3>RDF</h3>
               <button className="rdf-compile button play"></button>
             </div>
-            <textarea className="rdf-textarea" placeholder="CODE HERE"></textarea>
+            {/* <textarea className="rdf-textarea" placeholder="CODE HERE">
+               
+                {JSON.stringify(require('../../schema/raw-schema'), null, 2)}
+            
+            </textarea> */}
+
+            {/* <div class="context-box">
+              <code>
+                <div><pre>{JSON.stringify(require('../../schema/raw-schema'), null, 2).split("\\n").map((item, i) => {
+                  return <p key={i}>{item}</p>;
+                })}</pre></div>
+              </code>
+            </div> */}
+
+            <div class="context-box"> {JSON.stringify(require('../../schema/raw-schema'), null, 2).split("\\n").map((item, i) => {
+                  return <p key={i}>{item}</p>;
+                })} 
+            </div>
           </div>
+          
           {/* <div className="box-middle">
             <h3>Schema</h3>
             <div>
@@ -94,10 +114,10 @@ class PrivateDashboard extends Component {
           <div className="bottom-box">
             <Provider store={store}>
               <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"
-                 
-                tabs= {this.state.tabs}
-                  
-                
+
+                tabs={this.state.tabs}
+
+
 
               />
             </Provider>

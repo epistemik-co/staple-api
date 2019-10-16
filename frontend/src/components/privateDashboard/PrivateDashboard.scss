@@ -93,11 +93,19 @@
       }
 
     }
+
+    .box-left {
+      div { 
+        word-wrap: break-word;
+      }
+      .context-box{
+        margin-top:2.5rem;
+      }
+    }
     
     .box-left p{
-      margin-top: 40px;
-    } 
-    
+      margin-top: 0;
+    }
     
     .box-middle {
       font-size: 12px;
