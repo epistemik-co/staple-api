@@ -1,145 +1,357 @@
 {
-    "@context": {
-      "_id": "@id",
-      "_value": "@value",
-      "_type": "@type",
-      "_reverse": "@reverse",
-      "Thing": "http://schema.org/Thing",
-      "Organization": "http://schema.org/Organization",
-      "Person": "http://schema.org/Person",
-      "Patient": "http://schema.org/Patient",
-      "Text": "http://schema.org/Text",
-      "Number": "http://schema.org/Number",
-      "Integer": "http://schema.org/Integer",
-      "legalName": "http://schema.org/legalName",
-      "hasShareholder": "http://schema.org/hasShareholder",
-      "shareholderOf": "http://schema.org/shareholderOf",
-      "employee": "http://schema.org/employee",
-      "affiliation": "http://schema.org/affiliation",
-      "noOfEmployees": "http://schema.org/noOfEmployees",
-      "name": "http://schema.org/name"
+  "@context": {
+    "_id": "@id",
+    "_value": "@value",
+    "_type": "@type",
+    "_reverse": "@reverse",
+    "Thing": "http://schema.org/Thing",
+    "Organization": "http://schema.org/Organization",
+    "Person": "http://schema.org/Person",
+    "Country": "http://schema.org/Country",
+    "Place": "http://schema.org/Place",
+    "PostalAddress": "http://schema.org/PostalAddress",
+    "Product": "http://schema.org/Product",
+    "Service": "http://schema.org/Service",
+    "CreativeWork": "http://schema.org/CreativeWork",
+    "Offer": "http://schema.org/Offer",
+    "Text": "http://schema.org/Text",
+    "Date": "http://schema.org/Date",
+    "Number": "http://schema.org/Number",
+    "Integer": "http://schema.org/Integer",
+    "employee": "http://schema.org/employee",
+    "worksFor": "http://schema.org/worksFor",
+    "name": "http://schema.org/name",
+    "legalName": "http://schema.org/legalName",
+    "funder": "http://schema.org/funder",
+    "address": "http://schema.org/address",
+    "addressCountry": "http://schema.org/addressCountry",
+    "manufacturer": "http://schema.org/manufacturer",
+    "provider": "http://schema.org/provider",
+    "isRelatedTo": "http://schema.org/isRelatedTo",
+    "children": "http://schema.org/children",
+    "parent": "http://schema.org/parent",
+    "birthPlace": "http://schema.org/birthPlace",
+    "birthDate": "http://schema.org/birthDate",
+    "author": "http://schema.org/author",
+    "locationCreated": "http://schema.org/locationCreated",
+    "about": "http://schema.org/about",
+    "subjectOf": "http://schema.org/subjectOf",
+    "position": "http://schema.org/position",
+    "offeredBy": "http://schema.org/offeredBy",
+    "makesOffer": "http://schema.org/makesOffer",
+    "areaServed": "http://schema.org/areaServed",
+    "addOn": "http://schema.org/addOn",
+    "itemOffered": "http://schema.org/itemOffered",
+    "price": "http://schema.org/price",
+    "priceValidUntil": "http://schema.org/priceValidUntil",
+    "offers": "http://schema.org/offers"
+  },
+  "@graph": [
+    {
+      "@id": "http://schema.org/Thing",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
     },
-    "@graph": [
-      {
-        "@id": "http://schema.org/Thing",
-        "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-        "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-          {
-            "@id": "http://schema.org/Thing"
-          }
-        ]
-      },
-      {
-        "@id": "http://schema.org/Organization",
-        "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-        "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-          {
-            "@id": "http://schema.org/Organization"
-          },
-          {
-            "@id": "http://schema.org/Thing"
-          }
-        ]
-      },
-      {
-        "@id": "http://schema.org/Person",
-        "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-        "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-          {
-            "@id": "http://schema.org/Person"
-          },
-          {
-            "@id": "http://schema.org/Thing"
-          }
-        ]
-      },
-      {
-        "@id": "http://schema.org/Patient",
-        "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-        "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-          {
-            "@id": "http://schema.org/Patient"
-          },
-          {
-            "@id": "http://schema.org/Person"
-          },
-          {
-            "@id": "http://schema.org/Thing"
-          }
-        ]
-      },
-      {
-        "@id": "http://schema.org/Text",
-        "@type": "http://schema.org/DataType",
-        "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-          {
-            "@id": "http://schema.org/Text"
-          }
-        ]
-      },
-      {
-        "@id": "http://schema.org/Number",
-        "@type": "http://schema.org/DataType",
-        "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-          {
-            "@id": "http://schema.org/Number"
-          }
-        ]
-      },
-      {
-        "@id": "http://schema.org/Integer",
-        "@type": "http://schema.org/DataType",
-        "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-          {
-            "@id": "http://schema.org/Integer"
-          },
-          {
-            "@id": "http://schema.org/Number"
-          }
-        ]
-      },
-      {
-        "@id": "http://schema.org/legalName",
-        "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-        "http://schema.org/inverseOf": []
-      },
-      {
-        "@id": "http://schema.org/hasShareholder",
-        "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-        "http://schema.org/inverseOf": [
-          "http://schema.org/shareholderOf"
-        ]
-      },
-      {
-        "@id": "http://schema.org/shareholderOf",
-        "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-        "http://schema.org/inverseOf": [
-          "http://schema.org/hasShareholder"
-        ]
-      },
-      {
-        "@id": "http://schema.org/employee",
-        "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-        "http://schema.org/inverseOf": [
-          "http://schema.org/affiliation"
-        ]
-      },
-      {
-        "@id": "http://schema.org/affiliation",
-        "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-        "http://schema.org/inverseOf": [
-          "http://schema.org/employee"
-        ]
-      },
-      {
-        "@id": "http://schema.org/noOfEmployees",
-        "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-        "http://schema.org/inverseOf": []
-      },
-      {
-        "@id": "http://schema.org/name",
-        "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-        "http://schema.org/inverseOf": []
-      }
-    ]
-  }
+    {
+      "@id": "http://schema.org/Organization",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Organization"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Person",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Person"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Country",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Country"
+        },
+        {
+          "@id": "http://schema.org/Place"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Place",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Place"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/PostalAddress",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/PostalAddress"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Product",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Product"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Service",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Service"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/CreativeWork",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/CreativeWork"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Offer",
+      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Offer"
+        },
+        {
+          "@id": "http://schema.org/Thing"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Text",
+      "@type": "http://schema.org/DataType",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Text"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Date",
+      "@type": "http://schema.org/DataType",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Date"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Number",
+      "@type": "http://schema.org/DataType",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Number"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/Integer",
+      "@type": "http://schema.org/DataType",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+        {
+          "@id": "http://schema.org/Integer"
+        },
+        {
+          "@id": "http://schema.org/Number"
+        }
+      ]
+    },
+    {
+      "@id": "http://schema.org/employee",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": [
+        "http://schema.org/worksFor"
+      ]
+    },
+    {
+      "@id": "http://schema.org/worksFor",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": [
+        "http://schema.org/employee"
+      ]
+    },
+    {
+      "@id": "http://schema.org/name",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/legalName",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/funder",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/address",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/addressCountry",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/manufacturer",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/provider",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/isRelatedTo",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/children",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/parent",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/birthPlace",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/birthDate",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/author",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/locationCreated",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/about",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": [
+        "http://schema.org/subjectOf"
+      ]
+    },
+    {
+      "@id": "http://schema.org/subjectOf",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": [
+        "http://schema.org/about"
+      ]
+    },
+    {
+      "@id": "http://schema.org/position",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/offeredBy",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": [
+        "http://schema.org/makesOffer"
+      ]
+    },
+    {
+      "@id": "http://schema.org/makesOffer",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": [
+        "http://schema.org/offeredBy"
+      ]
+    },
+    {
+      "@id": "http://schema.org/areaServed",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/addOn",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/itemOffered",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/price",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/priceValidUntil",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    },
+    {
+      "@id": "http://schema.org/offers",
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
+      "http://schema.org/inverseOf": []
+    }
+  ]
+}

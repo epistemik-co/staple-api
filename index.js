@@ -15,6 +15,7 @@ const database = new DatabaseInterface(require('./schema/schema-mapping'));
 
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
 const rootResolver = new Resolver(database, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
+const servers = []
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
 app.use(bodyParser.urlencoded({ limit: '4000mb', extended: true }))
@@ -88,6 +89,8 @@ function init(app, index) {
         } 
     });
 
+    servers.push(server)
+
 const path = '/graphql' + index;
 server.applyMiddleware({ app, path });
 app.get('/api/myruntimeroute' + index, function (req, res) {
@@ -100,6 +103,12 @@ app.get('/api/dynamic', function (req, res) {
     init(app, id);
     res.send(id)
 });
+
+// setInterval(function(){
+//     const used = process.memoryUsage().heapUsed / 1024 / 1024;
+//     console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+//     return Math.round(used * 100) / 100;
+//   }, 5000);
 
 module.exports = {
     app,

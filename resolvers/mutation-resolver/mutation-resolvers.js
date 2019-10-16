@@ -88,8 +88,7 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
 
 
             // Inference
-            database.updateInference();
-            console.log(database.getAllQuads())
+            database.updateInference(); 
             return true;
         };
     }
