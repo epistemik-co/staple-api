@@ -13,6 +13,16 @@
       grid-template-rows: auto ;
       width: 100%;
     }
+
+    .box-grid2{
+
+      grid-template-columns: auto 50% ;
+    }
+
+    .box-grid3{
+      
+      grid-template-columns: auto 33% 33%;
+    }
     
     h1{
       margin: 0;
@@ -58,8 +68,6 @@
 
         width:100%;
         background: #0F202E;
-      
-        padding:10px 10px;
       }
 
       h3{
@@ -106,6 +114,15 @@
     .box-left p{
       margin-top: 0;
     }
+
+
+    .box-left h3{
+      position: fixed;
+      width:100%;
+      background: #0F202E;
+      padding:10px 10px;
+      margin: 0;
+    } 
     
     .box-middle {
       font-size: 12px;

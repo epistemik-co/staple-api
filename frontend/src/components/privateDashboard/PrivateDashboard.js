@@ -20,8 +20,7 @@ class PrivateDashboard extends Component {
     window.addEventListener("resize", this.setPlaygroundHeight);
 
 
-    /// send request
-    console.log("send get")
+    /// send request 
     // Make a request for a user with a given ID
     this.getId();
     // .then(function (response) {
@@ -41,15 +40,7 @@ class PrivateDashboard extends Component {
           {
             "endpoint": "http://localhost:4000/graphql" + res.data,
             "query": "defaultQuery",
-          },
-          {
-            "endpoint": "http://localhost:4000/graphql" + res.data,
-            "query": "defaultQuery",
-          },
-          {
-            "endpoint": "http://localhost:4000/graphql" + res.data,
-            "query": "defaultQuery",
-          },
+          }
         ]
       })
     }
@@ -66,11 +57,11 @@ class PrivateDashboard extends Component {
     return (
       <SplitPane split="hotizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter">
 
-        <div className="box-grid">
+        <div className={this.state.showObjects ? "box-grid box-grid3" : "box-grid box-grid2"}>
           <div className="box-left">
             <div className="fixed-top-bar">
               <h3>RDF</h3>
-              <button className="rdf-compile button play"></button>
+              {/* <button className="rdf-compile button play"></button> */}
             </div>
             {/* <textarea className="rdf-textarea" placeholder="CODE HERE">
                
