@@ -14,6 +14,7 @@ const schemaString = require('./schema/schema');
 const Resolver = require('./resolvers/resolvers');
 
 const app = express(); 
+const createschema = require('./schema/gen-schema-staple/index')
 
 const database = new DatabaseInterface(require('./schema/schema-mapping'));
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
@@ -88,6 +89,7 @@ async function setDB(){
 }
 
 setDB();
+createschema("./schema/gen-schema-staple/demo.ttl")
 
 module.exports = {
     app,
