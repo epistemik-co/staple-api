@@ -6,6 +6,8 @@ const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
 const { graphql } = require('graphql');
 
+let schMapping = require('./schema/schema-mapping')
+let objects = require('./database/exampleObjects')
 
 const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema');
@@ -13,6 +15,7 @@ const Resolver = require('./resolvers/resolvers');
 
 const app = express(); 
 
+const database = new DatabaseInterface(require('./schema/schema-mapping'));
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
 
 app.use(bodyParser.json({ limit: '4000mb', extended: true }))
@@ -31,15 +34,7 @@ app.listen({ port: 4000 }, () =>
 async function init(app, index) {
     const database2 = new DatabaseInterface(require('./schema/schema-mapping'));
     // load data
-    let schMapping = require('./schema/schema-mapping')
-    let objects = require('./database/exampleObjects')
-    for(let obj of objects){
-
-        obj["@context"] = schMapping["@context"];
-
-        const rdf = await jsonld.toRDF(obj, { format: 'application/n-quads' }); 
-        await database2.insertRDF(rdf, obj._id);
-    }
+    database2.database = database.dbCopy()
     const rootResolver = new Resolver(database2, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
     schema = makeExecutableSchema({
         typeDefs: schemaString,
@@ -82,6 +77,17 @@ setInterval(function(){
     }
     return Math.round(used * 100) / 100;
   }, 5000);
+
+
+async function setDB(){
+    for(let obj of objects){
+        obj["@context"] = schMapping["@context"];
+        const rdf = await jsonld.toRDF(obj, { format: 'application/n-quads' }); 
+        await database.insertRDF(rdf, obj._id);
+    }
+}
+
+setDB();
 
 module.exports = {
     app,

@@ -316,6 +316,19 @@ class Database {
         }
 
     }
+
+    dbCopy() {
+        let database = dataset_tree();
+        const temp = this.database.match(null, null, null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            database.add(x.value);
+            x = itr.next();
+        } 
+        return database;
+    }
 }
 
 module.exports = Database
