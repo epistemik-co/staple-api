@@ -106,7 +106,7 @@ class PrivateDashboard extends Component {
             <div className="box-middle">
               <h3>Objects</h3>
               <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
-              <div>
+              <div class="context-box">
                 <code>
                 <div><pre>{JSON.stringify(schemaString, null, 2)}</pre></div>
               </code>
