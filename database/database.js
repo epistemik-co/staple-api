@@ -229,7 +229,7 @@ class Database {
     insertRDFPromise(tree, ID, rdf) {
         return new Promise((resolve, reject) => {
             let data = (y_quad) => {
-                if (y_quad.subject.value === ID) {
+                if (y_quad.subject.value === ID || ID === null) {
                     y_quad.graph = factory.namedNode(null);
 
                     // add inverses 

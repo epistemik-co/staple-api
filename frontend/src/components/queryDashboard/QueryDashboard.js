@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Provider } from "react-redux";
 import { Playground, store } from "graphql-playground-react";
 import './QueryDashboard.scss';
-import schemaString from '../../schema/schema'
+import schemaString from '../../schema/objects'
 import SplitPane from 'react-split-pane'
 
 

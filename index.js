@@ -6,6 +6,7 @@ const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
 const { graphql } = require('graphql');
 
+
 const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema');
 const Resolver = require('./resolvers/resolvers');
@@ -27,8 +28,18 @@ app.listen({ port: 4000 }, () =>
     console.log(`🚀 Server ready`)
 );
 
-function init(app, index) {
+async function init(app, index) {
     const database2 = new DatabaseInterface(require('./schema/schema-mapping'));
+    // load data
+    let schMapping = require('./schema/schema-mapping')
+    let objects = require('./database/exampleObjects')
+    for(let obj of objects){
+
+        obj["@context"] = schMapping["@context"];
+
+        const rdf = await jsonld.toRDF(obj, { format: 'application/n-quads' }); 
+        await database2.insertRDF(rdf, obj._id);
+    }
     const rootResolver = new Resolver(database2, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
     schema = makeExecutableSchema({
         typeDefs: schemaString,
@@ -67,8 +78,7 @@ setInterval(function(){
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
     console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     if(used > 100){
-        console.log("need to clear!")
-        
+        console.log("need to clear!") 
     }
     return Math.round(used * 100) / 100;
   }, 5000);

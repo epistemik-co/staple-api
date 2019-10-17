@@ -80,6 +80,7 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
 
             let dataForQuads = req.input; 
             dataForQuads["@context"] = schemaMapping["@context"];
+            console.log(dataForQuads)
             const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' }); 
 
             await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings, quadlimit)

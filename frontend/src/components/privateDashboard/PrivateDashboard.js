@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Provider } from "react-redux";
 import { Playground, store } from "graphql-playground-react";
 import './PrivateDashboard.scss';
-import schemaString from '../../schema/schema'
+import schemaString from '../../schema/objects'
 import SplitPane from 'react-split-pane'
 import axios from 'axios';
 
@@ -108,10 +108,8 @@ class PrivateDashboard extends Component {
               <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
               <div>
                 <code>
-                  {schemaString.split('\n').map((item, i) => {
-                    return <p key={i}>{item}</p>;
-                  })}
-                </code>
+                <div><pre>{JSON.stringify(schemaString, null, 2)}</pre></div>
+              </code>
               </div>
             </div> :
             <React.Fragment>
