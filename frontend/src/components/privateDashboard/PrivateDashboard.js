@@ -32,6 +32,14 @@ class PrivateDashboard extends Component {
 
   }
 
+  escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+  }
+
+  replaceAll(str, find, replace) {
+    return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
+  }
+
   getId = async () => {
     let res = await axios.get('http://localhost:4000/api/dynamic');
     if (res.status === 200) {
@@ -61,13 +69,14 @@ class PrivateDashboard extends Component {
           <div className="box-left">
             <div className="fixed-top-bar">
               <h3>RDF</h3>
-              {/* <button className="rdf-compile button play"></button> */}
+              <button className="rdf-compile button play"></button>
             </div>
-            {/* <textarea className="rdf-textarea" placeholder="CODE HERE">
-               
-                {JSON.stringify(require('../../schema/raw-schema'), null, 2)}
-            
-            </textarea> */}
+            <textarea className="rdf-textarea" placeholder="CODE HERE">
+
+              {
+                this.replaceAll(JSON.stringify(require('../../schema/raw-schema'), null, 2), '\\n', String.fromCharCode(13, 10))
+              }
+            </textarea>
 
             {/* <div class="context-box">
               <code>
@@ -77,10 +86,10 @@ class PrivateDashboard extends Component {
               </code>
             </div> */}
 
-            <div class="context-box"> {JSON.stringify(require('../../schema/raw-schema'), null, 2).split("\\n").map((item, i) => {
+            {/* <div class="context-box"> {JSON.stringify(require('../../schema/raw-schema'), null, 2).split("\\n").map((item, i) => {
               return <p key={i}>{item}</p>;
             })}
-            </div>
+            </div> */}
           </div>
 
 
@@ -99,8 +108,8 @@ class PrivateDashboard extends Component {
               <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
               <div class="context-box">
                 <code>
-                <div><pre>{JSON.stringify(schemaString, null, 2)}</pre></div>
-              </code>
+                  <div><pre>{JSON.stringify(schemaString, null, 2)}</pre></div>
+                </code>
               </div>
             </div> :
             <React.Fragment>
