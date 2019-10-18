@@ -13,23 +13,16 @@ class PrivateDashboard extends Component {
     id: "",
     tabs: undefined,
     showObjects: true,
+    personal: false,
+    ontology:  JSON.stringify(require('../../schema/raw-schema'), null, 2),
+    context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2)
   }
 
   componentDidMount = () => {
     this.setPlaygroundHeight(null);
     window.addEventListener("resize", this.setPlaygroundHeight);
 
-
-    /// send request 
-    // Make a request for a user with a given ID
-    this.getId();
-    // .then(function (response) {
-    //   // handle success
-    //   console.log(response);
-    //   this.setState({id: response})
-    // }) 
-
-
+    this.getId(); 
   }
 
   escapeRegExp(str) {
@@ -54,6 +47,19 @@ class PrivateDashboard extends Component {
     }
   }
 
+  getIdPersonal = async () => {
+    this.setState({customEndPoint: true})
+
+    let data = this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1,-1)
+             
+    let res = await axios.post('http://localhost:4000/api/customInit', {"value": data});
+    if (res.status === 200) { 
+      this.setState({
+        id: res.data.id, 
+        context: JSON.stringify(res.data.context['@context'], null, 2)
+      })
+    }
+  }
   setPlaygroundHeight = (e) => {
     let playground = document.getElementsByClassName("playground");
     let topGrid = document.getElementsByClassName("box-grid");
@@ -61,35 +67,25 @@ class PrivateDashboard extends Component {
     playground[0].style.height = space + "px";
   }
 
+  handleChangeTextArea = (event) => {
+    this.setState({ontology: event.target.value});
+  }
+
   render() {
     return (
       <SplitPane split="hotizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter">
 
-        <div className={this.state.showObjects ? "box-grid box-grid3" : "box-grid box-grid2"}>
+        <div className={this.state.showObjects && !this.state.customEndPoint ? "box-grid box-grid3" : "box-grid box-grid2"}>
           <div className="box-left">
             <div className="fixed-top-bar">
               <h3>RDF</h3>
-              <button className="rdf-compile button play"></button>
+              <button className="rdf-compile button play" onClick={this.getIdPersonal}></button>
             </div>
-            <textarea className="rdf-textarea" placeholder="CODE HERE">
-
+            <textarea className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE">
               {
-                this.replaceAll(JSON.stringify(require('../../schema/raw-schema'), null, 2), '\\n', String.fromCharCode(13, 10))
+                this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1,-1)
               }
             </textarea>
-
-            {/* <div class="context-box">
-              <code>
-                <div><pre>{JSON.stringify(require('../../schema/raw-schema'), null, 2).split("\\n").map((item, i) => {
-                  return <p key={i}>{item}</p>;
-                })}</pre></div>
-              </code>
-            </div> */}
-
-            {/* <div class="context-box"> {JSON.stringify(require('../../schema/raw-schema'), null, 2).split("\\n").map((item, i) => {
-              return <p key={i}>{item}</p>;
-            })}
-            </div> */}
           </div>
 
 
@@ -97,12 +93,12 @@ class PrivateDashboard extends Component {
             <h3>Context</h3>
             <div class="context-box">
               <code>
-                <div><pre>{JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2)}</pre></div>
+                <div><pre>{this.state.context}</pre></div>
               </code>
             </div>
           </div>
 
-          {this.state.showObjects ?
+          {this.state.showObjects && !this.state.customEndPoint ?
             <div className="box-middle">
               <h3>Objects</h3>
               <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
@@ -112,20 +108,18 @@ class PrivateDashboard extends Component {
                 </code>
               </div>
             </div> :
-            <React.Fragment>
+             !this.state.customEndPoint ?
               <button className="button-close" onClick={x => this.setState({ showObjects: true })}>Show example objects</button>
-            </React.Fragment>
+             :
+            <React.Fragment></React.Fragment>
           }
         </div>
+
         <div className="box-grid">
           <div className="bottom-box">
             <Provider store={store}>
               <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"
-
                 tabs={this.state.tabs}
-
-
-
               />
             </Provider>
           </div>
