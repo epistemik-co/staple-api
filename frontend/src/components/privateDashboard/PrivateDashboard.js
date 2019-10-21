@@ -17,7 +17,8 @@ class PrivateDashboard extends Component {
     ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2),
     context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2),
     error: "",
-    compiledMessage: ""
+    compiledMessage: "",
+    playgroundVersion: 1,
   }
 
   componentDidMount = () => {
@@ -60,7 +61,8 @@ class PrivateDashboard extends Component {
           id: res.data.id,
           context: JSON.stringify(res.data.context['@context'], null, 2),
           error: "",
-          compiledMessage: "Compiled successfully!"
+          compiledMessage: "Compiled successfully!",
+          playgroundVersion: this.state.playgroundVersion + 1,
         })
       }
     } catch (error) {
@@ -71,6 +73,9 @@ class PrivateDashboard extends Component {
         compiledMessage: ""
       })
     }
+
+
+    this.setPlaygroundHeight(null);
   }
   setPlaygroundHeight = (e) => {
     let playground = document.getElementsByClassName("playground");
@@ -85,7 +90,7 @@ class PrivateDashboard extends Component {
 
   render() {
     return (
-      <SplitPane split="hotizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter">
+      <SplitPane split="hotizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter" >
 
         <div className={this.state.showObjects && !this.state.customEndPoint ? "box-grid box-grid3" : "box-grid box-grid2"}>
           <div className="box-left">
@@ -134,7 +139,7 @@ class PrivateDashboard extends Component {
         </div>
 
         <div className="box-grid">
-          <div className="bottom-box">
+          <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
               <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"/>
             </Provider>
