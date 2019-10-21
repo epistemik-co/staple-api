@@ -76,6 +76,9 @@ async function customInit(app, index, req) {
     let newEndpointData = await createschema(req.body.value)
     // console.log(newEndpointData.schema)
     // console.log(newEndpointData.context)
+    if (newEndpointData["Error"]) {
+        return newEndpointData;
+    }
 
     const database2 = new DatabaseInterface(newEndpointData.context);
     const rootResolver = new Resolver(database2, Warnings, newEndpointData.context).rootResolver; // Generate Resolvers for graphql
@@ -117,8 +120,13 @@ app.get('/api/dynamic', function (req, res) {
 app.post('/api/customInit', async function (req, res) {
     let id = uuidv1();
     let context = await customInit(app, id, req);
+    if (context["Error"]) {
+        res.status(500).send(context["Error"]) 
+    }
+    else{
+        res.send({ "id": id, "context": context })
+    }
 
-    res.send({"id": id, "context": context})
 });
 
 // It will be used to pre create objects

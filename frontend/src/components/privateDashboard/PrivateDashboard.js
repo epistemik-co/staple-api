@@ -14,7 +14,7 @@ class PrivateDashboard extends Component {
     tabs: undefined,
     showObjects: true,
     personal: false,
-    ontology:  JSON.stringify(require('../../schema/raw-schema'), null, 2),
+    ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2),
     context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2)
   }
 
@@ -22,7 +22,7 @@ class PrivateDashboard extends Component {
     this.setPlaygroundHeight(null);
     window.addEventListener("resize", this.setPlaygroundHeight);
 
-    this.getId(); 
+    this.getId();
   }
 
   escapeRegExp(str) {
@@ -48,15 +48,25 @@ class PrivateDashboard extends Component {
   }
 
   getIdPersonal = async () => {
-    this.setState({customEndPoint: true})
+    this.setState({ customEndPoint: true })
 
-    let data = this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1,-1)
-             
-    let res = await axios.post('http://localhost:4000/api/customInit', {"value": data});
-    if (res.status === 200) { 
+    let data = this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1, -1)
+    try {
+      let res = await axios.post('http://localhost:4000/api/customInit', { "value": data });
+      if (res.status === 200) {
+        this.setState({
+          id: res.data.id,
+          context: JSON.stringify(res.data.context['@context'], null, 2)
+        })
+      }
+    } catch (error) { 
+      // console.log(error.message);
+      // console.log(error.response.data);
+      // console.log(error.response.status);
+      // console.log(error.response.headers);
       this.setState({
-        id: res.data.id, 
-        context: JSON.stringify(res.data.context['@context'], null, 2)
+        id: "",
+        context: error.response.data
       })
     }
   }
@@ -68,7 +78,7 @@ class PrivateDashboard extends Component {
   }
 
   handleChangeTextArea = (event) => {
-    this.setState({ontology: event.target.value});
+    this.setState({ ontology: event.target.value });
   }
 
   render() {
@@ -83,7 +93,7 @@ class PrivateDashboard extends Component {
             </div>
             <textarea className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE">
               {
-                this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1,-1)
+                this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1, -1)
               }
             </textarea>
           </div>
@@ -108,10 +118,10 @@ class PrivateDashboard extends Component {
                 </code>
               </div>
             </div> :
-             !this.state.customEndPoint ?
+            !this.state.customEndPoint ?
               <button className="button-close" onClick={x => this.setState({ showObjects: true })}>Show example objects</button>
-             :
-            <React.Fragment></React.Fragment>
+              :
+              <React.Fragment></React.Fragment>
           }
         </div>
 
