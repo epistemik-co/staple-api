@@ -128,7 +128,10 @@ handleUnionTypeResolver = (tree, object, database) => {
 handleReverseDataTypeResolver = (tree, object) => {
     let newResolverBody = {}
 
-    for (var propertyName in tree[object].data) {
+    for (var propertyName in tree[object].data) { 
+        if(tree[object].data[propertyName].data === undefined){
+            continue;
+        }
         let uri = tree[object].data[propertyName].data.uri;
 
         let constr = (name) => {
@@ -147,6 +150,9 @@ handleReverseDataTypeResolver = (tree, object) => {
 createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
     schemaMapping = schemaMappingArg;
+    if(schemaMapping === undefined){
+        schemaMapping = require('../../schema/schema-mapping');
+    }
     let queryResolverBody = {};
     queryResolverBody['Query'] = {};
     queryResolverBody['Objects'] = {};

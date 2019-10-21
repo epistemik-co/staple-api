@@ -1,4 +1,4 @@
-const schemaString = require('../../schema/schema');
+// const schemaString = require('../../schema/schema');
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
 const { GraphQLError } = require('graphql');
@@ -44,9 +44,12 @@ beforeUpdate = (database, objectID, fieldFromSchemaTree) => {
     }
 }
 
-createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
+createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaString) => {
     if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
     schemaMapping = schemaMappingArg;
+    if(schemaString === undefined){
+        schemaString = require('../../schema/schema');
+    }
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let objectsFromSchemaObjectTree = [];
 

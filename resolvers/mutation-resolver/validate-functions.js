@@ -48,6 +48,9 @@ const validateflattenedJson = (data) => {
 const validateIsObjectInDatabase = (database, sub, pred, obj, expect = false, ensureExists = true) => {
     if (database.isTripleInDB(sub, pred, obj) === expect) {
         if (ensureExists) {
+            console.log(sub)
+            console.log(pred)
+            console.log(obj)
             throw new GraphQLError({ key: 'ERROR', message: 'The object must exist in the database prior to this request.' });
         }
     }

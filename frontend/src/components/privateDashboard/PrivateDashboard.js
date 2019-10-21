@@ -5,6 +5,7 @@ import './PrivateDashboard.scss';
 import schemaString from '../../schema/objects'
 import SplitPane from 'react-split-pane'
 import axios from 'axios';
+import uuidv1 from 'uuid'
 
 
 class PrivateDashboard extends Component {
@@ -62,7 +63,7 @@ class PrivateDashboard extends Component {
           context: JSON.stringify(res.data.context['@context'], null, 2),
           error: "",
           compiledMessage: "Compiled successfully!",
-          playgroundVersion: this.state.playgroundVersion + 1,
+          playgroundVersion: uuidv1()
         })
       }
     } catch (error) {
@@ -80,7 +81,7 @@ class PrivateDashboard extends Component {
   setPlaygroundHeight = (e) => {
     let playground = document.getElementsByClassName("playground");
     let topGrid = document.getElementsByClassName("box-grid");
-    var space = window.innerHeight - (topGrid[0].offsetHeight)
+    var space = window.innerHeight - (topGrid[0].offsetHeight) - 30;
     playground[0].style.height = space + "px";
   }
 
@@ -141,10 +142,17 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
-              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"/>
+              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground" />
             </Provider>
           </div>
+          <div className="doc-link">
+            <p>
+              Full documentation avaible here : <a href="https://github.com/epistemik-co/staple-api-docs">https://github.com/epistemik-co/staple-api-docs</a>
+            </p>
+          </div>
         </div>
+
+
       </SplitPane >
 
 

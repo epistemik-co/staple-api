@@ -1,5 +1,5 @@
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
-const schemaString = require('./schema');
+//const schemaString = require('./schema'); 
 let schemaMapping = undefined;//require('./schema-mapping');
 
 
@@ -124,8 +124,12 @@ saveTreeToFile = (treeFromSchema, path) => {
 }
 
 // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
-createTree = (schemaMappingArg) => {
+createTree = (schemaMappingArg, schemaString) => {
     schemaMapping = schemaMappingArg;
+ 
+    if(schemaString === undefined){
+        schemaString = require('./schema'); 
+    }
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let treeFromSchema = {};
 

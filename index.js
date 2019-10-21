@@ -73,15 +73,18 @@ async function init(app, index) {
 }
 
 async function customInit(app, index, req) {
+    // console.log(req.body.value)
     let newEndpointData = await createschema(req.body.value)
+    // console.log(newEndpointData)
     // console.log(newEndpointData.schema)
     // console.log(newEndpointData.context)
+
     if (newEndpointData["Error"]) {
         return newEndpointData;
     }
 
     const database2 = new DatabaseInterface(newEndpointData.context);
-    const rootResolver = new Resolver(database2, Warnings, newEndpointData.context).rootResolver; // Generate Resolvers for graphql
+    const rootResolver = new Resolver(database2, Warnings, newEndpointData.context, newEndpointData.schema).rootResolver; // Generate Resolvers for graphql
     schema = makeExecutableSchema({
         typeDefs: newEndpointData.schema,
         resolvers: rootResolver,
@@ -120,6 +123,7 @@ app.get('/api/dynamic', function (req, res) {
 app.post('/api/customInit', async function (req, res) {
     let id = uuidv1();
     let context = await customInit(app, id, req);
+
     if (context["Error"]) {
         res.status(500).send(context["Error"]) 
     }
@@ -134,7 +138,7 @@ async function setDB() {
     for (let obj of exampleObjects) {
         obj["@context"] = schMapping["@context"];
         const rdf = await jsonld.toRDF(obj, { format: 'application/n-quads' });
-        await database.insertRDF(rdf, obj._id);
+        await database.insertRDFForPreloadedData(rdf, obj._id);
     }
 }
 setDB();
