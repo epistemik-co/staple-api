@@ -16,7 +16,8 @@ class PrivateDashboard extends Component {
     personal: false,
     ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2),
     context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2),
-    error: ""
+    error: "",
+    compiledMessage: ""
   }
 
   componentDidMount = () => {
@@ -58,15 +59,16 @@ class PrivateDashboard extends Component {
         this.setState({
           id: res.data.id,
           context: JSON.stringify(res.data.context['@context'], null, 2),
-          error: ""
+          error: "",
+          compiledMessage: "Compiled successfully!"
         })
       }
     } catch (error) {
       this.setState({
         id: "",
         context: "",
-        error: error.response.data
-
+        error: error.response.data,
+        compiledMessage: ""
       })
     }
   }
@@ -90,6 +92,8 @@ class PrivateDashboard extends Component {
             <div className="fixed-top-bar">
               <h3>RDF</h3>
               <button className="rdf-compile button play" onClick={this.getIdPersonal}></button>
+              <p className="compiled-successfully">{this.state.compiledMessage}</p>
+              <p className="error-message">{this.state.error}</p>
             </div>
             <textarea spellcheck="false" className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE">
               {
@@ -106,7 +110,6 @@ class PrivateDashboard extends Component {
                 <div>
                   <pre>
                     {this.state.context}
-                    <span className="error-message">{this.state.error}</span>
                   </pre>
                 </div>
               </code>
