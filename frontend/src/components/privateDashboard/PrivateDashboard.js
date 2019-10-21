@@ -91,7 +91,7 @@ class PrivateDashboard extends Component {
               <h3>RDF</h3>
               <button className="rdf-compile button play" onClick={this.getIdPersonal}></button>
             </div>
-            <textarea className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE">
+            <textarea spellcheck="false" className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE">
               {
                 this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1, -1)
               }
@@ -133,9 +133,7 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box">
             <Provider store={store}>
-              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"
-                tabs={this.state.tabs}
-              />
+              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"/>
             </Provider>
           </div>
         </div>
