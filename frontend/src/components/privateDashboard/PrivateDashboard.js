@@ -15,7 +15,8 @@ class PrivateDashboard extends Component {
     showObjects: true,
     personal: false,
     ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2),
-    context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2)
+    context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2),
+    error: ""
   }
 
   componentDidMount = () => {
@@ -56,17 +57,16 @@ class PrivateDashboard extends Component {
       if (res.status === 200) {
         this.setState({
           id: res.data.id,
-          context: JSON.stringify(res.data.context['@context'], null, 2)
+          context: JSON.stringify(res.data.context['@context'], null, 2),
+          error: ""
         })
       }
-    } catch (error) { 
-      // console.log(error.message);
-      // console.log(error.response.data);
-      // console.log(error.response.status);
-      // console.log(error.response.headers);
+    } catch (error) {
       this.setState({
         id: "",
-        context: error.response.data
+        context: "",
+        error: error.response.data
+
       })
     }
   }
@@ -103,7 +103,12 @@ class PrivateDashboard extends Component {
             <h3>Context</h3>
             <div class="context-box">
               <code>
-                <div><pre>{this.state.context}</pre></div>
+                <div>
+                  <pre>
+                    {this.state.context}
+                    <span className="error-message">{this.state.error}</span>
+                  </pre>
+                </div>
               </code>
             </div>
           </div>
