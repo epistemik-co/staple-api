@@ -6,7 +6,7 @@ const { combine, timestamp, label, prettyPrint } = format;
 
 // define the custom settings for each transport (file, console)
 var options = {
-    file: {
+    fileInfo: {
         level: 'info',
         filename: `${appRoot}/logs/app.log`,
         handleExceptions: true,
@@ -15,8 +15,17 @@ var options = {
         maxFiles: 5,
         colorize: false,
     },
+    fileWarn: {
+        level: 'warn',
+        filename: `${appRoot}/logs/appWarns.log`,
+        handleExceptions: true,
+        json: true,
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+        colorize: false,
+    }, 
     console: {
-        level: 'info',
+        level: 'error',
         handleExceptions: true,
         json: true,
         colorize: true,
@@ -48,7 +57,8 @@ var logger = new winston.createLogger({
         }),
     ),
     transports: [
-        new winston.transports.File(options.file),
+        new winston.transports.File(options.fileInfo),
+        new winston.transports.File(options.fileWarn),
         new winston.transports.Console(options.console)
     ],
     exitOnError: false, // do not exit on handled exceptions

@@ -4,6 +4,7 @@ let schemaMapping = undefined; // require('../../schema/schema-mapping');
 const { GraphQLError } = require('graphql');
 const jsonld = require('jsonld');
 const validators = require('./validate-functions');
+const logger = require('../../config/winston');
 
 const quadlimit = 500;
 
@@ -59,7 +60,9 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaStr
     const mutation = schema.getTypeMap()['Mutation'].astNode;
 
     for (let field in mutation.fields) {
-        newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
+        newResolverBody[mutation.fields[field].name.value] = async (args, req, context, info) => {
+            logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`) 
+            logger.info(JSON.stringify(info["operation"]))
             const objectID = req.input['_id'];
             req.ensureExists = req.ensureExists === undefined ? false : req.ensureExists;
 
@@ -97,7 +100,9 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaStr
         };
     }
 
-    newResolverBody['DELETE'] = (args, req) => {
+    newResolverBody['DELETE'] = (args, req, context, info) => {
+        logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`) 
+        logger.info(JSON.stringify(info["operation"]))
         const objectID = req.id;
         validators.validateIsIdDefined(objectID);
         validators.validateURI(objectID, "id");
@@ -110,7 +115,9 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaStr
         return res;
     }
 
-    newResolverBody['CREATE'] = (args, req) => {
+    newResolverBody['CREATE'] = (args, req, context, info) => {
+        logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`) 
+        logger.info(JSON.stringify(info["operation"]))
         if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
         const objectID = req.id;
         validators.validateIsIdDefined(objectID);

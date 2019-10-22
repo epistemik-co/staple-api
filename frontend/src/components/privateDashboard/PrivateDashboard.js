@@ -30,7 +30,7 @@ class PrivateDashboard extends Component {
   }
 
   escapeRegExp(str) {
-    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+    return str.replace(/([.*+?^=!:${}()|\]\\])/g, "\\$1");
   }
 
   replaceAll(str, find, replace) {
@@ -41,20 +41,24 @@ class PrivateDashboard extends Component {
     let res = await axios.get('http://localhost:4000/api/dynamic');
     if (res.status === 200) {
       this.setState({
-        id: res.data, tabs: [
-          {
-            "endpoint": "http://localhost:4000/graphql" + res.data,
-            "query": "defaultQuery",
-          }
-        ]
+        id: res.data
       })
     }
   }
 
   getIdPersonal = async () => {
+
     this.setState({ customEndPoint: true })
 
-    let data = this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1, -1)
+    let data = this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"')
+
+    if (data[0] === '"') {
+      data = data.substr(1);
+    }
+    if (data[data.length - 1] === '"') {
+      data = data.substring(0, data.length - 1);
+    }
+
     try {
       let res = await axios.post('http://localhost:4000/api/customInit', { "value": data });
       if (res.status === 200) {
@@ -91,7 +95,7 @@ class PrivateDashboard extends Component {
 
   render() {
     return (
-      <SplitPane split="hotizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter" >
+      <SplitPane split="horizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter">
 
         <div className={this.state.showObjects && !this.state.customEndPoint ? "box-grid box-grid3" : "box-grid box-grid2"}>
           <div className="box-left">
@@ -101,17 +105,19 @@ class PrivateDashboard extends Component {
               <p className="compiled-successfully">{this.state.compiledMessage}</p>
               <p className="error-message">{this.state.error}</p>
             </div>
-            <textarea spellcheck="false" className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE">
-              {
+            <textarea spellCheck="false" className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE"
+              value={
                 this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1, -1)
               }
+            >
+
             </textarea>
           </div>
 
 
           <div className="box-right">
             <h3>Context</h3>
-            <div class="context-box">
+            <div className="context-box">
               <code>
                 <div>
                   <pre>
@@ -126,7 +132,7 @@ class PrivateDashboard extends Component {
             <div className="box-middle">
               <h3>Objects</h3>
               <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
-              <div class="context-box">
+              <div className="context-box">
                 <code>
                   <div><pre>{JSON.stringify(schemaString, null, 2)}</pre></div>
                 </code>
@@ -142,7 +148,7 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
-              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground" />
+              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"/>
             </Provider>
           </div>
           <div className="doc-link">

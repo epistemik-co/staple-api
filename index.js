@@ -4,6 +4,7 @@ const uuidv1 = require('uuid/v1');
 const jsonld = require('jsonld');
 const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
+const logger = require('./config/winston');
 
 let schMapping = require('./schema/schema-mapping')
 let exampleObjects = require('./database/exampleObjects')
@@ -35,7 +36,7 @@ app.listen({ port: 4000 }, () =>
 // show memory usage every 5 seconds
 setInterval(function () {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
-    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`)
     if (used > 100) {
         console.log("need to clear!")
     }
@@ -47,11 +48,11 @@ async function init(app, index) {
     // load data
     database2.database = database.dbCopy()
     const rootResolver = new Resolver(database2, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
-    schema = makeExecutableSchema({
+    let schema = makeExecutableSchema({
         typeDefs: schemaString,
         resolvers: rootResolver,
     });
-    server = new ApolloServer({
+    let server = new ApolloServer({
         schema,
         formatResponse: response => {
             if (response.errors !== undefined) {
@@ -65,7 +66,12 @@ async function init(app, index) {
                 }
             }
             return response;
-        }
+        },
+        context: () => {
+            return {
+                myID: index,
+            };
+        },
     });
 
     const path = '/graphql' + index;
@@ -85,11 +91,11 @@ async function customInit(app, index, req) {
 
     const database2 = new DatabaseInterface(newEndpointData.context);
     const rootResolver = new Resolver(database2, Warnings, newEndpointData.context, newEndpointData.schema).rootResolver; // Generate Resolvers for graphql
-    schema = makeExecutableSchema({
+    let schema = makeExecutableSchema({
         typeDefs: newEndpointData.schema,
         resolvers: rootResolver,
     });
-    server = new ApolloServer({
+    let server = new ApolloServer({
         schema,
         formatResponse: response => {
             if (response.errors !== undefined) {
@@ -103,7 +109,12 @@ async function customInit(app, index, req) {
                 }
             }
             return response;
-        }
+        },
+        context: () => {
+            return {
+                myID: index,
+            };
+        },
     });
 
     const path = '/graphql' + index;
@@ -117,6 +128,7 @@ app.get('/api/dynamic', function (req, res) {
     let id = uuidv1();
     init(app, id);
     res.send(id)
+    logger.warn(`Endpoint created ! http://localhost:4000/graphql${id}`)
 });
 
 
@@ -125,10 +137,12 @@ app.post('/api/customInit', async function (req, res) {
     let context = await customInit(app, id, req);
 
     if (context["Error"]) {
-        res.status(500).send(context["Error"]) 
+        res.status(500).send(context["Error"])
+        logger.warn(`ERROR! Endpoint was not created ! ${context["Error"]} \n${req.body.value}`)
     }
-    else{
+    else {
         res.send({ "id": id, "context": context })
+        logger.warn(`Endpoint created ! http://localhost:4000/graphql${id}`)
     }
 
 });
