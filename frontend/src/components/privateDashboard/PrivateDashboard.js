@@ -15,7 +15,7 @@ class PrivateDashboard extends Component {
     tabs: undefined,
     showObjects: true,
     personal: false,
-    ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2),
+    ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2).slice(1, -1),
     context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2),
     error: "",
     compiledMessage: "",
