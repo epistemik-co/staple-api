@@ -100,14 +100,14 @@ class PrivateDashboard extends Component {
         <div className={this.state.showObjects && !this.state.customEndPoint ? "box-grid box-grid3" : "box-grid box-grid2"}>
           <div className="box-left">
             <div className="fixed-top-bar">
-              <h3>RDF</h3>
+              <h3>Ontology (in Turtle syntax)</h3>
               <button className="rdf-compile button play" onClick={this.getIdPersonal}></button>
               <p className="compiled-successfully">{this.state.compiledMessage}</p>
               <p className="error-message">{this.state.error}</p>
             </div>
             <textarea spellCheck="false" className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE"
               value={
-                this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"').slice(1, -1)
+                this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"')
               }
             >
 
@@ -116,7 +116,7 @@ class PrivateDashboard extends Component {
 
 
           <div className="box-right">
-            <h3>Context</h3>
+            <h3>Json-LD context</h3>
             <div className="context-box">
               <code>
                 <div>
@@ -130,7 +130,7 @@ class PrivateDashboard extends Component {
 
           {this.state.showObjects && !this.state.customEndPoint ?
             <div className="box-middle">
-              <h3>Objects</h3>
+              <h3>Preloaded data</h3>
               <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
               <div className="context-box">
                 <code>
@@ -154,6 +154,7 @@ class PrivateDashboard extends Component {
           <div className="doc-link">
             <p>
               Full documentation avaible here : <a href="https://github.com/epistemik-co/staple-api-docs">https://github.com/epistemik-co/staple-api-docs</a>
+              <span>Questions? Contact: staple-api@epistemik.co</span>
             </p>
           </div>
         </div>
