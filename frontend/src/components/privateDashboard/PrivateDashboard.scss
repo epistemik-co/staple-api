@@ -1,5 +1,6 @@
 .Pane {
     display: block;
+    cursor: auto!important;
   }
   
   .box-grid {
@@ -209,6 +210,9 @@
   bottom: 0;
   left: 50%;
   transform: translate(-50%, 0);
+  background-color: #162B3A;
+  width: 100%;
+  text-align: center;
     p { 
     padding: 0;
     font-size: 16px;
