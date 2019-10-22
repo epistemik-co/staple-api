@@ -14,7 +14,9 @@
     "jsonld": "^1.6.2",
     "mongodb": "^3.3.0-beta2",
     "uuid": "^3.3.3",
-    "validator": "^11.0.0"
+    "validator": "^11.0.0",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.2.1"
   },
   "devDependencies": {
     "jest": "24.7.1",
