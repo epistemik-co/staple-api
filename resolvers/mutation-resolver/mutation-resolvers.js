@@ -1,19 +1,19 @@
 // const schemaString = require('../../schema/schema');
-const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
+const { buildSchemaFromTypeDefinitions } = require("graphql-tools");
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
-const { GraphQLError } = require('graphql');
-const jsonld = require('jsonld');
-const validators = require('./validate-functions');
-const logger = require('../../config/winston');
+const { GraphQLError } = require("graphql");
+const jsonld = require("jsonld");
+const validators = require("./validate-functions");
+const logger = require("../../config/winston");
 
 const quadlimit = 500;
 
-beforeInsert = (database, objectID, fieldFromSchemaTree, req) => {
-    if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
-    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
+let beforeInsert = (database, objectID, fieldFromSchemaTree, req) => {
+    if(database.database.size > quadlimit){ throw new GraphQLError({ key: "ERROR", message: "You have reached the limit of data per session" });}
+    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri);
     // Validation for single value types
     for (let propertyName in fieldFromSchemaTree.data) {
-        if (propertyName !== '_id' && propertyName !== '_type') {
+        if (propertyName !== "_id" && propertyName !== "_type") {
             if (req.input[propertyName] !== undefined) {
                 if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
                     continue;
@@ -23,51 +23,51 @@ beforeInsert = (database, objectID, fieldFromSchemaTree, req) => {
                     validators.validateURI(uri, propertyName);
                     let search = database.getObjectsValueArray((objectID), (uri));
                     if (search.length > 0) {
-                        throw new GraphQLError({ key: 'ERROR', message: `Can not override field: ${propertyName}. The field is already defined in object` });
+                        throw new GraphQLError({ key: "ERROR", message: `Can not override field: ${propertyName}. The field is already defined in object` });
                     }
                 }
             }
         }
     }
-}
+};
 
-beforeUpdate = (database, objectID, fieldFromSchemaTree) => {
-    if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
-    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri)
+let beforeUpdate = (database, objectID, fieldFromSchemaTree) => {
+    if(database.database.size > quadlimit){ throw new GraphQLError({ key: "ERROR", message: "You have reached the limit of data per session" });}
+    database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri);
     // Remove old fields
     for (let propertyName in fieldFromSchemaTree.data) {
-        if (propertyName !== '_id' && propertyName !== '_type') {
+        if (propertyName !== "_id" && propertyName !== "_type") {
             let uri = schemaMapping["@context"][propertyName];
 
             validators.validateURI(uri, propertyName);
             database.delete((objectID), (uri), undefined);
         }
     }
-}
+};
 
-createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaString) => {
-    if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
+let createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaString) => {
+    if(database.database.size > quadlimit){ throw new GraphQLError({ key: "ERROR", message: "You have reached the limit of data per session" });}
     schemaMapping = schemaMappingArg;
     if(schemaString === undefined){
-        schemaString = require('../../schema/schema');
+        schemaString = require("../../schema/schema");
     }
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let objectsFromSchemaObjectTree = [];
 
-    for (var property in tree) { objectsFromSchemaObjectTree.push(tree[property]); };
+    for (var property in tree) { objectsFromSchemaObjectTree.push(tree[property]); }
 
     let newResolverBody = {};
-    const mutation = schema.getTypeMap()['Mutation'].astNode;
+    const mutation = schema.getTypeMap()["Mutation"].astNode;
 
     for (let field in mutation.fields) {
         newResolverBody[mutation.fields[field].name.value] = async (args, req, context, info) => {
-            logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`) 
-            logger.info(JSON.stringify(info["operation"]))
-            const objectID = req.input['_id'];
+            logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`); 
+            logger.info(JSON.stringify(info["operation"]));
+            const objectID = req.input["_id"];
             req.ensureExists = req.ensureExists === undefined ? false : req.ensureExists;
 
             validators.validateIsIdDefined(objectID);
-            validators.validateURI(objectID, 'id');
+            validators.validateURI(objectID, "id");
             validators.validateflattenedJson(req.input);
             validators.validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", false, req.ensureExists);
 
@@ -86,10 +86,10 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaStr
 
             let dataForQuads = req.input; 
             dataForQuads["@context"] = schemaMapping["@context"];
-            console.log(dataForQuads)
-            const rdf = await jsonld.toRDF(dataForQuads, { format: 'application/n-quads' }); 
+            console.log(dataForQuads);
+            const rdf = await jsonld.toRDF(dataForQuads, { format: "application/n-quads" }); 
 
-            await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings, quadlimit)
+            await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings, quadlimit);
 
             req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
 
@@ -100,9 +100,9 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaStr
         };
     }
 
-    newResolverBody['DELETE'] = (args, req, context, info) => {
-        logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`) 
-        logger.info(JSON.stringify(info["operation"]))
+    newResolverBody["DELETE"] = (args, req, context, info) => {
+        logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`); 
+        logger.info(JSON.stringify(info["operation"]));
         const objectID = req.id;
         validators.validateIsIdDefined(objectID);
         validators.validateURI(objectID, "id");
@@ -113,12 +113,12 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaStr
         database.updateInference();
 
         return res;
-    }
+    };
 
-    newResolverBody['CREATE'] = (args, req, context, info) => {
-        logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`) 
-        logger.info(JSON.stringify(info["operation"]))
-        if(database.database.size > quadlimit){ throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });}
+    newResolverBody["CREATE"] = (args, req, context, info) => {
+        logger.info(`Mutation got executed from : http://localhost:4000/graphql${context.myID}`); 
+        logger.info(JSON.stringify(info["operation"]));
+        if(database.database.size > quadlimit){ throw new GraphQLError({ key: "ERROR", message: "You have reached the limit of data per session" });}
         const objectID = req.id;
         validators.validateIsIdDefined(objectID);
         validators.validateURI(objectID, "id");
@@ -129,9 +129,9 @@ createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaStr
         database.updateInference();
 
         return res;
-    }
+    };
 
     return newResolverBody;
-}
+};
 
-module.exports = createMutationResolvers
+module.exports = createMutationResolvers;

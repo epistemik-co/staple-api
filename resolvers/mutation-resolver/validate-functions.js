@@ -1,6 +1,5 @@
-const { GraphQLError } = require('graphql');
-const dataset_tree = require('graphy').util.dataset.tree
-const { ApolloError } = require('apollo-server-express');
+const { GraphQLError } = require("graphql");
+const dataset_tree = require("graphy").util.dataset.tree;
 
 
 
@@ -9,12 +8,12 @@ const validateIsIterable = (obj) => {
     if (obj == null) {
         return false;
     }
-    return typeof obj[Symbol.iterator] === 'function';
-}
+    return typeof obj[Symbol.iterator] === "function";
+};
 
 const validateURI = (uri, name) => {
     if (uri === undefined) {
-        throw new GraphQLError({ key: 'ERROR', message: `Uri for ${name} is not defined in context` });
+        throw new GraphQLError({ key: "ERROR", message: `Uri for ${name} is not defined in context` });
     }
     if (uri === "@reverse") {
         return;
@@ -22,45 +21,45 @@ const validateURI = (uri, name) => {
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     if (!pattern.test(uri)) {
         // throw new ApolloError("message", "code", "code");
-        console.log(uri)
-        throw new GraphQLError({ key: 'ERROR', message: `The value of ${name} keys in the object are valid URIs` });
+        console.log(uri);
+        throw new GraphQLError({ key: "ERROR", message: `The value of ${name} keys in the object are valid URIs` });
     }
-}
+};
 
 const validateflattenedJson = (data) => {
-    getDepth = function (obj) {
+    let getDepth = function (obj) {
         var depth = 0;
         if (obj.children) {
             obj.children.forEach(function (d) {
-                var tmpDepth = getDepth(d)
+                var tmpDepth = getDepth(d);
                 if (tmpDepth > depth) {
                     depth = tmpDepth;
                 }
-            })
+            });
         }
         return 1 + depth;
-    }
+    };
     if (getDepth(data) > 1) {
-        throw new GraphQLError({ key: 'ERROR', message: 'The input object is a valid flattened JSON-LD object under the assumed context' });
+        throw new GraphQLError({ key: "ERROR", message: "The input object is a valid flattened JSON-LD object under the assumed context" });
     }
-}
+};
 
 const validateIsObjectInDatabase = (database, sub, pred, obj, expect = false, ensureExists = true) => {
     if (database.isTripleInDB(sub, pred, obj) === expect) {
         if (ensureExists) {
-            console.log(sub)
-            console.log(pred)
-            console.log(obj)
-            throw new GraphQLError({ key: 'ERROR', message: 'The object must exist in the database prior to this request.' });
+            console.log(sub);
+            console.log(pred);
+            console.log(obj);
+            throw new GraphQLError({ key: "ERROR", message: "The object must exist in the database prior to this request." });
         }
     }
-}
+};
 
 const validateIsIdDefined = (id) => {
     if (id === undefined) {
-        throw new GraphQLError({ key: 'ERROR', message: 'The ID must be defined.' });
+        throw new GraphQLError({ key: "ERROR", message: "The ID must be defined." });
     }
-}
+};
 
 const validateData = async (database, objectID, rdf, ensureExists, reqType, Warnings, quadlimit) => {
     let dataForValidation = dataset_tree();
@@ -68,7 +67,7 @@ const validateData = async (database, objectID, rdf, ensureExists, reqType, Warn
     await database.insertRDFPromise(dataForValidation, objectID, rdf);
 
     if(dataForValidation.size > quadlimit){
-         throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });
+         throw new GraphQLError({ key: "ERROR", message: "You have reached the limit of data per session" });
     }
 
     let temp = dataForValidation.match(null, null, null);
@@ -79,13 +78,13 @@ const validateData = async (database, objectID, rdf, ensureExists, reqType, Warn
     while (!x.done) {
         data = x.value;
         // uri validation
-        validateURI(data.subject.value, data.subject.value)
-        validateURI(data.predicate.value, data.predicate.value)
+        validateURI(data.subject.value, data.subject.value);
+        validateURI(data.predicate.value, data.predicate.value);
         if (data.object.datatype === undefined) {
-            validateURI(data.object.value, data.object.value)
+            validateURI(data.object.value, data.object.value);
         }
         else {
-            validateURI(data.object.datatype.value, data.object.datatype.value)
+            validateURI(data.object.datatype.value, data.object.datatype.value);
         }
 
         // ensureExists
@@ -102,7 +101,7 @@ const validateData = async (database, objectID, rdf, ensureExists, reqType, Warn
                 if (data.predicate.value !== database.stampleDataType && data.predicate.value !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
                     let uri = data.object.value;
                     if (database.isTripleInDB(uri, "http://staple-api.org/datamodel/type", "http://schema.org/Thing") === false) {
-                        database.create(uri, "http://staple-api.org/datamodel/type", "http://schema.org/Thing")
+                        database.create(uri, "http://staple-api.org/datamodel/type", "http://schema.org/Thing");
                     }
                 }
             }
@@ -121,14 +120,14 @@ const validateData = async (database, objectID, rdf, ensureExists, reqType, Warn
     for (let key in RemovedType) {
         let types = database.getObjectsValueArray(key, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
         if (types.every(elem => RemovedType[key].indexOf(elem) > -1)) {
-            Warnings.push({ 'Message': `Object with id: ${key} has no type` })
+            Warnings.push({ "Message": `Object with id: ${key} has no type` });
         }
     }
-}
+};
 
 const validateUnion = (fieldFromSchemaTree, schemaMapping, req, objectsFromSchemaObjectTree) => {
     for (let propertyName in fieldFromSchemaTree.data) {
-        if (propertyName !== '_id' && propertyName !== '_type') {
+        if (propertyName !== "_id" && propertyName !== "_type") {
             let uri = schemaMapping["@context"][propertyName];
 
             validateURI(uri, propertyName);
@@ -146,18 +145,18 @@ const validateUnion = (fieldFromSchemaTree, schemaMapping, req, objectsFromSchem
                     returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
 
                     if (returnType.type === "UnionType") {
-                        if (objectFromInput['_id'] !== undefined && objectFromInput['_value'] !== undefined) {
-                            throw new GraphQLError({ key: 'ERROR', message: `Defined id and type properties for ${propertyName} type object. Select only one property.` });
+                        if (objectFromInput["_id"] !== undefined && objectFromInput["_value"] !== undefined) {
+                            throw new GraphQLError({ key: "ERROR", message: `Defined id and type properties for ${propertyName} type object. Select only one property.` });
                         }
-                        if (objectFromInput['_value'] !== undefined && objectFromInput['_type'] === undefined) {
-                            throw new GraphQLError({ key: 'ERROR', message: `Defined value without type properties for ${propertyName} type object.` });
+                        if (objectFromInput["_value"] !== undefined && objectFromInput["_type"] === undefined) {
+                            throw new GraphQLError({ key: "ERROR", message: `Defined value without type properties for ${propertyName} type object.` });
                         }
                     }
                 }
             }
         }
     }
-}
+};
 
 module.exports = {
     validateIsIterable: validateIsIterable,

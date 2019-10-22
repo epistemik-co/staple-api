@@ -1,64 +1,64 @@
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
 
-const logger = require('../../config/winston');
+const logger = require("../../config/winston");
 
-handleDataTypeResolver = (tree, object) => {
-    let newResolverBody = {}
+let handleDataTypeResolver = (tree, object) => {
+    let newResolverBody = {};
 
     for (var propertyName in tree[object].data) {
-        if (propertyName === '_value') {
-            newResolverBody['_value'] = async (parent) => { return parent.value }
+        if (propertyName === "_value") {
+            newResolverBody["_value"] = async (parent) => { return parent.value; };
         }
-        else if (propertyName === '_type') {
-            newResolverBody['_type'] = (parent) => { 
-                let types = [parent.datatype.value] 
+        else if (propertyName === "_type") {
+            newResolverBody["_type"] = (parent) => { 
+                let types = [parent.datatype.value]; 
 
                 types = types.map(x => {
-                   for(let key in  schemaMapping['@context']){
-                       if(schemaMapping['@context'][key] === x)
+                   for(let key in  schemaMapping["@context"]){
+                       if(schemaMapping["@context"][key] === x)
                        return key;
                    }
-                   return ""
-                })
+                   return "";
+                });
 
                 return types;
-            }
+            };
         }
     }
 
     return newResolverBody;
-}
-handleClassTypeResolver = (tree, object, database) => {
-    let newResolverBody = {}
+};
+let handleClassTypeResolver = (tree, object, database) => {
+    let newResolverBody = {};
 
     for (var propertyName in tree[object].data) {
         let currentObject = tree[object].data[propertyName];
         let isItList = false;
 
-        if (currentObject.kind == 'ListType') {
+        if (currentObject.kind == "ListType") {
             currentObject = currentObject.data;
             isItList = true;
         }
 
-        if (propertyName === '_id') {
-            newResolverBody['_id'] = (parent) => { return parent };
+        if (propertyName === "_id") {
+            newResolverBody["_id"] = (parent) => { return parent; };
         }
-        else if (propertyName === '_type') {
-            newResolverBody['_type'] = (parent, args) => {
+        else if (propertyName === "_type") {
+            newResolverBody["_type"] = (parent, args) => {
                 if (args.inferred) {
-                    return database.getObjectsValueArray((parent), database.stampleDataType)
+                    return database.getObjectsValueArray((parent), database.stampleDataType);
                 }
-                let types = database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+                let types = database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
 
                 types = types.map(x => {
-                   for(let key in  schemaMapping['@context']){
-                       if(schemaMapping['@context'][key] === x)
+                   for(let key in  schemaMapping["@context"]){
+                       if(schemaMapping["@context"][key] === x)
                        return key;
                    }
-                   return ""
-                })
+                   return "";
+                });
 
-                return types
+                return types;
             };
         }
 
@@ -75,7 +75,7 @@ handleClassTypeResolver = (tree, object, database) => {
                     return (parent) => {
                         let data = database.getObjectsValueArray((parent), (name));
                         return data;
-                    }
+                    };
                 };
                 newResolverBody[propertyName] = constr(name);
 
@@ -83,7 +83,7 @@ handleClassTypeResolver = (tree, object, database) => {
             else {
                 const name = uri;
                 let constr = (name, isItList) => {
-                    return ((parent, args) => {
+                    return ((parent) => {
                         if (name === "@reverse") {
                             let data = database.getTriplesByObjectUri(parent);
                             return data;
@@ -98,16 +98,16 @@ handleClassTypeResolver = (tree, object, database) => {
                         else {
                             return database.getSingleLiteral((parent), (name));
                         }
-                    })
+                    });
                 };
                 newResolverBody[propertyName] = constr(name, isItList);
             }
         }
     }
     return newResolverBody;
-}
-handleUnionTypeResolver = (tree, object, database) => {
-    let newResolverBody = {}
+};
+let handleUnionTypeResolver = (tree, object, database) => {
+    let newResolverBody = {};
 
     let constr = (name) => {
         return (parent) => {
@@ -115,20 +115,20 @@ handleUnionTypeResolver = (tree, object, database) => {
                 let uriToName = {};
                 uriToName[schemaMapping["@context"][value]] = value;
                 return uriToName;
-            })
+            });
 
             const typeOfObject = database.getObjectsValueArray(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")[0];
-            typesOfObject = typesOfObject.filter(x => x[typeOfObject] !== undefined)[0]
+            typesOfObject = typesOfObject.filter(x => x[typeOfObject] !== undefined)[0];
             return typesOfObject[typeOfObject];
         };
 
     };
 
-    newResolverBody['__resolveType'] = constr(object)
-    return newResolverBody
-}
-handleReverseDataTypeResolver = (tree, object) => {
-    let newResolverBody = {}
+    newResolverBody["__resolveType"] = constr(object);
+    return newResolverBody;
+};
+let handleReverseDataTypeResolver = (tree, object) => {
+    let newResolverBody = {};
 
     for (var propertyName in tree[object].data) { 
         if(tree[object].data[propertyName].data === undefined){
@@ -137,32 +137,32 @@ handleReverseDataTypeResolver = (tree, object) => {
         let uri = tree[object].data[propertyName].data.uri;
 
         let constr = (name) => {
-            return ((parent, args) => {
+            return ((parent) => {
                 parent = parent.filter(x => x.predicate.value === name);
                 let data = parent.map(x => x.subject.value);
                 return data;
-            })
+            });
         };
 
         newResolverBody[propertyName] = constr(uri);
     }
     return newResolverBody;
-}
+};
 
-createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
+let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
     schemaMapping = schemaMappingArg;
     if(schemaMapping === undefined){
-        schemaMapping = require('../../schema/schema-mapping');
+        schemaMapping = require("../../schema/schema-mapping");
     }
     let queryResolverBody = {};
-    queryResolverBody['Query'] = {};
-    queryResolverBody['Objects'] = {};
-    queryResolverBody['Data'] = {};
+    queryResolverBody["Query"] = {};
+    queryResolverBody["Objects"] = {};
+    queryResolverBody["Data"] = {};
 
     // -------------------------------------------------- CREATE RESOLVERS
     let objectsFromSchemaObjectTree = [];
-    for (var propertyName in tree) { objectsFromSchemaObjectTree.push(tree[propertyName]); };
+    for (var propertyName in tree) { objectsFromSchemaObjectTree.push(tree[propertyName]); }
     // console.log(objectsFromSchemaTree)
 
     for (var object in tree) {
@@ -170,59 +170,59 @@ createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
 
         if (tree[object].type === "http://schema.org/DataType") {
             let newResolver = tree[object].name;
-            queryResolverBody['Data'][newResolver] = handleDataTypeResolver(tree, object)
+            queryResolverBody["Data"][newResolver] = handleDataTypeResolver(tree, object);
         }
         else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
             // Core Query
-            let uri = tree[object]['uri'];
+            let uri = tree[object]["uri"];
             let constr = (uri) => {
                 return (parent, args, context, info) => {
-                    logger.info(`Query got executed from : http://localhost:4000/graphql${context.myID}`) 
-                    logger.info(JSON.stringify(info["operation"]))
+                    logger.info(`Query got executed from : http://localhost:4000/graphql${context.myID}`); 
+                    logger.info(JSON.stringify(info["operation"]));
                     let data = database.getSubjectsByType((uri), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", args.inferred);
-                    data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
+                    data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10; });
                     return data;
-                }
+                };
             };
-            queryResolverBody['Query'][tree[object].name] = constr(uri);
+            queryResolverBody["Query"][tree[object].name] = constr(uri);
 
             //OBJECT
             let newResolver = tree[object].name;
-            queryResolverBody['Objects'][newResolver] = handleClassTypeResolver(tree, object, database);
+            queryResolverBody["Objects"][newResolver] = handleClassTypeResolver(tree, object, database);
         }
         else if (tree[object].type === "UnionType") {
             let newResolver = tree[object].name;
-            queryResolverBody['Data'][newResolver] = handleUnionTypeResolver(tree, object, database);
+            queryResolverBody["Data"][newResolver] = handleUnionTypeResolver(tree, object, database);
         }
         else if (tree[object].type === "EnumType") {
             //....
         }
         else if (tree[object].type === "Reverse") {
             let newResolver = tree[object].name;
-            queryResolverBody['Data'][newResolver] = handleReverseDataTypeResolver(tree, object);
+            queryResolverBody["Data"][newResolver] = handleReverseDataTypeResolver(tree, object);
         }
         else if (object === "_CONTEXT") {
-            queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"] }
+            queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"]; };
         }
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = (obj, args, context, info) => {
-                logger.info(`Query got executed from : http://localhost:4000/graphql${context.myID}`) 
-                logger.info(JSON.stringify(info["operation"]))
+                logger.info(`Query got executed from : http://localhost:4000/graphql${context.myID}`); 
+                logger.info(JSON.stringify(info["operation"]));
                 let data = database.getSubjectsByType("http://schema.org/Thing", database.stampleDataType, args.inferred);
-                data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10 });
-                data = data.map((id) => { return { '_id': id, '_type': database.getObjectsValueArray(id, database.stampleDataType) } });
+                data = data.filter((id, index) => { return index >= (args.page - 1) * 10 && index < args.page * 10; });
+                data = data.map((id) => { return { "_id": id, "_type": database.getObjectsValueArray(id, database.stampleDataType) }; });
                 return data;
-            }
+            };
         }
         else {
-            console.log("UNHANDLED TYPE")
-            console.log(object)
-            console.log(tree[object].type)
+            console.log("UNHANDLED TYPE");
+            console.log(object);
+            console.log(tree[object].type);
         }
     }
     //console.log(queryResolverBody);
     return queryResolverBody;
-}
+};
 
 
-module.exports = createQueryResolvers
+module.exports = createQueryResolvers;
