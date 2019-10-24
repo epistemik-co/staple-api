@@ -6,15 +6,13 @@ const { ApolloServer } = require("apollo-server-express");
 const { makeExecutableSchema } = require("graphql-tools");
 const logger = require("./config/winston");
 
-let schMapping = require("./schema/schema-mapping");
 let exampleObjects = require("./database/exampleObjects");
 
-const DatabaseInterface = require("./database/Database");
-const schemaString = require("./schema/schema");
+const DatabaseInterface = require("./database/database");
 const Resolver = require("./resolvers/resolvers");
+const createschema = require("./schema/gen-schema-staple/index");
 
 const app = express();
-const createschema = require("./schema/gen-schema-staple/index");
 
 const database = new DatabaseInterface(require("./schema/schema-mapping"));
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
@@ -45,6 +43,8 @@ setInterval(function () {
 
 async function init(app, index) {
     const database2 = new DatabaseInterface(require("./schema/schema-mapping"));
+
+    const schemaString = require("./schema/schema");
     // load data
     database2.database = database.dbCopy();
     const rootResolver = new Resolver(database2, Warnings, require("./schema/schema-mapping")).rootResolver; // Generate Resolvers for graphql
@@ -150,6 +150,8 @@ app.post("/api/customInit", async function (req, res) {
 // It will be used to pre create objects
 async function setDB() {
     for (let obj of exampleObjects) {
+
+        let schMapping = require("./schema/schema-mapping");
         obj["@context"] = schMapping["@context"];
         const rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
         await database.insertRDFForPreloadedData(rdf, obj._id);

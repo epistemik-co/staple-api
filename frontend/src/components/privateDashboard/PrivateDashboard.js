@@ -59,10 +59,14 @@ class PrivateDashboard extends Component {
       data = data.substring(0, data.length - 1);
     }
 
+
     try {
       let res = await axios.post('http://localhost:4000/api/customInit', { "value": data });
       if (res.status === 200) {
+        console.log(res.data)
+        
         this.setState({
+
           id: res.data.id,
           context: JSON.stringify(res.data.context['@context'], null, 2),
           error: "",
@@ -71,6 +75,11 @@ class PrivateDashboard extends Component {
         })
       }
     } catch (error) {
+      
+      if(error.response.data === undefined){
+        error.response.data = "Error";
+      }
+
       this.setState({
         id: "",
         context: "",
