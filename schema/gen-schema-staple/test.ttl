@@ -1,0 +1,82 @@
+@prefix schema: <http://schema.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+schema:Thing a rdfs:Class ;
+    rdfs:comment "Anything." .
+
+schema:Organization a rdfs:Class ;
+    rdfs:comment "An organization such as a school, NGO, corporation, club, etc." ;
+    rdfs:subClassOf schema:Thing .
+
+schema:Person a rdfs:Class ;
+    rdfs:comment "A person" ;
+    rdfs:subClassOf schema:Thing .
+
+schema:Patient a rdfs:Class ;
+    rdfs:comment "A patient" ;
+    rdfs:subClassOf schema:Person .
+
+schema:legalName a rdf:Property, owl:FunctionalProperty ;
+    schema:domainIncludes schema:Organization ;
+    schema:rangeIncludes schema:Text ;
+    rdfs:comment "The official name of the organization, e.g. the registered company name." .
+
+schema:hasShareholder a rdf:Property ;
+    schema:domainIncludes schema:Organization ;
+    schema:rangeIncludes schema:Organization, schema:Person, schema:Text ;
+    rdfs:comment "Has a shareholder." .
+
+schema:gender a rdf:Property ;
+    schema:domainIncludes schema:Person ;
+    schema:rangeIncludes schema:GenderType ;
+    rdfs:comment "Has gender type." .
+
+schema:GenderType a rdfs:Class ;
+    rdfs:comment "A gender type" ;
+    rdfs:subClassOf schema:Enumeration .
+
+schema:Female a schema:GenderType ;
+    rdfs:comment "Female gender." .
+
+schema:Male a schema:GenderType ;
+    rdfs:comment "Male gender." .
+
+schema:shareholderOf a rdf:Property ;
+    schema:domainIncludes schema:Organization, schema:Person ;
+    schema:rangeIncludes schema:Organization ;
+    schema:inverseOf schema:hasShareholder ;
+    rdfs:comment "Is a shareholder of an organization." .
+
+schema:employee a rdf:Property ;
+    schema:domainIncludes schema:Organization ;
+    schema:rangeIncludes schema:Person ;
+    schema:inverseOf schema:affiliation ;
+    rdfs:comment "An employee of an organization." .
+
+schema:affiliation a rdf:Property ;
+    schema:domainIncludes schema:Person ;
+    schema:rangeIncludes schema:Organization ;
+    schema:inverseOf schema:employee ;
+    rdfs:comment "Affiliation of a person." .
+
+schema:noOfEmployees a rdf:Property, owl:FunctionalProperty ;
+    schema:domainIncludes schema:Organization ;
+    schema:rangeIncludes schema:Integer ;
+    rdfs:comment "The number of employees in an organization." .
+
+schema:name a rdf:Property, owl:FunctionalProperty ;
+    schema:domainIncludes schema:Thing ;
+    schema:rangeIncludes schema:Text ;
+    rdfs:comment "The name of an entity." .
+
+schema:Text a schema:DataType, rdfs:Class ;
+rdfs:comment "This is text DataType." .
+
+schema:Number a schema:DataType, rdfs:Class ;
+    rdfs:comment "This is number DataType." .
+
+schema:Integer a rdfs:Class ;
+    rdfs:comment "This is integer DataType." ;
+    rdfs:subClassOf schema:Number .
