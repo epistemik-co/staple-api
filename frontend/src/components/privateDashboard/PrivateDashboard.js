@@ -27,6 +27,14 @@ class PrivateDashboard extends Component {
     window.addEventListener("resize", this.setPlaygroundHeight);
 
     this.getId();
+    this.correctHeight();
+  }
+
+  correctHeight = () => {
+    var x = document.getElementsByClassName("JVBvg");
+    x[0].style.maxHeight = 90 + "px";
+    x[0].style.minHeight = 53 + "px";
+    x[0].firstChild.style.marginTop = 10 + "px";
   }
 
   escapeRegExp(str) {
@@ -38,7 +46,7 @@ class PrivateDashboard extends Component {
   }
 
   getId = async () => {
-    let res = await axios.get('http://localhost:4000/api/dynamic');
+    let res = await axios.get('http://staple-api.org:4000/api/dynamic');
     if (res.status === 200) {
       this.setState({
         id: res.data
@@ -61,7 +69,7 @@ class PrivateDashboard extends Component {
 
 
     try {
-      let res = await axios.post('http://localhost:4000/api/customInit', { "value": data });
+      let res = await axios.post('http://staple-api.org:4000/api/customInit', { "value": data });
       if (res.status === 200) {
         console.log(res.data)
 
@@ -171,7 +179,7 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
-              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground" />
+              <Playground endpoint={"http://staple-api.org:4000/graphql" + this.state.id} className="playground" id="playground" />
             </Provider>
           </div>
           <div className="doc-link">

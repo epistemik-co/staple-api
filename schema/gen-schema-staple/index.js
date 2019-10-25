@@ -27,7 +27,7 @@ const {
     getRangeName,
     getReverseTypeName
 } = require("./introspection-patterns.js")
-const DatabaseInterface = require('./database/Database');
+const DatabaseInterface = require('./database/database');
 let database = new DatabaseInterface();
 var express = require('express');
 var graphqlHTTP = require('express-graphql');
