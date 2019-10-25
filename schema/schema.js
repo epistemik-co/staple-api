@@ -2010,6 +2010,7 @@ input worksFor_INPUT {
   """The URI identfier of the object."""
   _id: ID!
 }
+ 
 `
 
 module.exports = schemaString

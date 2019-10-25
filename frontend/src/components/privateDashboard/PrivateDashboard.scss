@@ -20,6 +20,10 @@
       width: 100%;
     }
 
+    .box-grid1{
+      grid-template-columns: auto;
+    }
+
     .box-grid2{
       grid-template-columns: auto 50%;
     }
@@ -269,7 +273,7 @@
 }
 
 .iXTGTt { 
-  top: 5px;
+  top: 0px;
 }
 
 .JVBvg { 

@@ -77,7 +77,7 @@ async function init(app, index) {
     const path = "/graphql" + index;
     server.applyMiddleware({ app, path });
 }
-
+ 
 async function customInit(app, index, req) {
     // console.log(req.body.value)
     let newEndpointData = await createschema(req.body.value);
@@ -130,7 +130,7 @@ app.get("/api/dynamic", function (req, res) {
     res.send(id);
     logger.warn(`Endpoint created ! http://localhost:4000/graphql${id}`);
 });
-
+    
 
 app.post("/api/customInit", async function (req, res) {
     let id = uuidv1();
