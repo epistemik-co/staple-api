@@ -64,7 +64,7 @@ class PrivateDashboard extends Component {
       let res = await axios.post('http://localhost:4000/api/customInit', { "value": data });
       if (res.status === 200) {
         console.log(res.data)
-        
+
         this.setState({
 
           id: res.data.id,
@@ -75,8 +75,8 @@ class PrivateDashboard extends Component {
         })
       }
     } catch (error) {
-      
-      if(error.response.data === undefined){
+
+      if (error.response.data === undefined) {
         error.response.data = "Error";
       }
 
@@ -106,58 +106,80 @@ class PrivateDashboard extends Component {
     return (
       <SplitPane split="horizontal" minSize={40} defaultSize={300} onChange={this.setPlaygroundHeight} id="spliter">
 
-        <div className={this.state.showObjects && !this.state.customEndPoint ? "box-grid box-grid3" : "box-grid box-grid2"}>
-          <div className="box-left">
-            <div className="fixed-top-bar">
+        {/* <div>
+
+          <div className="nav-bar-grid">
+            <div className="box">
               <h3>Ontology (in Turtle syntax)</h3>
               <button className="rdf-compile button play" onClick={this.getIdPersonal}></button>
               <p className="compiled-successfully">{this.state.compiledMessage}</p>
               <p className="error-message">{this.state.error}</p>
             </div>
-            <textarea spellCheck="false" className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE"
-              value={
-                this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"')
-              }
-            >
-
-            </textarea>
-          </div>
-
-
-          <div className="box-right">
-            <h3>Json-LD context</h3>
-            <div className="context-box">
-              <code>
-                <div>
-                  <pre>
-                    {this.state.context}
-                  </pre>
-                </div>
-              </code>
+            <div className="box">
+              <h3>Json-LD context</h3>
             </div>
+            <div className="box">
+              <h3>Preloaded data</h3>
+            </div>
+          </div> */}
+
+          <div className={this.state.showObjects && !this.state.customEndPoint ? "box-grid box-grid3" : "box-grid box-grid2"}>
+            <div className="box-left">
+              <div className="fixed-top-bar">
+                <h3>Ontology (in Turtle syntax)</h3>
+                <button className="rdf-compile button play" onClick={this.getIdPersonal}></button>
+                <p className="compiled-successfully">{this.state.compiledMessage}</p>
+                <p className="error-message">{this.state.error}</p>
+              </div>
+              <textarea spellCheck="false" className="rdf-textarea" onChange={this.handleChangeTextArea} placeholder="CODE HERE"
+                value={
+                  this.replaceAll(this.replaceAll(this.state.ontology, '\\n', String.fromCharCode(13, 10)), '\\"', '"')
+                }
+              >
+
+              </textarea>
+            </div>
+
+
+            {/* {this.state.showObjects ? */}
+              <div className="box-right">
+                <h3>Json-LD context</h3>
+                <div className="context-box">
+                  <code>
+                    <div>
+                      <pre>
+                        {this.state.context}
+                      </pre>
+                    </div>
+                  </code>
+                </div>
+              </div>
+               {/* :
+              <React.Fragment></React.Fragment>
+            } */}
+
+            {this.state.showObjects && !this.state.customEndPoint ?
+              <div className="box-middle">
+                <h3>Preloaded data</h3>
+                <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
+                <div className="context-box">
+                  <code>
+                    <div><pre>{JSON.stringify(schemaString, null, 2)}</pre></div>
+                  </code>
+                </div>
+              </div> :
+              !this.state.customEndPoint ?
+                <button className="button-close" onClick={x => this.setState({ showObjects: true })}>Show example objects</button>
+                :
+                <React.Fragment></React.Fragment>
+            }
           </div>
 
-          {this.state.showObjects && !this.state.customEndPoint ?
-            <div className="box-middle">
-              <h3>Preloaded data</h3>
-              <button className="button-close" onClick={x => this.setState({ showObjects: false })}>X</button>
-              <div className="context-box">
-                <code>
-                  <div><pre>{JSON.stringify(schemaString, null, 2)}</pre></div>
-                </code>
-              </div>
-            </div> :
-            !this.state.customEndPoint ?
-              <button className="button-close" onClick={x => this.setState({ showObjects: true })}>Show example objects</button>
-              :
-              <React.Fragment></React.Fragment>
-          }
-        </div>
-
+        {/* </div> */}
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
-              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground"/>
+              <Playground endpoint={"http://localhost:4000/graphql" + this.state.id} className="playground" id="playground" />
             </Provider>
           </div>
           <div className="doc-link">

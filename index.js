@@ -150,12 +150,12 @@ app.post("/api/customInit", async function (req, res) {
 // It will be used to pre create objects
 async function setDB() {
     for (let obj of exampleObjects) {
-
         let schMapping = require("./schema/schema-mapping");
         obj["@context"] = schMapping["@context"];
         const rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
         await database.insertRDFForPreloadedData(rdf, obj._id);
     }
+    database.updateInference();
 }
 setDB();
 

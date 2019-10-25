@@ -2,6 +2,11 @@
     display: block;
     cursor: auto!important;
   }
+
+  .nav-bar-grid{
+
+    grid-template-columns: auto 33% auto;
+  }
   
   .box-grid {
       // overflow: hidden;
@@ -16,8 +21,7 @@
     }
 
     .box-grid2{
-
-      grid-template-columns: auto 50% ;
+      grid-template-columns: auto 50%;
     }
 
     .box-grid3{
@@ -57,7 +61,7 @@
         border: 0;
         color: white;
         resize: none;
-        font-size: 12px;
+        font-size: 14px;
         font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
       }
 
@@ -114,6 +118,7 @@
       }
       .context-box{
         margin-top:2.5rem;
+        font-size: 14px;
       }
     }
     
@@ -127,6 +132,8 @@
       overflow: scroll;
       .context-box{
         margin-top:2.5rem;
+        color: #c4c3c3;
+        font-size: 14px;
       }
     }
     
@@ -141,6 +148,7 @@
     .box-middle p{
       margin: 0px;
       padding-bottom: 10px;
+
     } 
       
     .box-middle p:first-child{
@@ -154,6 +162,8 @@
 
       .context-box{
         margin-top:2.5rem;
+        color: #c4c3c3;
+        font-size: 14px;
       }
     }
     
@@ -210,7 +220,29 @@
   bottom: 0;
   left: 50%;
   transform: translate(-50%, 0);
-  background-color: #162B3A;
+  // background-color: #162B3A;
+  background: linear-gradient(270deg, #162b3a, #2b4d66);
+  background-size: 400% 400%;
+  
+  -webkit-animation: AnimationName 7.5s ease infinite;
+  -moz-animation: AnimationName 7.5s ease infinite;
+  animation: AnimationName 7.5s ease infinite;
+
+  @-webkit-keyframes AnimationName {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+  }
+  @-moz-keyframes AnimationName {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+  }
+  @keyframes AnimationName {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+  }
   width: 100%;
   text-align: center;
     p { 
@@ -230,4 +262,17 @@
       text-decoration: underline;
     }
   }
+}
+
+.cZCkPb {
+   margin-top: 0;
+}
+
+.iXTGTt { 
+  top: 5px;
+}
+
+.JVBvg { 
+  max-height: 43px;
+  height: 43px;
 }
