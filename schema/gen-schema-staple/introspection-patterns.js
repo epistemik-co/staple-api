@@ -42,20 +42,20 @@ function getIdQueryField() {
     "name": ID,
     "description": "The URI identfier of the object.",
     "args": [
-      {
-        "name": "only",
-        "description": "The URI must be on the provided list of URIs.",
-        "type": {
-          "kind": "LIST",
-          "name": null,
-          "ofType": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          }
-        },
-        "defaultValue": null
-      }
+      // {
+      //   "name": "only",
+      //   "description": "The URI must be on the provided list of URIs.",
+      //   "type": {
+      //     "kind": "LIST",
+      //     "name": null,
+      //     "ofType": {
+      //       "kind": "SCALAR",
+      //       "name": "String",
+      //       "ofType": null
+      //     }
+      //   },
+      //   "defaultValue": null
+      // }
     ],
     "type": {
       "kind": "NON_NULL",
@@ -88,40 +88,40 @@ function getValueQueryField() {
     "name": VALUE,
     "description": "The literal data value for the property.",
     "args": [
-      {
-        "name": "only",
-        "description": "The value of this property must be on the provided list.",
-        "type": {
-          "kind": "LIST",
-          "name": null,
-          "ofType": {
-            "kind": "SCALAR",
-            "name": "String",
-            "ofType": null
-          }
-        },
-        "defaultValue": null
-      },
-      {
-        "name": "contains",
-        "description": "The value of the property must contain the specified string.",
-        "type": {
-          "kind": "SCALAR",
-          "name": "String",
-          "ofType": null
-        },
-        "defaultValue": null
-      },
-      {
-        "name": "lang",
-        "description": "The language of the string value (if recognized).",
-        "type": {
-          "kind": "SCALAR",
-          "name": "String",
-          "ofType": null
-        },
-        "defaultValue": null
-      }
+      // {
+      //   "name": "only",
+      //   "description": "The value of this property must be on the provided list.",
+      //   "type": {
+      //     "kind": "LIST",
+      //     "name": null,
+      //     "ofType": {
+      //       "kind": "SCALAR",
+      //       "name": "String",
+      //       "ofType": null
+      //     }
+      //   },
+      //   "defaultValue": null
+      // },
+      // {
+      //   "name": "contains",
+      //   "description": "The value of the property must contain the specified string.",
+      //   "type": {
+      //     "kind": "SCALAR",
+      //     "name": "String",
+      //     "ofType": null
+      //   },
+      //   "defaultValue": null
+      // },
+      // {
+      //   "name": "lang",
+      //   "description": "The language of the string value (if recognized).",
+      //   "type": {
+      //     "kind": "SCALAR",
+      //     "name": "String",
+      //     "ofType": null
+      //   },
+      //   "defaultValue": null
+      // }
     ],
     "type": {
       "kind": "SCALAR",
