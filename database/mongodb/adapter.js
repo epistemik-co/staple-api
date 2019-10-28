@@ -1,0 +1,135 @@
+const MongoClient = require("mongodb").MongoClient;
+
+var appRoot = require("app-root-path");
+const logger = require(`${appRoot}/config/winston`);
+
+/* eslint-disable require-atomic-updates */
+const jsonld = require("jsonld");
+const util = require("util");
+  
+class MongodbAdapter {
+    constructor(configFile) {
+        this.configFile = configFile;
+    }
+
+    async loadChildObjectsByUris(database, sub, filter) {
+        logger.log("info", "loadChildObjectsByUris was called");
+        if (database.client === undefined) { 
+            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        }
+    
+        try {
+            const db = database.client.db(this.configFile.dbName);
+            let collection = db.collection(this.configFile.collectionName);
+    
+            let query = filter;
+            if(query === undefined){
+                query = {};
+            }
+            if (query["_id"] === undefined) {
+                query["_id"] = { "$in": sub };
+            } else {
+                // ???? remove rest of ids from sub from graphy ???
+                // apply filter in resolver !
+            }
+    
+            logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+            let result = await collection.find(query).toArray();
+    
+            result = result.map(x => {
+                x["@context"] = database.schemaMapping["@context"];
+                return x;
+            });
+    
+            const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
+            let ids = result.map(x => x["_id"]);
+            result.map(async t => {
+                let tempIds = [];
+    
+                for (let key in t["_reverse"]) {
+                    tempIds = t["_reverse"][key].map(x => x["_id"]);
+                }
+    
+                ids = [...ids, ...tempIds];
+            });
+    
+            logger.debug("Graphy database rdf insert start");
+            await database.insertRDF(rdf, ids);
+            logger.debug("Graphy database rdf insert end");
+    
+    
+        } catch (err) {
+            logger.error(err);
+        }
+    }
+    
+    async loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
+    
+        if (database.client === undefined) {
+            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        }
+    
+    
+        try {
+            const db = database.client.db(this.configFile.dbName);
+            let collection = db.collection(this.configFile.collectionName);
+            let _type = undefined;
+    
+            if (query === undefined) {
+                _type = database.schemaMapping["@revContext"][type];
+                query = {};
+            }
+    
+            if (_type !== undefined) {
+    
+                if (inferred) {
+                    query["_inferred"] = _type;
+                }
+                else {
+                    query["_type"] = _type;
+                }
+    
+            }
+    
+            let result;
+            if (page === undefined) {
+                result = await collection.find(query).toArray();
+            }
+            else {
+                logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+                result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+            }
+    
+            // save page conetnt
+            database.pages[page] = result.map(x => x["_id"]);
+    
+            result = result.map(x => {
+                x["@context"] = database.schemaMapping["@context"];
+                return x;
+            });
+    
+            const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
+            let ids = result.map(x => x["_id"]);
+    
+            result.map(async t => {
+                let tempIds = [];
+    
+                for (let key in t["_reverse"]) {
+                    tempIds = t["_reverse"][key].map(x => x["_id"]);
+                }
+    
+                ids = [...ids, ...tempIds];
+            });
+    
+            logger.debug("Graphy database rdf insert start");
+            await database.insertRDF(rdf, ids);
+            logger.debug("Graphy database rdf insert end");
+    
+        } catch (err) {
+            logger.error(err);
+        }
+    
+    }
+}
+
+module.exports = MongodbAdapter;

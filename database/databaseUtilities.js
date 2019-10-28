@@ -1,72 +1,72 @@
-const read_graphy = require('graphy').content.nq.read;
-const factory = require('@graphy/core.data.factory');
+const read_graphy = require("graphy").content.nq.read;
+const factory = require("@graphy/core.data.factory");
 
-var appRoot = require('app-root-path');
+var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 
 function createReverseContext(schemaMapping) {
-    schemaMapping['@revContext'] = {};
-    for (let key in schemaMapping['@context']) {
-        schemaMapping['@revContext'][schemaMapping['@context'][key]] = key;
+    schemaMapping["@revContext"] = {};
+    for (let key in schemaMapping["@context"]) {
+        schemaMapping["@revContext"][schemaMapping["@context"][key]] = key;
     }
 }
 
 function createGraphMap(schemaMapping){
-    schemaMapping['@graphMap'] = {};
-    for (let object of schemaMapping['@graph']) {
-        if(schemaMapping['@graphMap'][object["@id"]] !== undefined){
-            logger.warn(`This ID apears more than once in schema mapping @graph ${schemaMapping['@graphMap'][object["@id"]]}`)
+    schemaMapping["@graphMap"] = {};
+    for (let object of schemaMapping["@graph"]) {
+        if(schemaMapping["@graphMap"][object["@id"]] !== undefined){
+            logger.warn(`This ID apears more than once in schema mapping @graph ${schemaMapping["@graphMap"][object["@id"]]}`);
         }
-        schemaMapping['@graphMap'][object["@id"]] = object;
+        schemaMapping["@graphMap"][object["@id"]] = object;
     }
 }
 
 function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false, uuid) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         let data = (y_quad) => {
             if (ID === undefined || ID.includes(y_quad.subject.value)) {
                 if (tryToFix) {
-                    y_quad = quadFix(y_quad, uuid)
+                    y_quad = quadFix(y_quad, uuid);
                 }
                 y_quad.graph = factory.namedNode(null);
 
                 // add inverses 
-                let inverse = schemaMapping['@graphMap'][y_quad.predicate.value]
+                let inverse = schemaMapping["@graphMap"][y_quad.predicate.value];
                 if (inverse !== undefined) {
-                    if (inverse['http://schema.org/inverseOf'] !== undefined) {
-                        inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
+                    if (inverse["http://schema.org/inverseOf"] !== undefined) {
+                        inverse["http://schema.org/inverseOf"].forEach(inversePredicate => {
                             let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
                             tree.add(quad);
-                        })
+                        });
                     }
                 }
 
                 tree.add(y_quad);
             }
-        }
+        };
 
-        let eof = (h_prefixes) => {
-            resolve('done')
-        }
+        let eof = () => {
+            resolve("done");
+        };
 
-        read_graphy(rdf, { data, eof, })
+        read_graphy(rdf, { data, eof, });
     });
 }
 
 function removeRDFPromise(tree, ID, rdf) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         let data = (y_quad) => {
             if (y_quad.subject.value === ID) {
                 y_quad.graph = factory.namedNode(null);
                 tree.delete(y_quad);
             }
-        }
+        };
 
-        let eof = (h_prefixes) => {
-            resolve('done')
-        }
+        let eof = () => {
+            resolve("done");
+        };
 
-        read_graphy(rdf, { data, eof, })
+        read_graphy(rdf, { data, eof, });
     });
 }
 
@@ -76,8 +76,8 @@ async function getFlatJson(databaseObject) {
     // CHECK IF OBJECT ALREADY IN DATABASE IF SO, THEN UPDATE
 
     for (let i in ids) {
-        let id = ids[i]
-        let allRelatedQuads = []
+        let id = ids[i];
+        let allRelatedQuads = [];
 
         var temp = databaseObject.database.match(factory.namedNode(id), null, null);
         var itr = temp.quads();
@@ -102,13 +102,13 @@ async function getFlatJson(databaseObject) {
             "_type": undefined,
             "_inferred": [],
             "_reverse": {},
-        }
+        };
 
         for (let quad of allRelatedQuads) {
             // logger.debug(quad)
             if (quad.subject.value === id) {
                 if (quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
-                    let contextKey = databaseObject.schemaMapping['@revContext'][quad.object.value]
+                    let contextKey = databaseObject.schemaMapping["@revContext"][quad.object.value];
                     newJson["_type"] = contextKey;
                 }
                 else if (quad.object.datatype !== undefined) { //Literal
@@ -118,46 +118,46 @@ async function getFlatJson(databaseObject) {
                         fieldKey = quad.predicate.value.split("http://schema.org/")[1];
                     }
                     else {
-                        fieldKey = databaseObject.schemaMapping['@revContext'][quad.predicate.value];
+                        fieldKey = databaseObject.schemaMapping["@revContext"][quad.predicate.value];
                     }
 
                     if (fieldKey !== undefined) {
 
                         if (newJson[fieldKey] === undefined) {
-                            newJson[fieldKey] = []
+                            newJson[fieldKey] = [];
                         }
 
                         newJson[fieldKey].push({
                             _value: quad.object.value,
-                            _type: databaseObject.schemaMapping['@revContext'][quad.object.datatype.value],
+                            _type: databaseObject.schemaMapping["@revContext"][quad.object.datatype.value],
                         });
                     }
                     else {
-                        logger.warn(`Unexpected predicate in quad with literal ${quad.predicate.value}`)
+                        logger.warn(`Unexpected predicate in quad with literal ${quad.predicate.value}`);
                     }
 
                 }
                 else if (quad.predicate.value === "http://staple-api.org/datamodel/type") { // _inferred
-                    let contextKey = databaseObject.schemaMapping['@revContext'][quad.object.value];
+                    let contextKey = databaseObject.schemaMapping["@revContext"][quad.object.value];
                     if (contextKey !== undefined) {
-                        newJson['_inferred'].push(contextKey)
+                        newJson["_inferred"].push(contextKey);
                     }
                     else {
-                        logger.warn(`Unexpected object in quad: ${quad.object.value}`)
+                        logger.warn(`Unexpected object in quad: ${quad.object.value}`);
                     }
                 }
                 else { // object
-                    let contextKey = databaseObject.schemaMapping['@revContext'][quad.predicate.value];
+                    let contextKey = databaseObject.schemaMapping["@revContext"][quad.predicate.value];
 
                     if (contextKey !== undefined) {
                         if (newJson[contextKey] === undefined) {
-                            newJson[contextKey] = []
+                            newJson[contextKey] = [];
                         }
 
                         newJson[contextKey].push({ _id: quad.object.value });
                     }
                     else {
-                        logger.warn(`Unexpected predicate in quad: ${quad.predicate.value}`)
+                        logger.warn(`Unexpected predicate in quad: ${quad.predicate.value}`);
                     }
 
 
@@ -165,25 +165,25 @@ async function getFlatJson(databaseObject) {
             }
 
             if (quad.object.value === id) { // _reverse
-                let contextKey = databaseObject.schemaMapping['@revContext'][quad.predicate.value];
+                let contextKey = databaseObject.schemaMapping["@revContext"][quad.predicate.value];
 
                 if (contextKey !== undefined) {
-                    if (newJson['_reverse'][contextKey] === undefined) {
-                        newJson['_reverse'][contextKey] = []
+                    if (newJson["_reverse"][contextKey] === undefined) {
+                        newJson["_reverse"][contextKey] = [];
                     }
 
-                    newJson['_reverse'][contextKey].push({ _id: quad.subject.value })
+                    newJson["_reverse"][contextKey].push({ _id: quad.subject.value });
                 }
                 else{
-                    logger.warn(`[ _reverse ] Unexpected predicate in quad: ${quad.predicate.value}`)
+                    logger.warn(`[ _reverse ] Unexpected predicate in quad: ${quad.predicate.value}`);
                 }
             }
         }
         //add to mongo db
-        databaseObject.flatJsons.push(newJson)
+        databaseObject.flatJsons.push(newJson);
     }
-    await databaseObject.mongodbAddOrUpdate()
-    return "DONE"
+    await databaseObject.mongodbAddOrUpdate();
+    return "DONE";
 }
 
 function quadFix(quad, uuid) {
@@ -197,20 +197,21 @@ function quadFix(quad, uuid) {
     //     quad.object = factory.namedNode(value)
     // }
 
+    // eslint-disable-next-line no-useless-escape
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     if (!pattern.test(quad.subject.value)) {
         let value = "http://staple-api.org/data/" + quad.subject.value;
         if (uuid !== undefined) {
             value = value + uuid;
         }
-        quad.subject = factory.namedNode(value)
+        quad.subject = factory.namedNode(value);
     }
     if (!pattern.test(quad.object.value) && quad["object"].constructor.name !== "Literal") {
         let value = "http://staple-api.org/data/" + quad.object.value;
         if (uuid !== undefined) {
             value = value + uuid;
         }
-        quad.object = factory.namedNode(value)
+        quad.object = factory.namedNode(value);
     }
 
     // stage 2 - unicode back to ascii
@@ -229,7 +230,7 @@ function quadFix(quad, uuid) {
         "http://schema.org/Text",
         "http://schema.org/Time",
         "http://schema.org/URL",
-    ]
+    ];
 
     let typesMap = {
         "http://www.w3.org/2001/XMLSchema#integer": "http://schema.org/Integer",
@@ -237,7 +238,7 @@ function quadFix(quad, uuid) {
         "http://www.w3.org/2001/XMLSchema#boolean": "http://schema.org/Boolean",
         "http://www.w3.org/2001/XMLSchema#string": "http://schema.org/Text",
         "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString": "http://schema.org/Text",
-    }
+    };
 
 
     if (quad.object.datatype !== undefined) {
@@ -246,13 +247,13 @@ function quadFix(quad, uuid) {
                 quad.object.datatype.value = typesMap[quad.object.datatype.value];
             }
             else {
-                logger.warn(quad.object.datatype.value)
+                logger.warn(quad.object.datatype.value);
                 quad.object.datatype.value = "http://schema.org/Text";
             }
         } 
     }
     else if(quad["object"].constructor.name === "Literal"){
-        quad.object.datatype = {}
+        quad.object.datatype = {};
         quad.object.datatype.value = "http://schema.org/Text";
     }
 

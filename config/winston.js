@@ -1,13 +1,12 @@
 
-var appRoot = require('app-root-path');
-var winston = require('winston');
-const { createLogger, format, transports } = require('winston');
-const { combine, timestamp, label, prettyPrint } = format;
+var appRoot = require("app-root-path");
+var winston = require("winston");
+const { format } = require("winston"); 
 
 // define the custom settings for each transport (file, console)
 var options = {
     file: {
-        level: 'info',
+        level: "info",
         filename: `${appRoot}/logs/app.log`,
         handleExceptions: true,
         json: true,
@@ -16,7 +15,7 @@ var options = {
         colorize: false,
     },
     console: {
-        level: 'info',
+        level: "info",
         handleExceptions: true,
         json: true,
         colorize: true,
@@ -43,8 +42,8 @@ var logger = new winston.createLogger({
                 timestamp, level, message, ...args
             } = info;
 
-            const ts = timestamp.slice(0, 19).replace('T', ' ');
-            return `${ts} [${level}]: ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ''}`;
+            const ts = timestamp.slice(0, 19).replace("T", " ");
+            return `${ts} [${level}]: ${message} ${Object.keys(args).length ? JSON.stringify(args, null, 2) : ""}`;
         }),
     ),
     transports: [
@@ -56,7 +55,7 @@ var logger = new winston.createLogger({
 
 // create a stream object with a 'write' function that will be used by `morgan`
 logger.stream = {
-    write: function (message, encoding) {
+    write: function (message) {
         // use the 'info' log level so the output will be picked up by both transports (file and console)
         logger.info(message);
     },
