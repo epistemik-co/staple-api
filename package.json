@@ -21,12 +21,13 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "eslint": "^6.6.0",
     "jest": "24.7.1",
     "nodemon": "^1.19.1"
   },
   "scripts": {
     "test": "jest",
-    "start": "nodemon app.js"
+    "start": "nodemon demo.js"
   },
   "repository": {
     "type": "git",

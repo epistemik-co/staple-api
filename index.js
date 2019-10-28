@@ -1,17 +1,11 @@
-const { makeExecutableSchema } = require('graphql-tools');
-const { graphql } = require('graphql');
-const Demo = require('./demo')
-const winston = require('./config/winston');
-
-let demo = new Demo();
-demo.run()
+const { makeExecutableSchema } = require("graphql-tools");
+const DatabaseInterface = require("./database/Database");
+const Resolver = require("./resolvers/resolvers");
 
 class Staple {
-    constructor(schemaLocation, contextLocation, configLocation) {
-        this.DatabaseInterface = require('./database/Database');
-        this.schemaString = require(schemaLocation);//('./schema/schema');
-        this.schemaMapping = require(contextLocation);//('schema/schema-mapping');
-        this.Resolver = require('./resolvers/resolvers');
+    constructor(schemaLocation, contextLocation, configLocation) { 
+        this.schemaString = require(schemaLocation);
+        this.schemaMapping = require(contextLocation);
 
         this.database = new DatabaseInterface(this.schemaMapping);
 
@@ -22,23 +16,13 @@ class Staple {
             typeDefs: this.schemaString,
             resolvers: this.rootResolver,
         });
+        
     }
 
-    async processQuery(query) {
-        let result = await graphql(this.schema, query, null, null, null);
-        return result;
-    }
+    // async processQuery(query) {
+    //     let result = await graphql(this.schema, query, null, null, null);
+    //     return result;
+    // }
 }
 
-function showMemUsage() {
-    const used = process.memoryUsage().heapUsed / 1024 / 1024;
-    logger.info(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
-    return Math.round(used * 100) / 100;
-}
-
-// setInterval(showMemUsage, 1000); //time is in ms
-
-
-module.exports = {
-    Staple
-};
+module.exports = Staple;

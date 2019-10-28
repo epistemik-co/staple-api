@@ -5,21 +5,18 @@ const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('graphql-tools');
 const DatabaseInterface = require('./database/Database');
 const schemaString = require('./schema/schema');
+const schemaMapping = require('./schema/schema-mapping');
 const Resolver = require('./resolvers/resolvers');
 const uuidv1 = require('uuid/v1');
 var morgan = require('morgan');
 const logger = require('./config/winston');
 const util = require('util')
+const staple = require('./index');
 
 class Demo {
     constructor() {
-        this.database = new DatabaseInterface(require('./schema/schema-mapping'));
-        const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-        const rootResolver = new Resolver(this.database, Warnings, require('./schema/schema-mapping')).rootResolver; // Generate Resolvers for graphql
-        const schema = makeExecutableSchema({
-            typeDefs: schemaString,
-            resolvers: rootResolver,
-        });
+        let stapleApi = new staple('./schema/schema', './schema/schema-mapping', undefined);
+        let schema = stapleApi.schema;
         this.server = new ApolloServer({
             schema,
             formatResponse: response => {
@@ -27,10 +24,10 @@ class Demo {
                     response.data = false;
                 }
                 else {
-                    if (response.data !== null && Warnings.length > 0) {
+                    if (response.data !== null && stapleApi.Warnings.length > 0) {
                         response["extensions"] = {}
-                        response["extensions"]['Warning'] = [...Warnings];
-                        Warnings.length = 0;
+                        response["extensions"]['Warning'] = [...stapleApi.Warnings];
+                        stapleApi.Warnings.length = 0;
                     }
                 }
                 return response;
@@ -43,13 +40,9 @@ class Demo {
         const app = express();
         app.use(bodyParser.json({ limit: '50mb', extended: true }))
         app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
-        app.use(bodyParser.text({ limit: '50mb', extended: true }));
-        //app.use(morgan('combined', { stream: winston.stream }));
+        app.use(bodyParser.text({ limit: '50mb', extended: true })); 
 
 
-        // winston.log('silly', "127.0.0.1 - there's no place like home");
-        // winston.log('debug', "127.0.0.1 - there's no place like home");
-        // winston.log('info', "127.0.0.1 - there's no place like home");
 
         this.server.applyMiddleware({ app });
         app.listen({ port: 4000 }, () =>
@@ -110,5 +103,9 @@ class Demo {
         });
     }
 }
+
+
+let demo = new Demo();
+demo.run()
 
 module.exports = Demo
