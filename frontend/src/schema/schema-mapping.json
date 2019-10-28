@@ -263,12 +263,16 @@
     {
       "@id": "http://schema.org/children",
       "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": []
+      "http://schema.org/inverseOf": [
+        "http://schema.org/parent"
+      ]
     },
     {
       "@id": "http://schema.org/parent",
       "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": []
+      "http://schema.org/inverseOf": [
+        "http://schema.org/children"
+      ]
     },
     {
       "@id": "http://schema.org/birthPlace",

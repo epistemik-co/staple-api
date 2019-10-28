@@ -16,10 +16,11 @@ class PrivateDashboard extends Component {
     showObjects: true,
     personal: false,
     ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2).slice(1, -1),
-    context: JSON.stringify(require('../../schema/schema-mapping')["@context"], null, 2),
+    context: JSON.stringify(require('../../schema/schema-mapping')['@context'], null, 2),
     error: "",
     compiledMessage: "",
     playgroundVersion: 1,
+    source: "staple-api.org", // "localhost", // 
   }
 
   componentDidMount = () => {
@@ -46,7 +47,7 @@ class PrivateDashboard extends Component {
   }
 
   getId = async () => {
-    let res = await axios.get('http://staple-api.org:4000/api/dynamic');
+    let res = await axios.get("http://"+this.state.source+":4000/api/dynamic");
     if (res.status === 200) {
       this.setState({
         id: res.data
@@ -69,7 +70,7 @@ class PrivateDashboard extends Component {
 
 
     try {
-      let res = await axios.post('http://staple-api.org:4000/api/customInit', { "value": data });
+      let res = await axios.post("http://"+this.state.source+":4000/api/customInit", { "value": data });
       if (res.status === 200) {
         console.log(res.data)
 
@@ -179,7 +180,7 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
-              <Playground endpoint={"http://staple-api.org:4000/graphql" + this.state.id} className="playground" id="playground" />
+              <Playground endpoint={"http://"+this.state.source+":4000/graphql" + this.state.id} className="playground" id="playground" />
             </Provider>
           </div>
           <div className="doc-link">

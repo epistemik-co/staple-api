@@ -82,7 +82,7 @@ async function customInit(app, index, req) {
     // console.log(req.body.value)
     let newEndpointData = await createschema(req.body.value);
     // console.log(newEndpointData)
-    // console.log(newEndpointData.schema)
+    console.log(newEndpointData.schema)
     // console.log(newEndpointData.context)
 
     if (newEndpointData["Error"]) {

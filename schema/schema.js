@@ -175,10 +175,7 @@ enum _Number_v_Text_ {
 """Any object in the database."""
 type _OBJECT {
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -351,10 +348,7 @@ type Country {
   subjectOf: [CreativeWork]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -473,10 +467,7 @@ type CreativeWork {
   offers: [Offer]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -560,16 +551,7 @@ union CreativeWork_v_Product_v_Service = CreativeWork | Product | Service
 """A date value in ISO 8601 date format."""
 type Date {
   """The literal data value for the property."""
-  _value(
-    """The value of this property must be on the provided list."""
-    only: [String]
-
-    """The value of the property must contain the specified string."""
-    contains: String
-
-    """The language of the string value (if recognized)."""
-    lang: String
-  ): String
+  _value: String
 
   """Asserted data type of this value."""
   _type: [String]
@@ -600,16 +582,7 @@ Broader types: Number
 """
 type Integer {
   """The literal data value for the property."""
-  _value(
-    """The value of this property must be on the provided list."""
-    only: [String]
-
-    """The value of the property must contain the specified string."""
-    contains: String
-
-    """The language of the string value (if recognized)."""
-    lang: String
-  ): String
+  _value: String
 
   """Asserted data type of this value."""
   _type: [String]
@@ -856,16 +829,7 @@ input name_INPUT {
 """This is number DataType."""
 type Number {
   """The literal data value for the property."""
-  _value(
-    """The value of this property must be on the provided list."""
-    only: [String]
-
-    """The value of the property must contain the specified string."""
-    contains: String
-
-    """The language of the string value (if recognized)."""
-    lang: String
-  ): String
+  _value: String
 
   """Asserted data type of this value."""
   _type: [String]
@@ -912,10 +876,7 @@ type Offer {
   priceValidUntil: Date
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -1065,10 +1026,7 @@ type Organization {
   areaServed: [Place_v_Text]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -1238,10 +1196,7 @@ type Person {
   makesOffer: [Offer]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -1380,10 +1335,7 @@ type Place {
   subjectOf: [CreativeWork]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -1484,10 +1436,7 @@ type PostalAddress {
   subjectOf: [CreativeWork]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -1593,10 +1542,7 @@ type Product {
   offers: [Offer]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -1839,10 +1785,7 @@ type Service {
   offers: [Offer]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -1933,16 +1876,7 @@ input subjectOf_INPUT {
 """This is text DataType."""
 type Text {
   """The literal data value for the property."""
-  _value(
-    """The value of this property must be on the provided list."""
-    only: [String]
-
-    """The value of the property must contain the specified string."""
-    contains: String
-
-    """The language of the string value (if recognized)."""
-    lang: String
-  ): String
+  _value: String
 
   """Asserted data type of this value."""
   _type: [String]
@@ -1957,10 +1891,7 @@ type Thing {
   subjectOf: [CreativeWork]
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -2010,7 +1941,7 @@ input worksFor_INPUT {
   """The URI identfier of the object."""
   _id: ID!
 }
- 
+
 `
 
 module.exports = schemaString
