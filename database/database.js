@@ -11,21 +11,15 @@ const DBAdapter = require("./DBAdapter");
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
     constructor(schemaMapping, configLocation) {
-        // select adapter
-        if(configLocation === undefined){
-            logger.info("No database selected");
-        }
-        else{
-            let dbConfig = require(appRoot+configLocation);
-            this.adapter = new DBAdapter(dbConfig);
-        }
+        this.selectAdapter(configLocation);
+        this.updateSchemaMapping(schemaMapping);
 
-        databaseUtilities.createReverseContext(schemaMapping);
-        databaseUtilities.createGraphMap(schemaMapping);
         this.schemaMapping = schemaMapping;
 
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
+
+        // do we really need this ? 
         this.pages = [];
         this.flatJsons = [];
         this.dbCallCounter = 0;
@@ -33,7 +27,22 @@ class Database {
         logger.log("info", "Database is ready to use");
     }
 
-    // Core Querys
+    selectAdapter(configLocation){
+        if(configLocation === undefined){
+            logger.info("No database selected");
+        }
+        else{
+            let dbConfig = require(appRoot+configLocation);
+            this.adapter = new DBAdapter(dbConfig);
+        }
+    }
+
+    updateSchemaMapping(schemaMapping){
+        databaseUtilities.createReverseContext(schemaMapping);
+        databaseUtilities.createGraphMap(schemaMapping);
+    }
+
+    // Core Querys ----------------------------------------------------------------------------------------------------------------------
 
     async loadChildObjectsFromDBForUnion(sub, filter) {
         logger.info("loadChildObjectsFromDBForUnion was called");
@@ -51,7 +60,7 @@ class Database {
         await this.adapter.loadCoreQueryDataFromDB(this, type, page, query, inferred); 
     }
 
-    // ---
+    // Memory database operations ---------------------------------------------------------------------------------------------------------
     create(sub, pred, obj, gra = null) {
         sub = factory.namedNode(sub);
         pred = factory.namedNode(pred);
@@ -65,7 +74,6 @@ class Database {
         return true;
     }
 
-    // ---  
     delete(sub, pred, obj, gra = null) {
         sub = factory.namedNode(sub);
         pred = factory.namedNode(pred);
@@ -324,12 +332,11 @@ class Database {
         return counter;
     }
 
+    // Needs to be move ----------------------------------------------------------------------------------------------------------------------------------------
+
     async getFlatJson() {
         return await databaseUtilities.getFlatJson(this);
     }
-
-
-
 
     async mongodbAddOrUpdate() {
         mongodbUtilities.mongodbAddOrUpdate(this.flatJsons);
@@ -348,6 +355,8 @@ class Database {
         await databaseUtilities.removeRDFPromise(this.database, ID, rdf);
         this.updateInference();
     }
+
+    // Query logic ... could by moved to another file called DBQueryLogic.js ---------------------------------------------------------------------------
 
     async loadQueryData(queryInfo, uri, page, inferred, tree, query = undefined) {
         this.dbCallCounter = 0; // debug only
@@ -531,9 +540,9 @@ class Database {
                 }
             }
         }
-        console.log("FINAL QUERY FILETRS");
+        // console.log("FINAL QUERY FILETRS");
 
-        console.log(util.inspect(query, false, null, true));
+        // console.log(util.inspect(query, false, null, true));
         // domyslnie taka postac
         // { _id: 'http://data/bluesB4', "legalName": {$in : [{ "_type":"Text", "_value":"Blues Brothers" }]} }
 

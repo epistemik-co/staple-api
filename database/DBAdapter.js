@@ -11,6 +11,7 @@ class DBAdapter {
             adapterType = require("./mongodb/adapter");
             this.adapter = new adapterType(configFile);
         }
+        // else if(configFile.type === "mysql"){ ... }
 
         logger.info("DBAdapter ready");
     }
@@ -18,16 +19,14 @@ class DBAdapter {
     // QUERY SECTION
     async loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(database, type, page, query , inferred );
+            await this.adapter.loadCoreQueryDataFromDB(database, type, page, query, inferred);
         }
-
     }
 
     async loadChildObjectsByUris(database, sub, filter) {
         if (this.adapter) {
             await this.adapter.loadChildObjectsByUris(database, sub, filter);
         }
-
     }
 
 }
