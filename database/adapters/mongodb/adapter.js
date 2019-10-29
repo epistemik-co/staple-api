@@ -54,7 +54,7 @@ class MongodbAdapter {
             });
     
             logger.debug("Graphy database rdf insert start");
-            await database.insertRDF(rdf, ids);
+            await database.insertRDF(rdf);
             logger.debug("Graphy database rdf insert end");
     
     
@@ -122,7 +122,7 @@ class MongodbAdapter {
             });
     
             logger.debug("Graphy database rdf insert start");
-            await database.insertRDF(rdf, ids);
+            await database.insertRDF(rdf);
             logger.debug("Graphy database rdf insert end");
     
         } catch (err) {

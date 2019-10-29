@@ -303,7 +303,7 @@ class Database {
         return counter;
     }
 
-    // binding database ----------------------------------------------------------------------------------------------------------------------------------------
+    // binding database ----------------------------------------------------------------------------------------------
 
     async getFlatJson() {
         return await flatJsonGenerator.getFlatJson(this);
@@ -313,11 +313,8 @@ class Database {
         databaseUtilities.updateInference(this);
     }
 
-    async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
-        if (ID !== undefined && ID[0] === undefined) {
-            ID = [];
-        }
-        await databaseUtilities.insertRDFPromise(this.database, ID, rdf, this.schemaMapping, tryToFix, uuid);
+    async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) { 
+        await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
         this.updateInference();
     }
 

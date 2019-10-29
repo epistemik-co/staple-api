@@ -77,7 +77,7 @@ class Demo {
                 const todo = req.body;
                 let uuid = uuidv1();
                 logger.info(`UUID FOR NEW RDF ${uuid}`);
-                await this.database.insertRDF(todo, undefined, true, uuid);
+                await this.database.insertRDF(todo, true, uuid);
                 logger.info(`Database size: ${this.database.database.size}`);
                 //logger.info(await this.database.getFlatJson());
                 this.database.countObjects();

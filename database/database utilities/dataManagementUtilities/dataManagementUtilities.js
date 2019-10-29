@@ -53,10 +53,10 @@ function updateInference(database) {
     }
 }
 
-function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false, uuid) {
+function insertRDFPromise(tree, rdf, schemaMapping, tryToFix = false, uuid) {
     return new Promise((resolve) => {
         let data = (y_quad) => {
-            if (ID === undefined || ID.includes(y_quad.subject.value)) {
+            
                 if (tryToFix) {
                     y_quad = quadFix(y_quad, uuid);
                 }
@@ -74,7 +74,7 @@ function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false, uuid) 
                 }
 
                 tree.add(y_quad);
-            }
+            
         };
 
         let eof = () => {

@@ -80,7 +80,7 @@ const createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => 
             console.log("AFTER RDF");
             // await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings)
             console.log("After data validation");
-            req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf, objectID);
+            req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf);
 
 
             // Inference
