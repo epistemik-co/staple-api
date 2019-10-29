@@ -101,7 +101,7 @@ class MongodbAdapter {
             }
     
             // save page conetnt
-            database.pages[page] = result.map(x => x["_id"]);
+            // database.pages[page] = result.map(x => x["_id"]);
     
             result = result.map(x => {
                 x["@context"] = database.schemaMapping["@context"];

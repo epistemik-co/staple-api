@@ -209,10 +209,7 @@ let getFilteredObjectsUri = async (database, parent, name, args) => {
     
     let data = [];
     if (args.filter !== undefined ){
-
         for(let prop in args.filter){
-            // let propUri = schemaMapping["@context"][prop];
-            
             if(prop === "_id"){
                 for (let uri of tempData) {
                     if (args.filter["_id"].includes(uri)) {
@@ -220,24 +217,6 @@ let getFilteredObjectsUri = async (database, parent, name, args) => {
                     }
                 }
             }
-            // else{
-            //     for(let uri of tempData){
-            //         let result = await database.getObjectsValueArray(uri, propUri, false);
-            //         console.log("--------------------------")
-            //         console.log(args.filter[prop])
-            //         console.log(result)
-            //         console.log("--------------------------")
-            //         console.log(result.filter(x=> args.filter[prop].includes(x)).length)
-            //         if (result.filter(x=> args.filter[prop].includes(x)).length === 0) {
-            //             console.log("jaja")
-            //             console.log("jaja")
-            //             console.log("jaja")
-            //             console.log("jaja")
-            //             data.push(uri)
-            //         }
-            //     }
-            // }
-
         }
     }
     else {
@@ -278,8 +257,6 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
                         `Finall db calls : ${database.dbCallCounter}
                         \tQuads in graphy : ${database.database.size}
                         \tObjects in graphy : ${database.countObjects()}`); 
-                    // data = database.pages[args.page];
-                    // console.log(data);
                     return data;
                 };
             };
@@ -308,7 +285,6 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
                 logger.debug(util.inspect(info["operation"], false, null, true /* enable colors */));
                 let data = await database.loadQueryData(info["operation"], "http://schema.org/Thing", args.page, args.inferred, tree);
-                // data = database.pages[args.page];
                 data = data.map(async (id) => { return { "_id": id, "_type": await database.getObjectsValueArray(id, database.stampleDataType) }; });
                 return data;
             };

@@ -18,9 +18,7 @@ class Database {
 
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
-
-        // do we really need this ? 
-        this.pages = [];
+ 
         this.flatJsons = [];
         this.dbCallCounter = 0;
 
