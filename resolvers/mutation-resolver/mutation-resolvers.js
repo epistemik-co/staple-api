@@ -86,8 +86,7 @@ const createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => 
             // Inference
             database.updateInference();
             console.log("await this.database.getFlatJson()");
-            await database.getFlatJson();
-            console.log(database.getAllQuads());
+            await database.getFlatJson(); 
             return true;
         };
     }

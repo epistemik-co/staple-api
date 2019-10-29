@@ -4,14 +4,14 @@ const factory = require("@graphy/core.data.factory");
 const databaseUtilities = require("./database utilities/dataManagementUtilities/dataManagementUtilities");
 const dataRetrievalAlgorithm = require("./database utilities/dataManagementUtilities/dataRetrievalAlgorithm");
 const flatJsonGenerator = require("./database utilities/flatJsonGenerator/flatjsonGenerator");
-var appRoot = require("app-root-path");
+const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 const DBAdapter = require("./database utilities/adapter/DBAdapter");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
-    constructor(schemaMapping, configLocation) {
-        this.selectAdapter(configLocation);
+    constructor(schemaMapping, configObject) {
+        this.selectAdapter(configObject);
         this.updateSchemaMapping(schemaMapping);
 
         this.schemaMapping = schemaMapping;
@@ -27,13 +27,12 @@ class Database {
         logger.log("info", "Database is ready to use");
     }
 
-    selectAdapter(configLocation){
-        if(configLocation === undefined){
+    selectAdapter(configObject){
+        if(configObject === undefined){
             logger.info("No database selected");
         }
         else{
-            let dbConfig = require(appRoot+configLocation);
-            this.adapter = new DBAdapter(dbConfig);
+            this.adapter = new DBAdapter(configObject);
         }
     }
 
@@ -62,8 +61,7 @@ class Database {
 
     preparefilters(selection, tree, parentName) {
         logger.info("preparefilters was called");
-        return this.adapter.preparefilters(this, selection, tree, parentName); 
-        
+        return this.adapter.preparefilters(this, selection, tree, parentName);    
     }
 
     // Memory database operations ---------------------------------------------------------------------------------------------------------
@@ -215,17 +213,6 @@ class Database {
             x = itr.next();
         }
         return data;
-    }
-
-    // returns single object value - uri or data
-    getSingleStringValue(sub, pred) {
-        sub = factory.namedNode(sub);
-        pred = factory.namedNode(pred);
-
-        const temp = this.database.match(sub, pred, null);
-        var itr = temp.quads();
-        var x = itr.next();
-        return x.value.object.value;
     }
 
     // returns single object value - data

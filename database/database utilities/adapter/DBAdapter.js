@@ -4,14 +4,14 @@ const logger = require(`${appRoot}/config/winston`);
 class DBAdapter {
     // this.adapter contains object with methods implemented for specyfic backend
 
-    constructor(configFile) {
+    constructor(configObject) {
         let adapterType = undefined;
         this.adapter = undefined;
-        if (configFile.type === "mongodb") {
+        if (configObject.type === "mongodb") {
             adapterType = require("../../adapters/mongodb/adapter");
-            this.adapter = new adapterType(configFile);
+            this.adapter = new adapterType(configObject);
         }
-        // else if(configFile.type === "mysql"){ ... }
+        // else if(configObject.type === "mysql"){ ... }
 
         logger.info("DBAdapter ready");
     }

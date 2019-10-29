@@ -5,10 +5,13 @@ const { ApolloServer } = require("apollo-server-express");
 const uuidv1 = require("uuid/v1"); 
 const logger = require("./config/winston"); 
 const staple = require("./index");
+const appRoot = require("app-root-path");
 
 class Demo {
     constructor() {
-        let stapleApi = new staple("./schema/schema", "./schema/schema-mapping", "/config/database.js");
+        
+        
+        let stapleApi = new staple("./schema/schema", "./schema/schema-mapping", require(appRoot+"/config/database.js"));
         let schema = stapleApi.schema;
         this.server = new ApolloServer({
             schema,

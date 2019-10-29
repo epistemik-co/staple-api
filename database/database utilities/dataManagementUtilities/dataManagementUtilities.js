@@ -56,7 +56,6 @@ function updateInference(database) {
 function insertRDFPromise(tree, rdf, schemaMapping, tryToFix = false, uuid) {
     return new Promise((resolve) => {
         let data = (y_quad) => {
-            
                 if (tryToFix) {
                     y_quad = quadFix(y_quad, uuid);
                 }
