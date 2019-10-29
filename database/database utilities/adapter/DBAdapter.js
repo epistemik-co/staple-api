@@ -8,7 +8,7 @@ class DBAdapter {
         let adapterType = undefined;
         this.adapter = undefined;
         if (configFile.type === "mongodb") {
-            adapterType = require("./mongodb/adapter");
+            adapterType = require("../../adapters/mongodb/adapter");
             this.adapter = new adapterType(configFile);
         }
         // else if(configFile.type === "mysql"){ ... }
@@ -29,6 +29,11 @@ class DBAdapter {
         }
     }
 
+    preparefilters(database, selection, tree, parentName) {
+        if (this.adapter) {
+            return this.adapter.preparefilters(database, selection, tree, parentName);
+        }
+    }
 }
 
 module.exports = DBAdapter;

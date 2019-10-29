@@ -1,12 +1,13 @@
 
 const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
-const databaseUtilities = require("./databaseUtilities");
-const mongodbUtilities = require("./mongodb/Utilities");
+const databaseUtilities = require("./database utilities/dataManagementUtilities/dataManagementUtilities");
+const flatJsonGenerator = require("./database utilities/flatJsonGenerator/flatjsonGenerator");
+const mongodbUtilities = require("./adapters/mongodb/Utilities");
 const util = require("util");
 var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
-const DBAdapter = require("./DBAdapter");
+const DBAdapter = require("./database utilities/adapter/DBAdapter");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
@@ -42,7 +43,7 @@ class Database {
         databaseUtilities.createGraphMap(schemaMapping);
     }
 
-    // Core Querys ----------------------------------------------------------------------------------------------------------------------
+    // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
 
     async loadChildObjectsFromDBForUnion(sub, filter) {
         logger.info("loadChildObjectsFromDBForUnion was called");
@@ -58,6 +59,12 @@ class Database {
 
         this.dbCallCounter = this.dbCallCounter + 1;
         await this.adapter.loadCoreQueryDataFromDB(this, type, page, query, inferred); 
+    }
+
+    preparefilters(selection, tree, parentName) {
+        logger.info("preparefilters was called");
+        return this.adapter.preparefilters(this, selection, tree, parentName); 
+        
     }
 
     // Memory database operations ---------------------------------------------------------------------------------------------------------
@@ -239,9 +246,7 @@ class Database {
     }
 
     // returns array of uri - Core Query
-    async getSubjectsByType(type, predicate, inferred = false, page = undefined, query = undefined) {
-        // await this.loadCoreQueryDataFromDB(type, page, query, inferred);
-
+    async getSubjectsByType(type, predicate, inferred = false) {
         type = factory.namedNode(type);
 
         if (inferred) {
@@ -280,6 +285,36 @@ class Database {
         this.database.clear();
     }
 
+    countObjects() {
+        let type = "http://schema.org/Thing";
+        let predicate = this.stampleDataType;
+
+        type = factory.namedNode(type);
+        predicate = factory.namedNode(predicate);
+
+
+        const temp = this.database.match(null, predicate, type);
+        let counter = 0;
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            counter = counter + 1;
+            x = itr.next();
+        }
+        return counter;
+    }
+
+    // Needs to be move ----------------------------------------------------------------------------------------------------------------------------------------
+
+    async getFlatJson() {
+        return await flatJsonGenerator.getFlatJson(this);
+    }
+
+    async mongodbAddOrUpdate() {
+        mongodbUtilities.mongodbAddOrUpdate(this.flatJsons);
+        this.flatJsons = [];
+    }
+
     updateInference() {
         // remove all staple : datatype but not Thing 
         let temp = this.database.match(null, null, null);
@@ -311,36 +346,6 @@ class Database {
             }
             itrData = itr.next();
         }
-    }
-
-    countObjects() {
-        let type = "http://schema.org/Thing";
-        let predicate = this.stampleDataType;
-
-        type = factory.namedNode(type);
-        predicate = factory.namedNode(predicate);
-
-
-        const temp = this.database.match(null, predicate, type);
-        let counter = 0;
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            counter = counter + 1;
-            x = itr.next();
-        }
-        return counter;
-    }
-
-    // Needs to be move ----------------------------------------------------------------------------------------------------------------------------------------
-
-    async getFlatJson() {
-        return await databaseUtilities.getFlatJson(this);
-    }
-
-    async mongodbAddOrUpdate() {
-        mongodbUtilities.mongodbAddOrUpdate(this.flatJsons);
-        this.flatJsons = [];
     }
 
     async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
@@ -473,84 +478,6 @@ class Database {
         }
     }
 
-    preparefilters(selection, tree, parentName) {
-        // console.log(util.inspect(selection,false,null,true)) 
-        let query = {};
-        let fieldName = selection.name.value;
-        let fieldData = tree[fieldName];
-
-        if (fieldData === undefined) {
-            fieldData = tree[parentName].data[fieldName];
-            if (fieldData === undefined) {
-                return {};
-            }
-            if (fieldData.kind === "ListType") {
-                fieldData = tree[fieldData.data.name];
-            }
-            else {
-                fieldData = tree[fieldData.name];
-            }
-        }
- 
-        for (let argument of selection.arguments) {
-            if (argument.name.value === "filter") {
-                for (let filterField of argument.value.fields) {
-                    // console.log("OBJECT");
-                    // console.log(filterField);
-                    // console.log("\n\n");
-                    if (fieldData.data[filterField.name.value] !== undefined) {
-                        // console.log("ADD TO THE FILTER QUERY");
-
-
-                        if (filterField.value.kind === "ListValue") {
-                            let objectFilterName = filterField.name.value;
-
-                            if (filterField.name.value !== "_id") {
-                                objectFilterName = objectFilterName + "._value";
-                            }
-
-                            query[objectFilterName] = {};
-                            query[objectFilterName]["$in"] = [];
-
-                            for (let elem of filterField.value.values) {
-
-                                if (filterField.name.value === "_id") {
-                                    query[objectFilterName]["$in"].push(elem.value);
-                                }
-                                else {
-                                    query[objectFilterName]["$in"].push(elem.value);
-
-                                }
-                            }
-                        }
-                        else {
-                            if (filterField.name.value === "_id") {
-                                query[filterField.name.value] = { "_value": filterField.value.value };
-                            }
-                            else {
-
-                                query[filterField.name.value] = filterField.value.value;
-                            }
-                        }
-
-                    }
-                    else {
-                        console.log("SKIPPPPPP");
-                    }
-                }
-            }
-        }
-        // console.log("FINAL QUERY FILETRS");
-
-        // console.log(util.inspect(query, false, null, true));
-        // domyslnie taka postac
-        // { _id: 'http://data/bluesB4', "legalName": {$in : [{ "_type":"Text", "_value":"Blues Brothers" }]} }
-
-        if(Object.keys(query).length === 0 && query.constructor === Object){
-            return undefined;
-        }
-        return query;
-    }
 }
 
 module.exports = Database;

@@ -130,6 +130,86 @@ class MongodbAdapter {
         }
     
     }
+
+    preparefilters(database, selection, tree, parentName) {
+
+        // console.log(util.inspect(selection,false,null,true)) 
+        let query = {};
+        let fieldName = selection.name.value;
+        let fieldData = tree[fieldName];
+
+        if (fieldData === undefined) {
+            fieldData = tree[parentName].data[fieldName];
+            if (fieldData === undefined) {
+                return {};
+            }
+            if (fieldData.kind === "ListType") {
+                fieldData = tree[fieldData.data.name];
+            }
+            else {
+                fieldData = tree[fieldData.name];
+            }
+        }
+ 
+        for (let argument of selection.arguments) {
+            if (argument.name.value === "filter") {
+                for (let filterField of argument.value.fields) {
+                    // console.log("OBJECT");
+                    // console.log(filterField);
+                    // console.log("\n\n");
+                    if (fieldData.data[filterField.name.value] !== undefined) {
+                        // console.log("ADD TO THE FILTER QUERY");
+
+
+                        if (filterField.value.kind === "ListValue") {
+                            let objectFilterName = filterField.name.value;
+
+                            if (filterField.name.value !== "_id") {
+                                objectFilterName = objectFilterName + "._value";
+                            }
+
+                            query[objectFilterName] = {};
+                            query[objectFilterName]["$in"] = [];
+
+                            for (let elem of filterField.value.values) {
+
+                                if (filterField.name.value === "_id") {
+                                    query[objectFilterName]["$in"].push(elem.value);
+                                }
+                                else {
+                                    query[objectFilterName]["$in"].push(elem.value);
+
+                                }
+                            }
+                        }
+                        else {
+                            if (filterField.name.value === "_id") {
+                                query[filterField.name.value] = { "_value": filterField.value.value };
+                            }
+                            else {
+
+                                query[filterField.name.value] = filterField.value.value;
+                            }
+                        }
+
+                    }
+                    else {
+                        console.log("SKIPPPPPP");
+                    }
+                }
+            }
+        }
+        // console.log("FINAL QUERY FILETRS");
+
+        // console.log(util.inspect(query, false, null, true));
+        // domyslnie taka postac
+        // { _id: 'http://data/bluesB4', "legalName": {$in : [{ "_type":"Text", "_value":"Blues Brothers" }]} }
+
+        if(Object.keys(query).length === 0 && query.constructor === Object){
+            return undefined;
+        }
+        return query;
+    }
 }
 
 module.exports = MongodbAdapter;

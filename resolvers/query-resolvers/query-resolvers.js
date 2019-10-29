@@ -243,7 +243,7 @@ let getFilteredObjectsUri = async (database, parent, name, args) => {
     else {
         data = tempData;
     }
-    console.log(data);
+    // console.log(data);
     
     return data;
 };
@@ -279,7 +279,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
                         \tQuads in graphy : ${database.database.size}
                         \tObjects in graphy : ${database.countObjects()}`); 
                     // data = database.pages[args.page];
-                    console.log(data);
+                    // console.log(data);
                     return data;
                 };
             };

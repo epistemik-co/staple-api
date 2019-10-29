@@ -69,6 +69,7 @@ class Demo {
         });
 
         // This end-point should create data for qraphql mutation and run it.
+        // does not work
         app.post("/api/uploadRDF", async (req, res) => {
             try {
                 this.database.drop();
@@ -78,7 +79,7 @@ class Demo {
                 logger.info(`UUID FOR NEW RDF ${uuid}`);
                 await this.database.insertRDF(todo, undefined, true, uuid);
                 logger.info(`Database size: ${this.database.database.size}`);
-                logger.info(await this.database.getFlatJson());
+                //logger.info(await this.database.getFlatJson());
                 this.database.countObjects();
             } catch (error) {
                 logger.error(error);

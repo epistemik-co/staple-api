@@ -2,6 +2,7 @@ const { makeExecutableSchema } = require("graphql-tools");
 const DatabaseInterface = require("./database/Database");
 const Resolver = require("./resolvers/resolvers");
 
+// configLocation - obiekt
 class Staple {
     constructor(schemaLocation, contextLocation, configLocation) { 
         this.schemaString = require(schemaLocation);
