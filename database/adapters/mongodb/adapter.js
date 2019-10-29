@@ -187,14 +187,12 @@ class MongodbAdapter {
                                 query[filterField.name.value] = { "_value": filterField.value.value };
                             }
                             else {
-
                                 query[filterField.name.value] = filterField.value.value;
                             }
                         }
-
                     }
                     else {
-                        console.log("SKIPPPPPP");
+                        console.log("SKIP");
                     }
                 }
             }

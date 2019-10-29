@@ -94,8 +94,6 @@ async function getFlatJson(databaseObject) {
                     else {
                         logger.warn(`Unexpected predicate in quad: ${quad.predicate.value}`);
                     }
-
-
                 }
             }
 

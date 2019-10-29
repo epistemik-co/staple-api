@@ -20,6 +20,39 @@ function createGraphMap(schemaMapping){
     }
 }
 
+function updateInference(database) {
+    // remove all staple : datatype but not Thing 
+    let temp = database.database.match(null, null, null);
+    let itr = temp.quads();
+    let itrData = itr.next();
+    while (!itrData.done) {
+        if (itrData.value.predicate.value === database.stampleDataType && itrData.value.object.value !== database.schemaMapping["@context"]["Thing"]) {
+            database.database.delete(itrData.value);
+        }
+        itrData = itr.next();
+    }
+
+    // get all quads and foreach type put inferences .... store in array types already putted to db
+    temp = database.database.match(null, null, null);
+    itr = temp.quads();
+    itrData = itr.next();
+
+    while (!itrData.done) {
+        if (itrData.value.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
+            // let data = database.schemaMapping["@graph"].filter((x) => { return x['@id'] === itrData.value.object.value })
+            let data = database.schemaMapping["@graphMap"][itrData.value.object.value];
+            if (data !== undefined) {
+                let uris = data["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
+                for (let x in uris) {
+                    database.create(itrData.value.subject.value, database.stampleDataType, uris[x]["@id"]);
+                }
+            }
+
+        }
+        itrData = itr.next();
+    }
+}
+
 function insertRDFPromise(tree, ID, rdf, schemaMapping, tryToFix = false, uuid) {
     return new Promise((resolve) => {
         let data = (y_quad) => {
@@ -68,7 +101,6 @@ function removeRDFPromise(tree, ID, rdf) {
         read_graphy(rdf, { data, eof, });
     });
 }
-
 // Try to fix quads from some wierd sources
 function quadFix(quad, uuid) {
     // stage 1 - blank node 
@@ -149,6 +181,7 @@ function quadFix(quad, uuid) {
 module.exports = {
     createReverseContext,
     createGraphMap,
+    updateInference,
     insertRDFPromise,
     removeRDFPromise, 
 };
