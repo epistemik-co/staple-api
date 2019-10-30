@@ -18,23 +18,23 @@ class Database {
 
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
- 
+
         this.flatJsons = [];
         this.dbCallCounter = 0;
 
         logger.log("info", "Database is ready to use");
     }
 
-    selectAdapter(configObject){
-        if(configObject === undefined){
+    selectAdapter(configObject) {
+        if (configObject === undefined) {
             logger.info("No database selected");
         }
-        else{
+        else {
             this.adapter = new DBAdapter(configObject);
         }
     }
 
-    updateSchemaMapping(schemaMapping){
+    updateSchemaMapping(schemaMapping) {
         databaseUtilities.createReverseContext(schemaMapping);
         databaseUtilities.createGraphMap(schemaMapping);
     }
@@ -46,20 +46,30 @@ class Database {
         logger.debug(`with arguments : sub: ${sub}  query: ${filter} `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
-        await this.adapter.loadChildObjectsByUris(this, sub, filter); 
+        if (this.adapter) {
+            await this.adapter.loadChildObjectsByUris(this, sub, filter);
+        }
     }
 
-    async loadCoreQueryDataFromDB(type, page = 1, query = undefined, inferred = false) {
+    async loadCoreQueryDataFromDB(type, page = 1, filters = undefined, inferred = false) {
         logger.info("loadCoreQueryDataFromDB was called");
-        logger.debug(`with arguments : type: ${type} page: ${page} query: ${query} inferred: ${inferred} `);
+        logger.debug(`with arguments : type: ${type} page: ${page} query: ${filters} inferred: ${inferred} `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
-        await this.adapter.loadCoreQueryDataFromDB(this, type, page, query, inferred); 
+        if (this.adapter) {
+            await this.adapter.loadCoreQueryDataFromDB(this, type, page, filters, inferred);
+        }
     }
 
     preparefilters(selection, tree, parentName) {
         logger.info("preparefilters was called");
-        return this.adapter.preparefilters(this, selection, tree, parentName);    
+
+        if (this.adapter) {
+            return this.adapter.preparefilters(this, selection, tree, parentName);
+        }
+        // in memory db
+
+        return undefined;
     }
 
     // Memory database operations ---------------------------------------------------------------------------------------------------------
@@ -298,7 +308,7 @@ class Database {
         databaseUtilities.updateInference(this);
     }
 
-    async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) { 
+    async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
         await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
         this.updateInference();
     }
@@ -310,8 +320,8 @@ class Database {
 
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
 
-    async loadQueryData(queryInfo, uri, page, inferred, tree) {
-        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree);
+    async loadQueryData(queryInfo, uri, page, inferred, tree, filter) {
+        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter);
     }
 
     async searchForDataRecursively(selectionSet, uri, tree, reverse = false, parentName = undefined) {

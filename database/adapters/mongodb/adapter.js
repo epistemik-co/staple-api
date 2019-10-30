@@ -64,7 +64,7 @@ class MongodbAdapter {
     }
     
     async loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
-    
+
         if (database.client === undefined) {
             database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }

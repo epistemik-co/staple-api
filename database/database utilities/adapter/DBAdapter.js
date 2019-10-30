@@ -17,9 +17,9 @@ class DBAdapter {
     }
 
     // QUERY SECTION
-    async loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
+    async loadCoreQueryDataFromDB(database, type, page = 1, filters = undefined, inferred = false) {
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(database, type, page, query, inferred);
+            await this.adapter.loadCoreQueryDataFromDB(database, type, page, filters, inferred);
         }
     }
 
