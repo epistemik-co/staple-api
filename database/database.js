@@ -61,8 +61,6 @@ class Database {
         }
     }
 
-    
-
     // Memory database operations ---------------------------------------------------------------------------------------------------------
     create(sub, pred, obj, gra = null) {
         sub = factory.namedNode(sub);
