@@ -9,7 +9,7 @@ const util = require("util");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class MemoryDatabase {
-    constructor(schemaMapping) { 
+    constructor(schemaMapping) {
         this.schemaMapping = schemaMapping;
 
         this.database = dataset_tree();
@@ -21,23 +21,78 @@ class MemoryDatabase {
         this.loadFakeData();
         logger.log("info", "Database is ready to use");
     }
- 
-    async loadCoreQueryDataFromDB(database, type, page = 1,  selection = undefined, inferred = false, tree = undefined) {
+
+    async loadCoreQueryDataFromDB(database, type, page = 1, selection = undefined, inferred = false, tree = undefined) {
         // search selectionSet for core objects load them
         // console.log(selectionSet);
         let fieldName = selection.name.value;
+        let fieldData = tree[fieldName];
 
         if (fieldName === undefined) {
             logger.error("Could not find type of object");
             return undefined;
         }
 
+        // all ids
+        let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred);
 
-        let ids = await this.getSubjectsByType(type ,"http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred);
+        // id filter
+        if (fieldData) {
+            for (let argument of selection.arguments) {
+                if (argument.name.value === "filter") {
+                    for (let filterField of argument.value.fields) {
+                        // console.log("OBJECT");
+                        // console.log(filterField);
+                        // console.log("\n\n");
+                        if (fieldData.data[filterField.name.value] !== undefined) {
+                            // console.log("ADD TO THE FILTER QUERY");
 
+                            if (filterField.value.kind === "ListValue") {
+                                let objectFilterName = filterField.name.value;
+
+                                // if (filterField.name.value !== "_id") {
+                                //     objectFilterName = objectFilterName + "._value";
+                                // }
+
+                                // query[objectFilterName] = {};
+                                // query[objectFilterName]["$in"] = [];
+
+                                for (let elem of filterField.value.values) {
+
+                                    if (filterField.name.value === "_id") {
+                                        let allowedIds = filterField.value.values.map(x => x.value);
+                                        ids = ids.filter(x => allowedIds.includes(x));
+                                    }
+                                    else {
+                                        // query[objectFilterName]["$in"].push(elem.value);
+
+                                    }
+                                }
+                            }
+                            else {
+                                if (filterField.name.value === "_id") {
+                                    let allowedId = filterField.value.value;
+                                    console.log(allowedId);
+                                    ids = ids.filter(x => allowedId === x);
+                                }
+                                else {
+                                    // query[filterField.name.value] = filterField.value.value;
+                                }
+                            }
+                        }
+                        else {
+                            console.log("SKIP");
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            logger.warn("Could not find object data for filters");
+        }
 
         // Add to graphy
-        for(let sub of ids){
+        for (let sub of ids) {
             sub = factory.namedNode(sub);
 
             const temp = this.database.match(sub, null, null);
@@ -142,6 +197,77 @@ class MemoryDatabase {
                 object: { value: "http://schema.org/Person" },
                 graph: { value: "null" }
             },
+
+            {
+                subject: { value: "http://sony.com/AkioMorita1" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+
+            {
+                subject: { value: "http://sony.com/AkioMorita2" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+
+            {
+                subject: { value: "http://sony.com/AkioMorita3" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+
+            {
+                subject: { value: "http://sony.com/AkioMorita4" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+
+            {
+                subject: { value: "http://sony.com/AkioMorita5" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+
+            {
+                subject: { value: "http://sony.com/AkioMorita6" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+
+            {
+                subject: { value: "http://sony.com/AkioMorita7" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+            {
+                subject: { value: "http://sony.com/AkioMorita8" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+            {
+                subject: { value: "http://sony.com/AkioMorita9" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+            {
+                subject: { value: "http://sony.com/AkioMorita10" },
+                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+                object: { value: "http://schema.org/Person" },
+                graph: { value: "null" }
+            },
+
+
+
+
             {
                 subject: { value: "http://sony.com/AkioMorita" },
                 predicate: { value: "http://staple-api.org/datamodel/type" },
@@ -207,28 +333,28 @@ class MemoryDatabase {
         return true;
     }
 
-        // returns array of uri - Core Query
-        async getSubjectsByType(type, predicate, inferred = false) {
-            type = factory.namedNode(type);
-    
-            if (inferred) {
-                predicate = factory.namedNode(this.stampleDataType);
-            }
-            else {
-                predicate = factory.namedNode(predicate);
-            }
-    
-            const temp = this.database.match(null, predicate, type);
-            let data = [];
-            var itr = temp.quads();
-            var x = itr.next();
-            while (!x.done) {
-                data.push(x.value.subject.value);
-                x = itr.next();
-            }
-    
-            return data;
+    // returns array of uri - Core Query
+    async getSubjectsByType(type, predicate, inferred = false) {
+        type = factory.namedNode(type);
+
+        if (inferred) {
+            predicate = factory.namedNode(this.stampleDataType);
         }
+        else {
+            predicate = factory.namedNode(predicate);
+        }
+
+        const temp = this.database.match(null, predicate, type);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value.subject.value);
+            x = itr.next();
+        }
+
+        return data;
+    }
 }
 
 module.exports = MemoryDatabase;
