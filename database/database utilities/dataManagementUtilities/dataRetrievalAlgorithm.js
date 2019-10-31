@@ -4,41 +4,28 @@ const util = require("util");
 
 async function loadQueryData(database, queryInfo, uri, page, inferred, tree, filter) {
     database.dbCallCounter = 0; // debug only
-    if(database.adapter !== undefined){
-        database.drop(); // clear db before new query.
-    }
+    database.drop(); // clear db before new query.
+
 
     let coreIds = [];
     let resolverName = database.schemaMapping["@revContext"][uri];
     if (resolverName === undefined) {
         return;
     }
-    //step 1 
-    // let variables = queryInfo["variableDefinitions"];
-    //step 2 find core object
+
     let coreSelectionSet = queryInfo["selectionSet"];
 
 
     for (let coreSelection in coreSelectionSet["selections"]) {
         let filters = database.preparefilters(coreSelectionSet["selections"][coreSelection], tree);
         if (coreSelectionSet["selections"][0].name.value === "_OBJECT") {
-            if(database.adapter !== undefined){   
-                await database.loadCoreQueryDataFromDB(uri, page, filters, inferred);
-                coreIds = await database.getSubjectsByType(uri, database.stampleDataType, inferred, page);
-            }
-            else{
-                coreIds = await database.getSubjectsByType(uri, database.stampleDataType, inferred, page);
-            }
+            await database.loadCoreQueryDataFromDB(uri, page, filters, inferred);
+            coreIds = await database.getSubjectsByType(uri, database.stampleDataType, inferred, page);
         }
         else if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
-            if(database.adapter !== undefined){   
-                await database.loadCoreQueryDataFromDB(uri, page, filters, inferred);
-                coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-                await database.searchForDataRecursively(coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName);
-            }
-            else{   
-                coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-            }
+            await database.loadCoreQueryDataFromDB(uri, page, filters, inferred);
+            coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
+            await database.searchForDataRecursively(coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName);
         }
     }
 
