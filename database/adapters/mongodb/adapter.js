@@ -12,57 +12,6 @@ class MongodbAdapter {
         this.configFile = configFile;
     }
 
-    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
-        logger.log("info", "loadChildObjectsByUris was called");
-        if (database.client === undefined) { 
-            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
-        }
-    
-        try {
-            const db = database.client.db(this.configFile.dbName);
-            let collection = db.collection(this.configFile.collectionName);
-    
-            let query = this.preparefilters(database, selection, tree, parentName);
-            if(query === undefined){
-                query = {};
-            }
-            if (query["_id"] === undefined) {
-                query["_id"] = { "$in": sub };
-            } else {
-                // ???? remove rest of ids from sub from graphy ???
-                // apply filter in resolver !
-            }
-    
-            logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
-            let result = await collection.find(query).toArray();
-    
-            result = result.map(x => {
-                x["@context"] = database.schemaMapping["@context"];
-                return x;
-            });
-    
-            const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
-            let ids = result.map(x => x["_id"]);
-            result.map(async t => {
-                let tempIds = [];
-    
-                for (let key in t["_reverse"]) {
-                    tempIds = t["_reverse"][key].map(x => x["_id"]);
-                }
-    
-                ids = [...ids, ...tempIds];
-            });
-    
-            logger.debug("Graphy database rdf insert start");
-            await database.insertRDF(rdf);
-            logger.debug("Graphy database rdf insert end");
-    
-    
-        } catch (err) {
-            logger.error(err);
-        }
-    }
-    
     async loadCoreQueryDataFromDB(database, type, page = 1,  selectionSet = undefined, inferred = false, tree = undefined) {
 
         let query = this.preparefilters(database, selectionSet, tree);
@@ -133,6 +82,57 @@ class MongodbAdapter {
     
     }
 
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
+        logger.log("info", "loadChildObjectsByUris was called");
+        if (database.client === undefined) { 
+            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        }
+    
+        try {
+            const db = database.client.db(this.configFile.dbName);
+            let collection = db.collection(this.configFile.collectionName);
+    
+            let query = this.preparefilters(database, selection, tree, parentName);
+            if(query === undefined){
+                query = {};
+            }
+            if (query["_id"] === undefined) {
+                query["_id"] = { "$in": sub };
+            } else {
+                // ???? remove rest of ids from sub from graphy ???
+                // apply filter in resolver !
+            }
+    
+            logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+            let result = await collection.find(query).toArray();
+    
+            result = result.map(x => {
+                x["@context"] = database.schemaMapping["@context"];
+                return x;
+            });
+    
+            const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
+            let ids = result.map(x => x["_id"]);
+            result.map(async t => {
+                let tempIds = [];
+    
+                for (let key in t["_reverse"]) {
+                    tempIds = t["_reverse"][key].map(x => x["_id"]);
+                }
+    
+                ids = [...ids, ...tempIds];
+            });
+    
+            logger.debug("Graphy database rdf insert start");
+            await database.insertRDF(rdf);
+            logger.debug("Graphy database rdf insert end");
+    
+    
+        } catch (err) {
+            logger.error(err);
+        }
+    }
+    
     preparefilters(database, selection, tree, parentName) {
         // console.log(util.inspect(selection,false,null,true)) 
         let query = {};

@@ -26,12 +26,7 @@ class Database {
     }
 
     selectAdapter(configObject) {
-        if (configObject === undefined) {
-            logger.info("No database selected");
-        }
-        else {
-            this.adapter = new DBAdapter(configObject);
-        }
+        this.adapter = new DBAdapter(this.schemaMapping, configObject);
     }
 
     updateSchemaMapping(schemaMapping) {
