@@ -254,7 +254,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
                     logger.debug(util.inspect(info["operation"], false, null, true /* enable colors */));
                     logger.info(`Query started for ${uri}`);
 
-                    let data = await database.loadQueryData(info["operation"], uri, args.page, args.inferred, tree, args.filter);
+                    let data = await database.loadQueryData(info["operation"], uri, args.page, args.inferred, tree);
 
                     logger.info(
                         `Finall db calls : ${database.dbCallCounter}

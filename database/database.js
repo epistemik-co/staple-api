@@ -41,36 +41,27 @@ class Database {
 
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
 
-    async loadChildObjectsFromDBForUnion(sub, filter) {
+    async loadChildObjectsFromDBForUnion(sub, selection, tree, parentName) {
         logger.info("loadChildObjectsFromDBForUnion was called");
-        logger.debug(`with arguments : sub: ${sub}  query: ${filter} `);
+        logger.debug(`with arguments : sub: ${sub}  ... `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadChildObjectsByUris(this, sub, filter);
+            await this.adapter.loadChildObjectsByUris(this, sub, selection, tree, parentName);
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = 1, filters = undefined, inferred = false) {
+    async loadCoreQueryDataFromDB(type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB was called");
-        logger.debug(`with arguments : type: ${type} page: ${page} query: ${filters} inferred: ${inferred} `);
+        logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${selectionSet} inferred: ${inferred} `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(this, type, page, filters, inferred);
+            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree);
         }
     }
 
-    preparefilters(selection, tree, parentName) {
-        logger.info("preparefilters was called");
-
-        if (this.adapter) {
-            return this.adapter.preparefilters(this, selection, tree, parentName);
-        }
-        // in memory db
-
-        return undefined;
-    }
+    
 
     // Memory database operations ---------------------------------------------------------------------------------------------------------
     create(sub, pred, obj, gra = null) {
@@ -319,13 +310,9 @@ class Database {
     }
 
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
-
+    // return 10 ids of the core objects
     async loadQueryData(queryInfo, uri, page, inferred, tree, filter) {
         return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter);
-    }
-
-    async searchForDataRecursively(selectionSet, uri, tree, reverse = false, parentName = undefined) {
-        return dataRetrievalAlgorithm.searchForDataRecursively(this, selectionSet, uri, tree, reverse, parentName);
     }
 
 }

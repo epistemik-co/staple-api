@@ -11,7 +11,7 @@ class Demo {
     constructor() {
         
         
-        let stapleApi = new staple("./schema/schema", "./schema/schema-mapping");//, require(appRoot+"/config/database.js"));
+        let stapleApi = new staple("./schema/schema", "./schema/schema-mapping", require(appRoot+"/config/database.js"));
         let schema = stapleApi.schema;
         this.server = new ApolloServer({
             schema,

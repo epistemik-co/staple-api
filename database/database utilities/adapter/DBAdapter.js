@@ -17,21 +17,23 @@ class DBAdapter {
     }
 
     // QUERY SECTION
-    async loadCoreQueryDataFromDB(database, type, page = 1, filters = undefined, inferred = false) {
+    // loadCoreQueryDataFromDB loads only 10 objects from database
+    // Arguments :
+    // database - graphy database
+    // type - type of object ( URI )
+    // page - selected page of data
+    // selectionSet - graphql query
+    // inferred - true if inferred types are expected
+    // tree - structure describing data
+    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(database, type, page, filters, inferred);
+            await this.adapter.loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
         }
     }
 
-    async loadChildObjectsByUris(database, sub, filter) {
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
         if (this.adapter) {
-            await this.adapter.loadChildObjectsByUris(database, sub, filter);
-        }
-    }
-
-    preparefilters(database, selection, tree, parentName) {
-        if (this.adapter) {
-            return this.adapter.preparefilters(database, selection, tree, parentName);
+            await this.adapter.loadChildObjectsByUris(database, sub, selection, tree, parentName);
         }
     }
 }

@@ -12,7 +12,7 @@ class MongodbAdapter {
         this.configFile = configFile;
     }
 
-    async loadChildObjectsByUris(database, sub, filter) {
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
         logger.log("info", "loadChildObjectsByUris was called");
         if (database.client === undefined) { 
             database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
@@ -22,7 +22,7 @@ class MongodbAdapter {
             const db = database.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
     
-            let query = filter;
+            let query = this.preparefilters(database, selection, tree, parentName);
             if(query === undefined){
                 query = {};
             }
@@ -63,7 +63,9 @@ class MongodbAdapter {
         }
     }
     
-    async loadCoreQueryDataFromDB(database, type, page = 1, query = undefined, inferred = false) {
+    async loadCoreQueryDataFromDB(database, type, page = 1,  selectionSet = undefined, inferred = false, tree = undefined) {
+
+        let query = this.preparefilters(database, selectionSet, tree);
 
         if (database.client === undefined) {
             database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
@@ -132,7 +134,6 @@ class MongodbAdapter {
     }
 
     preparefilters(database, selection, tree, parentName) {
-
         // console.log(util.inspect(selection,false,null,true)) 
         let query = {};
         let fieldName = selection.name.value;

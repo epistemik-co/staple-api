@@ -2,7 +2,7 @@ var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 const util = require("util");
 
-async function loadQueryData(database, queryInfo, uri, page, inferred, tree, filter) {
+async function loadQueryData(database, queryInfo, uri, page, inferred, tree) {
     database.dbCallCounter = 0; // debug only
     database.drop(); // clear db before new query.
 
@@ -17,15 +17,15 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, fil
 
 
     for (let coreSelection in coreSelectionSet["selections"]) {
-        let filters = database.preparefilters(coreSelectionSet["selections"][coreSelection], tree);
+        let selectionSet = coreSelectionSet["selections"][coreSelection];
         if (coreSelectionSet["selections"][0].name.value === "_OBJECT") {
-            await database.loadCoreQueryDataFromDB(uri, page, filters, inferred);
+            await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree);
             coreIds = await database.getSubjectsByType(uri, database.stampleDataType, inferred, page);
         }
         else if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
-            await database.loadCoreQueryDataFromDB(uri, page, filters, inferred);
+            await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree);
             coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-            await database.searchForDataRecursively(coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName);
+            await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName);
         }
     }
 
@@ -49,7 +49,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
 
 
         if (selection.kind === "InlineFragment") {
-            await database.searchForDataRecursively(selection["selectionSet"], uri, tree, false, parentName);
+            await searchForDataRecursively(database, selection["selectionSet"], uri, tree, false, parentName);
         }
         else if (selection["selectionSet"] !== undefined && selection.name !== undefined) {
 
@@ -62,7 +62,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             let type = database.schemaMapping["@context"][name];
 
             if (type === "@reverse") {
-                await database.searchForDataRecursively(selection["selectionSet"], uri, tree, true, parentName);
+                await searchForDataRecursively(database, selection["selectionSet"], uri, tree, true, parentName);
             }
             else {
                 for (let id of uri) {
@@ -90,8 +90,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                 newUris = [...new Set(newUris)];
 
                 if (newUris.length > 0) {
-                    let filters = database.preparefilters(selection, tree, parentName);
-                    await database.loadChildObjectsFromDBForUnion(newUris, filters);
+                    await database.loadChildObjectsFromDBForUnion(newUris, selection, tree, parentName);
 
                     let newParentName = tree[parentName].data[name];
                     if (newParentName === undefined) {
@@ -104,7 +103,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                         newParentName = newParentName.name;
                     }
 
-                    await database.searchForDataRecursively(selection["selectionSet"], newUris, tree, false, newParentName);
+                    await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName);
                 }
 
             }
