@@ -6,15 +6,16 @@ const dataRetrievalAlgorithm = require("./database utilities/dataManagementUtili
 const flatJsonGenerator = require("./database utilities/flatJsonGenerator/flatjsonGenerator");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
+const util = require("util");
 const DBAdapter = require("./database utilities/adapter/DBAdapter");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
     constructor(schemaMapping, configObject) {
-        this.selectAdapter(configObject);
         this.updateSchemaMapping(schemaMapping);
-
         this.schemaMapping = schemaMapping;
+
+        this.selectAdapter(configObject);
 
         this.database = dataset_tree();
         this.stampleDataType = "http://staple-api.org/datamodel/type";
@@ -53,6 +54,26 @@ class Database {
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
             await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree);
+        }
+    }
+
+    async loadObjectsByUris(sub) {
+        logger.info("loadObjectsByUris was called");
+        logger.debug(`with arguments : sub: ${sub}`);
+
+        if (this.adapter) {
+            await this.adapter.loadObjectsByUris(this, sub);
+        }
+    }
+
+    async pushObjectToBackend(Id) {
+        logger.info("pushObjectToBackend was called");
+        logger.debug(`with arguments : Id: ${Id}`);
+        let flatJson = await this.getFlatJson();
+        console.log(this.getAllQuads());
+        // console.log((util.inspect(await flatJson , false, null, true)));
+        if (this.adapter) {
+            await this.adapter.pushObjectToBackend(this, Id, flatJson);
         }
     }
 
@@ -293,6 +314,8 @@ class Database {
     }
 
     async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
+        console.log("MY RDF");
+        console.log(rdf);
         await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
         this.updateInference();
     }

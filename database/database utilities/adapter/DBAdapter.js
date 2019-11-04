@@ -44,6 +44,20 @@ class DBAdapter {
             await this.adapter.loadChildObjectsByUris(database, sub, selection, tree, parentName);
         }
     }
+
+    // sub = [ ... ]
+    async loadObjectsByUris(database, sub) {
+        if (this.adapter) {
+            await this.adapter.loadObjectsByUris(database, sub);
+        }
+    }
+
+    // sub = [ ... ]
+    async pushObjectToBackend(database, sub, flatJson) {
+        if (this.adapter) {
+            await this.adapter.pushObjectToBackend(database, sub, flatJson);
+        }
+    }
 }
 
 module.exports = DBAdapter;

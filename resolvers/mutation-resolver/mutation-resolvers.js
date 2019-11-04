@@ -4,6 +4,9 @@ let schemaMapping = undefined; // require('../../schema/schema-mapping');
 const { GraphQLError } = require("graphql");
 const jsonld = require("jsonld");
 const validators = require("./validate-functions");
+const appRoot = require("app-root-path");
+const logger = require(`${appRoot}/config/winston`);
+// const util = require("util");
 
 const beforeInsert = (database, objectID, fieldFromSchemaTree, req) => {
     database.create(objectID, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", fieldFromSchemaTree.uri);
@@ -53,6 +56,8 @@ const createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => 
     for (let field in mutation.fields) {
         newResolverBody[mutation.fields[field].name.value] = async (args, req) => {
             const objectID = req.input["_id"];
+            await database.loadObjectsByUris(objectID); 
+
             req.ensureExists = req.ensureExists === undefined ? false : req.ensureExists;
 
             validators.validateIsIdDefined(objectID);
@@ -65,34 +70,35 @@ const createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => 
             fieldFromSchemaTree = fieldFromSchemaTree[0];
 
             if (req.type === "INSERT") {
-                console.log("INSERT");
+                logger.info("INSERT");
                 beforeInsert(database, objectID, fieldFromSchemaTree, req);
             }
             else if (req.type === "UPDATE") {
                 beforeUpdate(database, objectID, fieldFromSchemaTree);
             }
-            console.log("After insert");
+            logger.info("After insert");
             validators.validateUnion(fieldFromSchemaTree, schemaMapping, req, objectsFromSchemaObjectTree);
 
             let dataForQuads = req.input;
-            dataForQuads["@context"] = schemaMapping["@context"];
+            dataForQuads["@context"] = schemaMapping["@context"]; 
             const rdf = await jsonld.toRDF(dataForQuads, { format: "application/n-quads" });
-            console.log("AFTER RDF");
+            logger.info("AFTER RDF");
             // await validators.validateData(database, objectID, rdf, req.ensureExists, req.type, Warnings)
-            console.log("After data validation");
+            logger.info("After data validation");
             req.type === "REMOVE" ? await database.removeRDF(rdf, objectID) : await database.insertRDF(rdf);
 
 
             // Inference
             database.updateInference();
-            console.log("await this.database.getFlatJson()");
-            await database.getFlatJson(); 
+            // logger.info("await this.database.getFlatJson()"); 
+            await database.pushObjectToBackend(objectID);
             return true;
         };
     }
 
-    newResolverBody["DELETE"] = (args, req) => {
+    newResolverBody["DELETE"] = async (args, req) => {
         const objectID = req.id;
+        await database.loadObjectsByUris(objectID);
         validators.validateIsIdDefined(objectID);
         validators.validateURI(objectID, "id");
         validators.validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing");
@@ -101,11 +107,13 @@ const createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => 
 
         database.updateInference();
 
+        await database.pushObjectToBackend(objectID);
         return res;
     };
 
-    newResolverBody["CREATE"] = (args, req) => {
+    newResolverBody["CREATE"] = async (args, req) => {
         const objectID = req.id;
+        await database.loadObjectsByUris(objectID);
         validators.validateIsIdDefined(objectID);
         validators.validateURI(objectID, "id");
         validators.validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", true);
@@ -114,6 +122,7 @@ const createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => 
 
         database.updateInference();
 
+        await database.pushObjectToBackend(objectID);
         return res;
     };
 

@@ -58,7 +58,7 @@ class MongodbAdapter {
                 x["@context"] = database.schemaMapping["@context"];
                 return x;
             });
-    
+            
             const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
             let ids = result.map(x => x["_id"]);
     

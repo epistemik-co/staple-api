@@ -5,6 +5,8 @@ const factory = require("@graphy/core.data.factory");
 // const flatJsonGenerator = require("../../database utilities/flatJsonGenerator/flatjsonGenerator");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
+const databaseUtilities = require("./Utilities");
+const jsonld = require("jsonld");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class MemoryDatabase {
@@ -17,7 +19,7 @@ class MemoryDatabase {
         this.flatJsons = [];
         this.dbCallCounter = 0;
 
-        this.loadFakeData();
+        // this.loadFakeData();
         logger.log("info", "Database is ready to use");
     }
 
@@ -107,7 +109,7 @@ class MemoryDatabase {
         return;
     }
 
-    async loadChildObjectsByUris(database, sub, selection, tree, parentName) { 
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
         // search selectionSet for core objects load them
         let fieldName = selection.name.value;
         // let fieldData = tree[fieldName];
@@ -117,13 +119,13 @@ class MemoryDatabase {
             return undefined;
         }
 
-        for(let subject of sub){
+        for (let subject of sub) {
             subject = factory.namedNode(subject);
             const temp = this.database.match(subject, null, null);
             var itr = temp.quads();
             var x = itr.next();
-            while (!x.done) { 
-                database.database.add(x.value); 
+            while (!x.done) {
+                database.database.add(x.value);
                 x = itr.next();
             }
         }
@@ -131,6 +133,46 @@ class MemoryDatabase {
         return;
     }
 
+    async loadObjectsByUris(database, sub) {
+        // search selectionSet for core objects load them
+
+        for (let subject of sub) {
+            subject = factory.namedNode(subject);
+            const temp = this.database.match(subject, null, null);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                database.database.add(x.value);
+                x = itr.next();
+            }
+        }
+
+        return;
+    }
+
+    async pushObjectToBackend(database, sub, flatJson) {
+        // search selectionSet for core objects load them
+        let data = flatJson.filter(x => sub.includes(x["_id"]));
+        // data = await data.map(x => {
+        //     x["@context"] = ;
+        //     return x;
+        // });
+        for(let obj of data){
+
+            obj["@context"] = database.schemaMapping["@context"];
+            const rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
+            await this.insertRDF(rdf);
+        }
+
+
+
+
+        console.log("\n\n\n");
+        console.log("DATABASE SHOULD CONTAIN DATA NOW");
+        console.log(this.getAllQuads());
+        console.log("\n\n\n");
+        return;
+    }
     // // filters need to be implemented
     // preparefilters(database, selection, tree, parentName) {
     //     return undefined;
@@ -370,10 +412,10 @@ class MemoryDatabase {
         var x = itr.next();
         while (!x.done) {
             i++;
-            if(i > (page-1) * 10){
+            if (i > (page - 1) * 10) {
                 data.push(x.value.subject.value);
             }
-            if(i+1 > page * 10){
+            if (i + 1 > page * 10) {
                 break;
             }
             x = itr.next();
@@ -382,7 +424,30 @@ class MemoryDatabase {
         return data;
     }
 
-   
+    async insertRDF(rdf, tryToFix = false, uuid = undefined) {
+
+        await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
+        // this.updateInference();
+    }
+
+    async removeRDF(rdf, ID) {
+        await databaseUtilities.removeRDFPromise(this.database, ID, rdf);
+        // this.updateInference();
+    }
+
+    // returns all quads
+    getAllQuads() {
+        const temp = this.database.match(null, null, null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value);
+            x = itr.next();
+        }
+        return data;
+    }
+
 }
 
 module.exports = MemoryDatabase;
