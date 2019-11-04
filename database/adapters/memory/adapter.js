@@ -5,7 +5,6 @@ const factory = require("@graphy/core.data.factory");
 // const flatJsonGenerator = require("../../database utilities/flatJsonGenerator/flatjsonGenerator");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
-const util = require("util");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class MemoryDatabase {
@@ -26,7 +25,7 @@ class MemoryDatabase {
         // search selectionSet for core objects load them
         // console.log(selectionSet);
         let fieldName = selection.name.value;
-        let fieldData = tree[fieldName];
+        // let fieldData = tree[fieldName];
 
         if (fieldName === undefined) {
             logger.error("Could not find type of object");
@@ -34,62 +33,62 @@ class MemoryDatabase {
         }
 
         // all ids
-        let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred);
+        let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
 
         // id filter
-        if (fieldData) {
-            for (let argument of selection.arguments) {
-                if (argument.name.value === "filter") {
-                    for (let filterField of argument.value.fields) {
-                        // console.log("OBJECT");
-                        // console.log(filterField);
-                        // console.log("\n\n");
-                        if (fieldData.data[filterField.name.value] !== undefined) {
-                            // console.log("ADD TO THE FILTER QUERY");
+        // if (fieldData) {
+        //     for (let argument of selection.arguments) {
+        //         if (argument.name.value === "filter") {
+        //             for (let filterField of argument.value.fields) {
+        //                 // console.log("OBJECT");
+        //                 // console.log(filterField);
+        //                 // console.log("\n\n");
+        //                 if (fieldData.data[filterField.name.value] !== undefined) {
+        //                     // console.log("ADD TO THE FILTER QUERY");
 
-                            if (filterField.value.kind === "ListValue") {
-                                let objectFilterName = filterField.name.value;
+        //                     if (filterField.value.kind === "ListValue") {
+        //                         let objectFilterName = filterField.name.value;
 
-                                // if (filterField.name.value !== "_id") {
-                                //     objectFilterName = objectFilterName + "._value";
-                                // }
+        //                         // if (filterField.name.value !== "_id") {
+        //                         //     objectFilterName = objectFilterName + "._value";
+        //                         // }
 
-                                // query[objectFilterName] = {};
-                                // query[objectFilterName]["$in"] = [];
+        //                         // query[objectFilterName] = {};
+        //                         // query[objectFilterName]["$in"] = [];
 
-                                for (let elem of filterField.value.values) {
+        //                         for (let elem of filterField.value.values) {
 
-                                    if (filterField.name.value === "_id") {
-                                        let allowedIds = filterField.value.values.map(x => x.value);
-                                        ids = ids.filter(x => allowedIds.includes(x));
-                                    }
-                                    else {
-                                        // query[objectFilterName]["$in"].push(elem.value);
+        //                             if (filterField.name.value === "_id") {
+        //                                 let allowedIds = filterField.value.values.map(x => x.value);
+        //                                 ids = ids.filter(x => allowedIds.includes(x));
+        //                             }
+        //                             else {
+        //                                 // query[objectFilterName]["$in"].push(elem.value);
 
-                                    }
-                                }
-                            }
-                            else {
-                                if (filterField.name.value === "_id") {
-                                    let allowedId = filterField.value.value;
-                                    console.log(allowedId);
-                                    ids = ids.filter(x => allowedId === x);
-                                }
-                                else {
-                                    // query[filterField.name.value] = filterField.value.value;
-                                }
-                            }
-                        }
-                        else {
-                            console.log("SKIP");
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            logger.warn("Could not find object data for filters");
-        }
+        //                             }
+        //                         }
+        //                     }
+        //                     else {
+        //                         if (filterField.name.value === "_id") {
+        //                             let allowedId = filterField.value.value;
+        //                             console.log(allowedId);
+        //                             ids = ids.filter(x => allowedId === x);
+        //                         }
+        //                         else {
+        //                             // query[filterField.name.value] = filterField.value.value;
+        //                         }
+        //                     }
+        //                 }
+        //                 else {
+        //                     console.log("SKIP");
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // else {
+        //     logger.warn("Could not find object data for filters");
+        // }
 
         // Add to graphy
         for (let sub of ids) {
@@ -108,7 +107,27 @@ class MemoryDatabase {
         return;
     }
 
-    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName) { 
+        // search selectionSet for core objects load them
+        let fieldName = selection.name.value;
+        // let fieldData = tree[fieldName];
+
+        if (fieldName === undefined) {
+            logger.error("Could not find type of object");
+            return undefined;
+        }
+
+        for(let subject of sub){
+            subject = factory.namedNode(subject);
+            const temp = this.database.match(subject, null, null);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) { 
+                database.database.add(x.value); 
+                x = itr.next();
+            }
+        }
+
         return;
     }
 
@@ -233,37 +252,37 @@ class MemoryDatabase {
                 graph: { value: "null" }
             },
 
-            {
-                subject: { value: "http://sony.com/AkioMorita6" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
+            // {
+            //     subject: { value: "http://sony.com/AkioMorita6" },
+            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+            //     object: { value: "http://schema.org/Person" },
+            //     graph: { value: "null" }
+            // },
 
-            {
-                subject: { value: "http://sony.com/AkioMorita7" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita8" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita9" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita10" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
+            // {
+            //     subject: { value: "http://sony.com/AkioMorita7" },
+            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+            //     object: { value: "http://schema.org/Person" },
+            //     graph: { value: "null" }
+            // },
+            // {
+            //     subject: { value: "http://sony.com/AkioMorita8" },
+            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+            //     object: { value: "http://schema.org/Person" },
+            //     graph: { value: "null" }
+            // },
+            // {
+            //     subject: { value: "http://sony.com/AkioMorita9" },
+            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+            //     object: { value: "http://schema.org/Person" },
+            //     graph: { value: "null" }
+            // },
+            // {
+            //     subject: { value: "http://sony.com/AkioMorita10" },
+            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+            //     object: { value: "http://schema.org/Person" },
+            //     graph: { value: "null" }
+            // },
 
 
 
@@ -334,8 +353,9 @@ class MemoryDatabase {
     }
 
     // returns array of uri - Core Query
-    async getSubjectsByType(type, predicate, inferred = false) {
+    async getSubjectsByType(type, predicate, inferred = false, page) {
         type = factory.namedNode(type);
+        let i = 0;
 
         if (inferred) {
             predicate = factory.namedNode(this.stampleDataType);
@@ -349,12 +369,20 @@ class MemoryDatabase {
         var itr = temp.quads();
         var x = itr.next();
         while (!x.done) {
-            data.push(x.value.subject.value);
+            i++;
+            if(i > (page-1) * 10){
+                data.push(x.value.subject.value);
+            }
+            if(i+1 > page * 10){
+                break;
+            }
             x = itr.next();
         }
 
         return data;
     }
+
+   
 }
 
 module.exports = MemoryDatabase;
