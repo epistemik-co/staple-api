@@ -2,230 +2,11 @@ let schemaMapping = undefined; // require('../../schema/schema-mapping');
 const util = require("util");
 var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
+const handleDataTypeResolver = require("./querys/dataTypeResolver");
+const handleClassTypeResolver = require("./querys/classTypeResolver");
+const handleUnionTypeResolver = require("./querys/unionTypeResolver");
+const handleReverseDataTypeResolver = require("./querys/reverseDataTypeResolver");
 
-let handleDataTypeResolver = (tree, object) => {
-    let newResolverBody = {};
-
-
-    for (var propertyName in tree[object].data) {
-        if (propertyName === "_value") {
-            newResolverBody["_value"] = async (parent) => { if (parent.value === undefined) return parent; return parent.value; };
-        }
-        else if (propertyName === "_type") {
-            newResolverBody["_type"] = (parent) => {
-
-                let types = ["http://schema.org/Text"];
-                if (parent.datatype !== undefined) {
-                    types = [parent.datatype.value];
-                }
-
-                types = types.map(x => {
-                    for (let key in schemaMapping["@context"]) {
-                        if (schemaMapping["@context"][key] === x)
-                            return key;
-                    }
-                    return "";
-                });
-
-                return types;
-            };
-        }
-    }
-
-    return newResolverBody;
-};
-let handleClassTypeResolver = (tree, object, database) => {
-    let newResolverBody = {};
-
-    for (var propertyName in tree[object].data) {
-        let currentObject = tree[object].data[propertyName];
-        let isItList = false;
-
-        if (currentObject.kind == "ListType") {
-            currentObject = currentObject.data;
-            isItList = true;
-        }
-
-        if (propertyName === "_id") {
-            newResolverBody["_id"] = (parent) => { return parent; };
-        }
-        else if (propertyName === "_type") {
-            newResolverBody["_type"] = async (parent, args) => {
-                if (args.inferred) {
-                    return await database.getObjectsValueArray((parent), database.stampleDataType);
-                }
-                let types = await database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
-
-                types = types.map(x => {
-                    for (let key in schemaMapping["@context"]) {
-                        if (schemaMapping["@context"][key] === x)
-                            return key;
-                    }
-                    return "";
-                });
-
-                return types;
-            };
-        }
-        else {
-            let uri = schemaMapping["@context"][propertyName];
-            if (uri === undefined) {
-                // throw new GraphQLError({ key: `Uri not found`, message: 'URI for: {propertyName} was not found' });
-                uri = "http://schema.org/" + propertyName;
-            }
-
-            if (tree[currentObject.name].type === "UnionType") {
-                const name = uri;
-                let constr = (name) => {
-                    return async (parent) => {
-                        let data = await database.getObjectsValueArray((parent), (name));
-                        return data;
-                    };
-                };
-                newResolverBody[propertyName] = constr(name);
-
-            }
-            else {
-                const name = uri;
-                let type = currentObject.name;
-
-                let constr = (name, isItList, type, objectType) => {
-                    return (async (parent, args) => {
-                        if (name === "@reverse") {
-                            let data = database.getTriplesByObjectUri(parent);
-                            return data;
-                        }
-
-                        if (parent.value) {
-                            parent = parent.value;
-                        }
-
-                        if (isItList) {
-                            if (objectType === "http://schema.org/DataType") {
-                                let data = await database.getObjectsValueArray((parent), (name), true);
-                                return data;
-                            }
-                            else {
-                                let data = await getFilteredObjectsUri(database, parent, name, args);
-
-
-                                return data;
-                            }
-                        }
-                        else {
-                            return database.getSingleLiteral((parent), (name));
-                        }
-                    });
-                };
-                newResolverBody[propertyName] = constr(name, isItList, type, tree[currentObject.name].type);
-            }
-        }
-    }
-    return newResolverBody;
-};
-let handleUnionTypeResolver = (tree, object, database) => {
-    let newResolverBody = {};
-
-    let constr = (name) => {
-        return async (parent) => {
-
-
-            let typesOfObject = tree[name].values.map(value => {
-                let uriToName = {};
-                uriToName[schemaMapping["@context"][value]] = value;
-
-                return uriToName;
-            });
-
-
-            let typeOfInspectedObject = await database.getObjectsValueArray(parent, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
-            typeOfInspectedObject = typeOfInspectedObject[0];
-
-
-            let searchedTypes = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0];
-
-            // Could not find exact type
-            if (searchedTypes === undefined) {
-                //look for infered types
-                let inferedTypes = [];
-                // let data = schemaMapping["@graph"].filter((x) => { return x['@id'] === typeOfInspectedObject });
-                let data = schemaMapping["@graphMap"][typeOfInspectedObject];
-                if (data !== undefined) {
-                    let uris = data["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
-                    for (let x in uris) {
-                        inferedTypes.push(uris[x]["@id"]);
-                    }
-                }
-
-
-
-                for (let key in inferedTypes) {
-                    for (let i in typesOfObject) {
-                        for (let key2 in typesOfObject[i]) {
-                            if (key2 === inferedTypes[key]) {
-                                return typesOfObject[i][key2];
-                            }
-                        }
-                    }
-                }
-            }
-            typesOfObject = typesOfObject.filter(x => x[typeOfInspectedObject] !== undefined)[0];
-            if (typesOfObject === undefined) {
-                let possibleTypes = name.split("_");
-                if (possibleTypes.includes("Text")) {
-                    return "Text";
-                }
-                return possibleTypes[0];
-            }
-            return typesOfObject[typeOfInspectedObject];
-        };
-
-    };
-
-    newResolverBody["__resolveType"] = constr(object);
-    return newResolverBody;
-};
-let handleReverseDataTypeResolver = (tree, object) => {
-    let newResolverBody = {};
-
-    for (var propertyName in tree[object].data) {
-        let uri = tree[object].data[propertyName].data.uri;
-
-        let constr = (name) => {
-            return ((parent) => {
-                parent = parent.filter(x => x.predicate.value === name);
-                let data = parent.map(x => x.subject.value);
-                return data;
-            });
-        };
-
-        newResolverBody[propertyName] = constr(uri);
-    }
-    return newResolverBody;
-};
-let getFilteredObjectsUri = async (database, parent, name, args) => {
-    let tempData = await database.getObjectsValueArray((parent), (name), false);
-    // add ignoring bad filter fields !! ( from tree )
-    
-    let data = [];
-    if (args.filter !== undefined ){
-        for(let prop in args.filter){
-            if(prop === "_id"){
-                for (let uri of tempData) {
-                    if (args.filter["_id"].includes(uri)) {
-                        data.push(uri);
-                    }
-                }
-            }
-        }
-    }
-    else {
-        data = tempData;
-    }
-    // console.log(data);
-    
-    return data;
-};
 
 let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
@@ -243,7 +24,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
 
         if (tree[object].type === "http://schema.org/DataType") {
             let newResolver = tree[object].name;
-            queryResolverBody["Data"][newResolver] = handleDataTypeResolver(tree, object);
+            queryResolverBody["Data"][newResolver] = handleDataTypeResolver(tree, object, schemaMapping);
         }
         else if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
             // Core Query
@@ -267,15 +48,14 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
 
             //OBJECT
             let newResolver = tree[object].name;
-            queryResolverBody["Objects"][newResolver] = handleClassTypeResolver(tree, object, database);
+            queryResolverBody["Objects"][newResolver] = handleClassTypeResolver(tree, object, database, schemaMapping);
         }
         else if (tree[object].type === "UnionType") {
             let newResolver = tree[object].name;
-            queryResolverBody["Data"][newResolver] = handleUnionTypeResolver(tree, object, database);
+            queryResolverBody["Data"][newResolver] = handleUnionTypeResolver(tree, object, database, schemaMapping);
         }
         else if (tree[object].type === "EnumType") {
-            //....
-
+            //...
         }
         else if (tree[object].type === "Reverse") {
             let newResolver = tree[object].name;
