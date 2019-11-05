@@ -413,7 +413,7 @@ async function process(schemaText) {
     const objectTypesEnum = getObjectTypesEnum(objectTypeNames)
     const dataTypesEnum = getDataTypesEnum(dataTypeNames)
     const contextType = getContextObject(context)
-    const objectType = getObjectObject()
+    // const objectType = getObjectObject()
 
     types = types.concat(queryType)
     if (!readonly) {
