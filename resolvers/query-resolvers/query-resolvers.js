@@ -67,7 +67,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         else if (object === "_OBJECT") {
             queryResolverBody["Query"]["_OBJECT"] = async (obj, args, context, info) => {
                 logger.debug(util.inspect(info["operation"], false, null, true /* enable colors */));
-                let data = await database.loadQueryData(info["operation"], "http://schema.org/Thing", args.page, args.inferred, tree);
+                let data = await database.loadQueryData(info["operation"], "http://schema.org/Thing", args.page, true, tree);
                 data = data.map(async (id) => { return { "_id": id, "_type": await database.getObjectsValueArray(id, database.stampleDataType) }; });
                 return data;
             };
