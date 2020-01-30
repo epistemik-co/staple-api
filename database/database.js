@@ -6,7 +6,7 @@ const dataRetrievalAlgorithm = require("./database utilities/dataManagementUtili
 const flatJsonGenerator = require("./database utilities/flatJsonGenerator/flatjsonGenerator");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
-const util = require("util");
+// const util = require("util");
 const DBAdapter = require("./database utilities/adapter/DBAdapter");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean

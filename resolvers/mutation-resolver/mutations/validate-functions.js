@@ -66,7 +66,7 @@ const validateData = async (database, objectID, rdf, ensureExists, reqType, Warn
     await database.insertRDF(dataForValidation, rdf);
 
     if(dataForValidation.size > quadlimit){
-         throw new GraphQLError({ key: 'ERROR', message: `You have reached the limit of data per session` });
+         throw new GraphQLError({ key: "ERROR", message: "You have reached the limit of data per session" });
     }
 
     let temp = dataForValidation.match(null, null, null);

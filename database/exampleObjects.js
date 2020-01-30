@@ -192,8 +192,8 @@ const objects = [
         "_id": "http://example.com/bigbank/offer",
         "_type": "Offer"
     }
-  ]
+  ];
   
   
   
-  module.exports = objects
+  module.exports = objects;

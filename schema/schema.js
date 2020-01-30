@@ -1,4 +1,4 @@
-schemaString = `
+let schemaString = `
 """
 Exposes linked data context mapppings for this schema. Response to the full
 _CONTEXT query returns a valid JSON-LD context sufficient to interpret data
@@ -1992,6 +1992,6 @@ input Filter {
   name: [String]
 }
 
-`
+`;
 
-module.exports = schemaString
+module.exports = schemaString;
