@@ -9,8 +9,6 @@ const appRoot = require("app-root-path");
 
 class Demo {
     constructor() {
-        
-        
         let stapleApi = new staple("./schema/schema", "./schema/schema-mapping" , require(appRoot+"/config/database.js"));
         let schema = stapleApi.schema;
         this.server = new ApolloServer({
@@ -37,8 +35,6 @@ class Demo {
         app.use(bodyParser.json({ limit: "50mb", extended: true }));
         app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
         app.use(bodyParser.text({ limit: "50mb", extended: true })); 
-
-
 
         this.server.applyMiddleware({ app });
         app.listen({ port: 4000 }, () =>

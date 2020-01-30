@@ -15,7 +15,6 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree) {
 
     let coreSelectionSet = queryInfo["selectionSet"];
 
-
     for (let coreSelection in coreSelectionSet["selections"]) {
         let selectionSet = coreSelectionSet["selections"][coreSelection];
         if (coreSelectionSet["selections"][0].name.value === "_OBJECT") {

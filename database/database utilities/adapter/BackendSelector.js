@@ -1,7 +1,7 @@
 var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 
-class DBAdapter {
+class BackendSelector {
     // this.adapter contains object with methods implemented for specyfic backend
 
     constructor(schemaMapping, configObject) {
@@ -9,19 +9,19 @@ class DBAdapter {
         this.adapter = undefined;
 
         if (configObject === undefined) {
-            adapterType = require("../../adapters/memory/adapter");
+            adapterType = require("../backends/memory/adapter");
             this.adapter = new adapterType(schemaMapping);
             return;
         }
 
         if (configObject.type === "mongodb") {
-            adapterType = require("../../adapters/mongodb/adapter");
+            adapterType = require("../backends/mongodb/adapter");
             this.adapter = new adapterType(configObject);
         }
         // else if(configObject.type === "mysql"){ ... }
 
 
-        logger.info("DBAdapter ready");
+        logger.info("DBAdapterSelector ready");
     }
 
     // QUERY SECTION
@@ -60,4 +60,4 @@ class DBAdapter {
     }
 }
 
-module.exports = DBAdapter;
+module.exports = BackendSelector;

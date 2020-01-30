@@ -7,7 +7,7 @@ const flatJsonGenerator = require("./database utilities/flatJsonGenerator/flatjs
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 // const util = require("util");
-const DBAdapter = require("./database utilities/adapter/DBAdapter");
+const BackendSelector = require("./database utilities/adapter/BackendSelector");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {
@@ -27,7 +27,7 @@ class Database {
     }
 
     selectAdapter(configObject) {
-        this.adapter = new DBAdapter(this.schemaMapping, configObject);
+        this.adapter = new BackendSelector(this.schemaMapping, configObject);
     }
 
     updateSchemaMapping(schemaMapping) {
@@ -36,7 +36,6 @@ class Database {
     }
 
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
-
     async loadChildObjectsFromDBForUnion(sub, selection, tree, parentName) {
         logger.info("loadChildObjectsFromDBForUnion was called");
         logger.debug(`with arguments : sub: ${sub}  ... `);
@@ -314,8 +313,6 @@ class Database {
     }
 
     async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
-        console.log("MY RDF");
-        console.log(rdf);
         await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
         this.updateInference();
     }
