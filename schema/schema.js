@@ -1328,12 +1328,11 @@ type Person_REV {
   """
   provider: [Service]
 
-  """
-  This is the inverse view of the property: children. 
-  
-  This means that whenever it is the case that { x { children { y } } it implies { y { _reverse { children { x } } }.
-  """
-  children: [Person]
+  """An employee of an organization."""
+  employee(
+    """Include inferred types for this project."""
+    filter: Filter
+  ): [Person]
 
   """
   This is the inverse view of the property: parent. 
@@ -1355,29 +1354,6 @@ type Person_REV {
   This means that whenever it is the case that { x { about { y } } it implies { y { _reverse { about { x } } }.
   """
   about: [CreativeWork]
-
-  """
-  This is the inverse view of the property: offeredBy. 
-  
-  This means that whenever it is the case that { x { offeredBy { y } } it implies { y { _reverse { offeredBy { x } } }.
-  """
-  offeredBy: [Offer]
-}
-
-"""
-Entities that have a somewhat fixed, physical extension.
-
-Broader types: Thing
-"""
-type Place {
-  """The name of an entity."""
-  name: Text
-
-  """Physical address of the item."""
-  address: [PostalAddress_v_Text]
-
-  """A CreativeWork or Event about this Thing."""
-  subjectOf: [CreativeWork]
 
   """The URI identfier of the object."""
   _id(
@@ -1573,7 +1549,16 @@ the rental of a car; a haircut; or an episode of a TV show streamed online.
 
 Broader types: Thing
 """
-type Product {
+type Person {
+  """Is a shareholder of an organization."""
+  shareholderOf: [Organization]
+
+  """Affiliation of a person."""
+  affiliation(
+    """Include inferred types for this project."""
+    filter: Filter
+  ): [Organization]
+
   """The name of an entity."""
   name: Text
 
@@ -1694,6 +1679,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
   ): [_OBJECT]
 
   """List objects of type: Thing."""
@@ -1702,6 +1688,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -1713,6 +1700,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -1724,6 +1712,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -1801,6 +1790,7 @@ type Query {
     The number of the consecutive results page to be returned by the query.
     """
     page: Int = 1
+    filter: Filter
 
     """Include inferred objects of this type."""
     inferred: Boolean = false
@@ -1987,29 +1977,21 @@ input Thing_INPUT {
   _type: [_OBJECT_TYPES]
 }
 
-"""
-This is the inverse view of the object of type: Thing. 
+"""Filter."""
+input Filter {
+  """id"""
+  _id: [ ID ]
 
- This means, that whenever the schema contains the structure SomeType {
-someField: Thing } it will also be the case that Thing_REV{ someField: SomeType }.
-"""
-type Thing_REV {
-  """
-  This is the inverse view of the property: about. 
-  
-  This means that whenever it is the case that { x { about { y } } it implies { y { _reverse { about { x } } }.
-  """
-  about: [CreativeWork]
+  """http://schema.org/legalName"""
+  legalName: [String]
+
+  """http://schema.org/noOfEmployees"""
+  noOfEmployees: [String] 
+
+  """http://schema.org/name"""
+  name: [String]
 }
 
-"""The filler for the property worksFor"""
-input worksFor_INPUT {
-  """The type of the property filler."""
-  _type: _Organization_
-
-  """The URI identfier of the object."""
-  _id: ID!
-}
 `
 
 module.exports = schemaString

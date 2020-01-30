@@ -1,6 +1,8 @@
 const { buildSchemaFromTypeDefinitions } = require('graphql-tools');
 const schemaString = require('./schema');
 let schemaMapping = undefined;//require('./schema-mapping');
+var appRoot = require('app-root-path');
+const logger = require(`${appRoot}/config/winston`);
 
 
 getUris = (object, name, listOfUnions) => {
@@ -27,7 +29,7 @@ getUris = (object, name, listOfUnions) => {
         typesOfNode.map((typeOfNode) => {
             let oneUri = schemaMapping["@context"][typeOfNode.name.value]; // copyOfNewNode.name
             if (oneUri === undefined) {
-                console.log("ERROR URI IS UNDEFINED")
+                logger.error(`ERROR URI IS UNDEFINED FOR ${typeOfNode} in schema-tree`);
             }
             uri.push(oneUri)
         });
@@ -65,7 +67,8 @@ handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUnions) 
     else{
         newNode['uri'] = id;
 
-        let tempNewNodeType = schemaMapping["@graph"].filter((x) => { return x["@id"] === id })[0];
+        // let tempNewNodeType = schemaMapping["@graph"].filter((x) => { return x["@id"] === id })[0];
+        let tempNewNodeType = schemaMapping['@graphMap'][id];
 
         if (tempNewNodeType === undefined) {
             newNode['type'] = undefined;
@@ -91,9 +94,7 @@ handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUnions) 
                 copyOfNewNode['mandatory'] = false;
             }
             // this is the root where we get the value
-            if (prop['kind'] === 'NamedType') {
-                // console.log("PROP\n")
-                // console.log(prop)
+            if (prop['kind'] === 'NamedType') { 
                 copyOfNewNode['name'] = prop['name']['value'];
                 copyOfNewNode['uri'] = getUris(object, copyOfNewNode['name'], listOfUnions);
 
@@ -115,11 +116,11 @@ saveTreeToFile = (treeFromSchema, path) => {
     const fs = require('fs');
     fs.writeFile(path, jsonContent, 'utf8', function (err) {
         if (err) {
-            console.log("An error occured while writing JSON Object to File.");
-            return console.log(err);
+            logger.error("An error occured while writing JSON Object to File.");
+            return logger.error(err);
         }
 
-        console.log("JSON file has been saved.");
+        logger.info("JSON file has been saved.");
     });
 }
 
@@ -149,8 +150,6 @@ createTree = (schemaMappingArg) => {
         'Boolean',
     ];
 
-    // console.log(schemaMapping["@context"]["Person"])
-    // console.log(schemaMapping["@graph"])
 
     let listOfUnions = []
     for (let schemaTypeName in schema.getTypeMap()) {
@@ -189,8 +188,7 @@ createTree = (schemaMappingArg) => {
             handleObjectType(newNode, newNodeData, schema, schemaTypeName, listOfUnions);
         }
         else {
-            console.log("---------------- NEW NODE KIND ----------------")
-            console.log(schema.getTypeMap()[schemaTypeName].astNode.kind);
+            logger.warn(`---------------- NEW NODE KIND ----------------\n${schema.getTypeMap()[schemaTypeName].astNode.kind}`)
             continue;
         }
         treeFromSchema[schema.getTypeMap()[schemaTypeName]['name']] = newNode;
