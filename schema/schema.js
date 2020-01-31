@@ -71,10 +71,7 @@ enum _Integer_ {
 """Any object in the database."""
 type _OBJECT {
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -141,16 +138,7 @@ Broader types: Number
 """
 type Integer {
   """The literal data value for the property."""
-  _value(
-    """The value of this property must be on the provided list."""
-    only: [String]
-
-    """The value of the property must contain the specified string."""
-    contains: String
-
-    """The language of the string value (if recognized)."""
-    lang: String
-  ): String
+  _value: String
 
   """Asserted data type of this value."""
   _type: [String]
@@ -274,16 +262,7 @@ input noOfEmployees_INPUT {
 """This is number DataType."""
 type Number {
   """The literal data value for the property."""
-  _value(
-    """The value of this property must be on the provided list."""
-    only: [String]
-
-    """The value of the property must contain the specified string."""
-    contains: String
-
-    """The language of the string value (if recognized)."""
-    lang: String
-  ): String
+  _value: String
 
   """Asserted data type of this value."""
   _type: [String]
@@ -307,19 +286,13 @@ type Organization {
   shareholderOf: [Organization]
 
   """An employee of an organization."""
-  employee(
-    """Include inferred types for this project."""
-    filter: Filter
-  ): [Person]
+  employee: [Person]
 
   """The number of employees in an organization."""
   noOfEmployees: Integer
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -378,10 +351,7 @@ type Patient {
   name: Text
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -425,19 +395,13 @@ type Person {
   shareholderOf: [Organization]
 
   """Affiliation of a person."""
-  affiliation(
-    """Include inferred types for this project."""
-    filter: Filter
-  ): [Organization]
+  affiliation: [Organization]
 
   """The name of an entity."""
   name: Text
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
@@ -546,16 +510,7 @@ input shareholderOf_INPUT {
 """This is text DataType."""
 type Text {
   """The literal data value for the property."""
-  _value(
-    """The value of this property must be on the provided list."""
-    only: [String]
-
-    """The value of the property must contain the specified string."""
-    contains: String
-
-    """The language of the string value (if recognized)."""
-    lang: String
-  ): String
+  _value: String
 
   """Asserted data type of this value."""
   _type: [String]
@@ -567,10 +522,7 @@ type Thing {
   name: Text
 
   """The URI identfier of the object."""
-  _id(
-    """The URI must be on the provided list of URIs."""
-    only: [String]
-  ): ID!
+  _id: ID!
 
   """Types of the object."""
   _type(
