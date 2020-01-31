@@ -293,42 +293,6 @@ class MemoryDatabase {
                 object: { value: "http://schema.org/Person" },
                 graph: { value: "null" }
             },
-
-            // {
-            //     subject: { value: "http://sony.com/AkioMorita6" },
-            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-            //     object: { value: "http://schema.org/Person" },
-            //     graph: { value: "null" }
-            // },
-
-            // {
-            //     subject: { value: "http://sony.com/AkioMorita7" },
-            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-            //     object: { value: "http://schema.org/Person" },
-            //     graph: { value: "null" }
-            // },
-            // {
-            //     subject: { value: "http://sony.com/AkioMorita8" },
-            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-            //     object: { value: "http://schema.org/Person" },
-            //     graph: { value: "null" }
-            // },
-            // {
-            //     subject: { value: "http://sony.com/AkioMorita9" },
-            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-            //     object: { value: "http://schema.org/Person" },
-            //     graph: { value: "null" }
-            // },
-            // {
-            //     subject: { value: "http://sony.com/AkioMorita10" },
-            //     predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-            //     object: { value: "http://schema.org/Person" },
-            //     graph: { value: "null" }
-            // },
-
-
-
-
             {
                 subject: { value: "http://sony.com/AkioMorita" },
                 predicate: { value: "http://staple-api.org/datamodel/type" },

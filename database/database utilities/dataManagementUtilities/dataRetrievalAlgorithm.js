@@ -85,7 +85,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             newUris = [...new Set(newUris)];
 
             if (newUris.length > 0) {
-                await database.loadChildObjectsFromDBForUnion(newUris, selection, tree, parentName);
+                await database.loadChildObjectsByUris(newUris, selection, tree, parentName);
 
                 let newParentName = tree[parentName].data[name];
                 if (newParentName === undefined) {

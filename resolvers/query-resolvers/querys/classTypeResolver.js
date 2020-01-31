@@ -41,47 +41,32 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
                 uri = "http://schema.org/" + propertyName;
             }
 
-            if (tree[currentObject.name].type === "UnionType") {
-                const name = uri;
-                let constr = (name) => {
-                    return async (parent) => {
-                        let data = await database.getObjectsValueArray((parent), (name));
-                        return data;
-                    };
-                };
-                newResolverBody[propertyName] = constr(name);
+            const name = uri;
+            let type = currentObject.name;
 
-            }
-            else {
-                const name = uri;
-                let type = currentObject.name;
+            let constr = (name, isItList, type, objectType) => {
+                return (async (parent, args) => {
 
-                let constr = (name, isItList, type, objectType) => {
-                    return (async (parent, args) => {
+                    if (parent.value) {
+                        parent = parent.value;
+                    }
 
-                        if (parent.value) {
-                            parent = parent.value;
-                        }
-
-                        if (isItList) {
-                            if (objectType === "http://schema.org/DataType") {
-                                let data = await database.getObjectsValueArray((parent), (name), true);
-                                return data;
-                            }
-                            else {
-                                let data = await getFilteredObjectsUri(database, parent, name, args);
-
-
-                                return data;
-                            }
+                    if (isItList) {
+                        if (objectType === "http://schema.org/DataType") {
+                            let data = await database.getObjectsValueArray((parent), (name), true);
+                            return data;
                         }
                         else {
-                            return database.getSingleLiteral((parent), (name));
+                            let data = await getFilteredObjectsUri(database, parent, name, args);
+                            return data;
                         }
-                    });
-                };
-                newResolverBody[propertyName] = constr(name, isItList, type, tree[currentObject.name].type);
-            }
+                    }
+                    else {
+                        return database.getSingleLiteral((parent), (name));
+                    }
+                });
+            };
+            newResolverBody[propertyName] = constr(name, isItList, type, tree[currentObject.name].type);
         }
     }
     return newResolverBody;
@@ -92,11 +77,11 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
 let getFilteredObjectsUri = async (database, parent, name, args) => {
     let tempData = await database.getObjectsValueArray((parent), (name), false);
     // add ignoring bad filter fields !! ( from tree )
-    
+
     let data = [];
-    if (args.filter !== undefined ){
-        for(let prop in args.filter){
-            if(prop === "_id"){
+    if (args.filter !== undefined) {
+        for (let prop in args.filter) {
+            if (prop === "_id") {
                 for (let uri of tempData) {
                     if (args.filter["_id"].includes(uri)) {
                         data.push(uri);
@@ -109,7 +94,7 @@ let getFilteredObjectsUri = async (database, parent, name, args) => {
         data = tempData;
     }
     // console.log(data);
-    
+
     return data;
 };
 

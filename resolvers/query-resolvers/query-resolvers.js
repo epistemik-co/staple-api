@@ -4,7 +4,6 @@ var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 const handleDataTypeResolver = require("./querys/dataTypeResolver");
 const handleClassTypeResolver = require("./querys/classTypeResolver");
-const handleUnionTypeResolver = require("./querys/unionTypeResolver");
 
 
 let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
@@ -48,11 +47,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             //OBJECT
             let newResolver = tree[object].name;
             queryResolverBody["Objects"][newResolver] = handleClassTypeResolver(tree, object, database, schemaMapping);
-        }
-        else if (tree[object].type === "UnionType") {
-            let newResolver = tree[object].name;
-            queryResolverBody["Data"][newResolver] = handleUnionTypeResolver(tree, object, database, schemaMapping);
-        }
+        } 
         else if (tree[object].type === "EnumType") {
             //...
         } 

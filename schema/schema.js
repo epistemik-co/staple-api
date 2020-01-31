@@ -94,12 +94,7 @@ enum _OBJECT_TYPES {
 enum _Organization_ {
   Organization
 }
-
-enum _Organization_v_Person_v_Text_ {
-  Organization
-  Person
-  Text
-}
+ 
 
 enum _Person_ {
   Person
@@ -130,7 +125,7 @@ input employee_INPUT {
 """The filler for the property hasShareholder"""
 input hasShareholder_INPUT {
   """The type of the property filler."""
-  _type: _Organization_v_Person_v_Text_
+  _type: _Organization_
 
   """The URI identfier of the object."""
   _id: ID
@@ -306,7 +301,7 @@ type Organization {
   legalName: Text
 
   """Has a shareholder."""
-  hasShareholder: [Organization_v_Person_v_Text]
+  hasShareholder: [Organization]
 
   """Is a shareholder of an organization."""
   shareholderOf: [Organization]
@@ -365,14 +360,7 @@ input Organization_INPUT {
 
   """Types of the object."""
   _type: [_OBJECT_TYPES]
-}
- 
-
-"""A filler of any of the types: Organization, Person."""
-union Organization_v_Person = Organization | Person
-
-"""A filler of any of the types: Organization, Person, Text."""
-union Organization_v_Person_v_Text = Organization | Person | Text
+} 
 
 """
 A patient

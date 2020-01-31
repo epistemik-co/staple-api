@@ -36,8 +36,8 @@ class Database {
     }
 
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
-    async loadChildObjectsFromDBForUnion(sub, selection, tree, parentName) {
-        logger.info("loadChildObjectsFromDBForUnion was called");
+    async loadChildObjectsByUris(sub, selection, tree, parentName) {
+        logger.info("loadChildObjectsByUris was called");
         logger.debug(`with arguments : sub: ${sub}  ... `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
