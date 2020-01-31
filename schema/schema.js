@@ -1,4 +1,4 @@
-schemaString = `
+let schemaString = `
 """
 Exposes linked data context mapppings for this schema. Response to the full
 _CONTEXT query returns a valid JSON-LD context sufficient to interpret data
@@ -13,10 +13,7 @@ type _CONTEXT {
 
   """@type"""
   _type: String
-
-  """@reverse"""
-  _reverse: String
-
+ 
   """http://schema.org/Thing"""
   Thing: String
 
@@ -334,9 +331,7 @@ type Organization {
     """Include inferred types for this project."""
     inferred: Boolean = false
   ): [String]
-
-  """The reverse view of the object with all incoming properties."""
-  _reverse: Organization_REV
+ 
 }
 
 """
@@ -371,28 +366,7 @@ input Organization_INPUT {
   """Types of the object."""
   _type: [_OBJECT_TYPES]
 }
-
-"""
-This is a reverse view of the object of type: Organization. This means that the
-values on the included fields should be in fact interpreted as their subjects
-while the actual value is the current object of type: Organization.
-"""
-type Organization_REV {
-  """
-  Has a shareholder. (Note: this is a reverse view of the property: hasShareholder)
-  """
-  hasShareholder: [Organization]
-
-  """
-  Is a shareholder of an organization. (Note: this is a reverse view of the property: shareholderOf)
-  """
-  shareholderOf: [Organization_v_Person]
-
-  """
-  Affiliation of a person. (Note: this is a reverse view of the property: affiliation)
-  """
-  affiliation: [Person]
-}
+ 
 
 """A filler of any of the types: Organization, Person."""
 union Organization_v_Person = Organization | Person
@@ -426,9 +400,7 @@ type Patient {
     """Include inferred types for this project."""
     inferred: Boolean = false
   ): [String]
-
-  """The reverse view of the object with all incoming properties."""
-  _reverse: Patient_REV
+ 
 }
 
 """
@@ -453,22 +425,7 @@ input Patient_INPUT {
   _type: [_OBJECT_TYPES]
 }
 
-"""
-This is a reverse view of the object of type: Patient. This means that the
-values on the included fields should be in fact interpreted as their subjects
-while the actual value is the current object of type: Patient.
-"""
-type Patient_REV {
-  """
-  Has a shareholder. (Note: this is a reverse view of the property: hasShareholder)
-  """
-  hasShareholder: [Organization]
-
-  """
-  An employee of an organization. (Note: this is a reverse view of the property: employee)
-  """
-  employee: [Organization]
-}
+ 
 
 """
 A person
@@ -499,9 +456,7 @@ type Person {
     """Include inferred types for this project."""
     inferred: Boolean = false
   ): [String]
-
-  """The reverse view of the object with all incoming properties."""
-  _reverse: Person_REV
+ 
 }
 
 """
@@ -524,23 +479,6 @@ input Person_INPUT {
 
   """Types of the object."""
   _type: [_OBJECT_TYPES]
-}
-
-"""
-This is a reverse view of the object of type: Person. This means that the values
-on the included fields should be in fact interpreted as their subjects while the
-actual value is the current object of type: Person.
-"""
-type Person_REV {
-  """
-  Has a shareholder. (Note: this is a reverse view of the property: hasShareholder)
-  """
-  hasShareholder: [Organization]
-
-  """
-  An employee of an organization. (Note: this is a reverse view of the property: employee)
-  """
-  employee: [Organization]
 }
 
 """Get objects of specific types."""
@@ -679,7 +617,6 @@ input Filter {
   """http://schema.org/name"""
   name: [String]
 }
+`;
 
-`
-
-module.exports = schemaString
+module.exports = schemaString;

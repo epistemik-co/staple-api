@@ -58,10 +58,6 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
 
                 let constr = (name, isItList, type, objectType) => {
                     return (async (parent, args) => {
-                        if (name === "@reverse") {
-                            let data = database.getTriplesByObjectUri(parent);
-                            return data;
-                        }
 
                         if (parent.value) {
                             parent = parent.value;

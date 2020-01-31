@@ -100,46 +100,31 @@
     },
     {
       "@id": "http://schema.org/legalName",
-      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": []
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
     },
     {
       "@id": "http://schema.org/hasShareholder",
-      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": [
-        "http://schema.org/shareholderOf"
-      ]
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
     },
     {
       "@id": "http://schema.org/shareholderOf",
-      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": [
-        "http://schema.org/hasShareholder"
-      ]
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
     },
     {
       "@id": "http://schema.org/employee",
-      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": [
-        "http://schema.org/affiliation"
-      ]
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
     },
     {
       "@id": "http://schema.org/affiliation",
-      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": [
-        "http://schema.org/employee"
-      ]
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
     },
     {
       "@id": "http://schema.org/noOfEmployees",
-      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": []
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
     },
     {
       "@id": "http://schema.org/name",
-      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
-      "http://schema.org/inverseOf": []
+      "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
     }
   ]
 }

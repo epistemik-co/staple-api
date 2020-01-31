@@ -35,8 +35,7 @@ async function getFlatJson(databaseObject) {
         let newJson = {
             "_id": id,
             "_type": undefined,
-            "_inferred": [],
-            "_reverse": {},
+            "_inferred": [], 
         };
 
         for (let quad of allRelatedQuads) {
@@ -96,21 +95,7 @@ async function getFlatJson(databaseObject) {
                     }
                 }
             }
-
-            if (quad.object.value === id) { // _reverse
-                let contextKey = databaseObject.schemaMapping["@revContext"][quad.predicate.value];
-
-                if (contextKey !== undefined) {
-                    if (newJson["_reverse"][contextKey] === undefined) {
-                        newJson["_reverse"][contextKey] = [];
-                    }
-
-                    newJson["_reverse"][contextKey].push({ _id: quad.subject.value });
-                }
-                else{
-                    logger.warn(`[ _reverse ] Unexpected predicate in quad: ${quad.predicate.value}`);
-                }
-            }
+ 
         }
         //add flat json to database object
         databaseObject.flatJsons.push(newJson);

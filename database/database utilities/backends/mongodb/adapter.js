@@ -60,17 +60,6 @@ class MongodbAdapter {
             });
             
             const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
-            let ids = result.map(x => x["_id"]);
-    
-            result.map(async t => {
-                let tempIds = [];
-    
-                for (let key in t["_reverse"]) {
-                    tempIds = t["_reverse"][key].map(x => x["_id"]);
-                }
-    
-                ids = [...ids, ...tempIds];
-            });
     
             logger.debug("Graphy database rdf insert start");
             await database.insertRDF(rdf);
@@ -112,16 +101,6 @@ class MongodbAdapter {
             });
     
             const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
-            let ids = result.map(x => x["_id"]);
-            result.map(async t => {
-                let tempIds = [];
-    
-                for (let key in t["_reverse"]) {
-                    tempIds = t["_reverse"][key].map(x => x["_id"]);
-                }
-    
-                ids = [...ids, ...tempIds];
-            });
     
             logger.debug("Graphy database rdf insert start");
             await database.insertRDF(rdf);

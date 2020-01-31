@@ -1,9 +1,6 @@
 const { GraphQLError } = require("graphql");
 const dataset_tree = require("graphy").util.dataset.tree;
 
-
-
-
 const validateIsIterable = (obj) => {
     // checks for null and undefined
     if (obj == null) {
@@ -15,9 +12,6 @@ const validateIsIterable = (obj) => {
 const validateURI = (uri, name) => {
     if (uri === undefined) {
         throw new GraphQLError({ key: "ERROR", message: `Uri for ${name} is not defined in context` });
-    }
-    if (uri === "@reverse") {
-        return;
     }
     // eslint-disable-next-line no-useless-escape
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;

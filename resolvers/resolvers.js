@@ -5,7 +5,7 @@ var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 
 class rootResolver {
-    constructor(db, Warnings, schemaMapping) {
+    constructor(db, Warnings, schemaMapping, schemaString) {
         this.database = db;
         //Warnings.push({'Message': "Information about object2"})
 
@@ -28,7 +28,7 @@ class rootResolver {
         logger.info("Query Resolvers are ready");
 
 
-        const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings, schemaMapping);
+        const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings, schemaMapping, schemaString);
         this.rootResolver["Mutation"] = mutationResolvers;
         
 

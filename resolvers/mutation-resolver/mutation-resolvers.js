@@ -1,4 +1,3 @@
-const schemaString = require("../../schema/schema");
 const { buildSchemaFromTypeDefinitions } = require("graphql-tools");
 let schemaMapping = undefined;
 const appRoot = require("app-root-path");
@@ -8,7 +7,7 @@ const deleteMutation = require("./mutations/deleteMutation");
 const classMutations = require("./mutations/classMutations");
 // const util = require("util");
 
-const createMutationResolvers = (database, tree, Warnings, schemaMappingArg) => {
+const createMutationResolvers = (database, tree, Warnings, schemaMappingArg, schemaString) => {
     logger.info("createMutationResolvers called");
     schemaMapping = schemaMappingArg;
     const schema = buildSchemaFromTypeDefinitions(schemaString);

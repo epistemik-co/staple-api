@@ -5,7 +5,6 @@ const logger = require(`${appRoot}/config/winston`);
 const handleDataTypeResolver = require("./querys/dataTypeResolver");
 const handleClassTypeResolver = require("./querys/classTypeResolver");
 const handleUnionTypeResolver = require("./querys/unionTypeResolver");
-const handleReverseDataTypeResolver = require("./querys/reverseDataTypeResolver");
 
 
 let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
@@ -56,11 +55,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         }
         else if (tree[object].type === "EnumType") {
             //...
-        }
-        else if (tree[object].type === "Reverse") {
-            let newResolver = tree[object].name;
-            queryResolverBody["Data"][newResolver] = handleReverseDataTypeResolver(tree, object);
-        }
+        } 
         else if (object === "_CONTEXT") {
             queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"]; };
         }

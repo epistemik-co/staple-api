@@ -60,52 +60,48 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             let newUris = [];
             let type = database.schemaMapping["@context"][name];
 
-            if (type === "@reverse") {
-                await searchForDataRecursively(database, selection["selectionSet"], uri, tree, true, parentName);
-            }
-            else {
-                for (let id of uri) {
-                    let data = [];
-                    if (reverse) {
-                        data = await database.getSubjectsValueArray(type, id);
-                    }
-                    else {
+            for (let id of uri) {
+                let data = [];
+                if (reverse) {
+                    data = await database.getSubjectsValueArray(type, id);
+                }
+                else {
 
-                        data = await database.getObjectsValueArray(id, type);
-                        logger.debug("Asked for ID TYPE");
-                        logger.debug(util.inspect(id, false, null, true));
-                        logger.debug(util.inspect(type, false, null, true));
-                    }
-
-                    for (let x of data) {
-                        // eslint-disable-next-line no-useless-escape
-                        var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-                        if (pattern.test(x)) {
-                            newUris.push(x);
-                        }
-                    }
+                    data = await database.getObjectsValueArray(id, type);
+                    logger.debug("Asked for ID TYPE");
+                    logger.debug(util.inspect(id, false, null, true));
+                    logger.debug(util.inspect(type, false, null, true));
                 }
 
-                newUris = [...new Set(newUris)];
-
-                if (newUris.length > 0) {
-                    await database.loadChildObjectsFromDBForUnion(newUris, selection, tree, parentName);
-
-                    let newParentName = tree[parentName].data[name];
-                    if (newParentName === undefined) {
-                        newParentName = {};
+                for (let x of data) {
+                    // eslint-disable-next-line no-useless-escape
+                    var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+                    if (pattern.test(x)) {
+                        newUris.push(x);
                     }
-                    if (newParentName.kind === "ListType") {
-                        newParentName = newParentName.data.name;
-                    }
-                    else {
-                        newParentName = newParentName.name;
-                    }
+                }
+            }
 
-                    await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName);
+            newUris = [...new Set(newUris)];
+
+            if (newUris.length > 0) {
+                await database.loadChildObjectsFromDBForUnion(newUris, selection, tree, parentName);
+
+                let newParentName = tree[parentName].data[name];
+                if (newParentName === undefined) {
+                    newParentName = {};
+                }
+                if (newParentName.kind === "ListType") {
+                    newParentName = newParentName.data.name;
+                }
+                else {
+                    newParentName = newParentName.name;
                 }
 
+                await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName);
             }
+
+
         }
         else {
             logger.debug("Skiped object from query");
