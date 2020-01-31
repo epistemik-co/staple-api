@@ -1,5 +1,5 @@
 const { makeExecutableSchema } = require("graphql-tools");
-const DatabaseInterface = require("./database/Database");
+const DatabaseInterface = require("./database/database");
 const Resolver = require("./resolvers/resolvers");
 
 // configLocation - obiekt
@@ -18,12 +18,7 @@ class Staple {
             resolvers: this.rootResolver,
         });
         
-    } 
-
-    // async processQuery(query) {
-    //     let result = await graphql(this.schema, query, null, null, null);
-    //     return result;
-    // }
+    }  
 }
 
 module.exports = Staple;

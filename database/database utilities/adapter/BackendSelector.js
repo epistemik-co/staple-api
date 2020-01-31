@@ -2,21 +2,21 @@ var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 
 class BackendSelector {
-    // this.adapter contains object with methods implemented for specyfic backend
+    // this.backend contains object with methods implemented for specyfic backend
 
     constructor(schemaMapping, configObject) {
         let adapterType = undefined;
-        this.adapter = undefined;
+        this.backend = undefined;
 
         if (configObject === undefined) {
             adapterType = require("../backends/memory/adapter");
-            this.adapter = new adapterType(schemaMapping);
+            this.backend = new adapterType(schemaMapping);
             return;
         }
 
         if (configObject.type === "mongodb") {
             adapterType = require("../backends/mongodb/adapter");
-            this.adapter = new adapterType(configObject);
+            this.backend = new adapterType(configObject);
         }
         // else if(configObject.type === "mysql"){ ... }
 
@@ -34,28 +34,28 @@ class BackendSelector {
     // inferred - true if inferred types are expected
     // tree - structure describing data
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
-        if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
+        if (this.backend) {
+            await this.backend.loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
         }
     }
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
-        if (this.adapter) {
-            await this.adapter.loadChildObjectsByUris(database, sub, selection, tree, parentName);
+        if (this.backend) {
+            await this.backend.loadChildObjectsByUris(database, sub, selection, tree, parentName);
         }
     }
 
     // sub = [ ... ]
     async loadObjectsByUris(database, sub) {
-        if (this.adapter) {
-            await this.adapter.loadObjectsByUris(database, sub);
+        if (this.backend) {
+            await this.backend.loadObjectsByUris(database, sub);
         }
     }
 
     // sub = [ ... ]
     async pushObjectToBackend(database, sub, flatJson) {
-        if (this.adapter) {
-            await this.adapter.pushObjectToBackend(database, sub, flatJson);
+        if (this.backend) {
+            await this.backend.pushObjectToBackend(database, sub, flatJson);
         }
     }
 }
