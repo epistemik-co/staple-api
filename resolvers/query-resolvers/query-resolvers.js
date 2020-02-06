@@ -1,8 +1,8 @@
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
-const util = require("util");
 var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 const handleClassTypeResolver = require("./querys/classTypeResolver");
+const handleQueryTypeResolver = require("./querys/queryTypeResolver");
 
 
 let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
@@ -21,22 +21,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         if (tree[object].type === "http://www.w3.org/2000/01/rdf-schema#Class") {
             // Core Query
             let uri = tree[object]["uri"];
-            let constr = (uri) => {
-                return async (parent, args, context, info) => {
-                    
-                    logger.debug(util.inspect(info["operation"], false, null, true /* enable colors */));
-                    logger.info(`Query started for ${uri}`);
-
-                    let data = await database.loadQueryData(info["operation"], uri, args.page, args.inferred, tree);
-
-                    logger.info(
-                        `Finall db calls : ${database.dbCallCounter}
-                        \tQuads in graphy : ${database.database.size}
-                        \tObjects in graphy : ${database.countObjects()}`); 
-                    return data;
-                };
-            };
-            queryResolverBody["Query"][tree[object].name] = constr(uri);
+            queryResolverBody["Query"][tree[object].name] = handleQueryTypeResolver(database, tree, uri);
 
             //OBJECT
             let newResolver = tree[object].name;
@@ -52,6 +37,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     }
     return queryResolverBody;
 };
+ 
 
 
 module.exports = createQueryResolvers;

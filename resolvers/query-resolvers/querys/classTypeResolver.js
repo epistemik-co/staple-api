@@ -18,7 +18,7 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
         else {
             let uri = schemaMapping["@context"][propertyName];
             if (uri === undefined) {
-                logger.warn(`Uri not found: URI for: ${propertyName} was not found`);
+                logger.warn(`Uri not found for: ${propertyName} in schema mapping`);
                 uri = "http://schema.org/" + propertyName;
             }
             
