@@ -12,10 +12,7 @@ const getUris = (object, name, listOfUnions) => {
     }
     if (uri === undefined) { // union
         let typesOfNode = listOfUnions.filter((x) => {
-            let tempNode = object.type;
-            if (tempNode.kind === "ListType") {
-                tempNode = tempNode.type;
-            }
+            let tempNode = object.type; 
             return x.name.value === tempNode.name.value;
         })[0]; // get types of union
 
@@ -82,16 +79,17 @@ const handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUn
         newNodeData[object.name.value] = {};
         let copyOfNewNode = newNodeData[object.name.value];
         let prop = object["type"];
-
-
+        
+ 
         while (prop !== undefined) {
-            // save information if it is mandatory and skip
-            if (prop["kind"] === "NonNullType") {
-                copyOfNewNode["mandatory"] = true;
+            copyOfNewNode["ListType"] = false;
+            if(prop["kind"] === "ListType" && prop["type"] !== undefined){
                 prop = prop["type"];
+                copyOfNewNode["ListType"] = true;
             }
-            else {
-                copyOfNewNode["mandatory"] = false;
+
+            if (prop["kind"] === "NonNullType") {
+                prop = prop["type"];
             }
             // this is the root where we get the value
             if (prop["kind"] === "NamedType") { 
@@ -99,10 +97,13 @@ const handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUn
                 copyOfNewNode["uri"] = getUris(object, copyOfNewNode["name"], listOfUnions);
 
             }
-            else {
+            else { 
                 copyOfNewNode["kind"] = prop["kind"];
                 copyOfNewNode["data"] = {};
+                logger.warn("Unexpected node in schema:");
+                logger.debug(prop);
             }
+
             prop = prop["type"];
             copyOfNewNode = copyOfNewNode["data"];
         }
@@ -188,14 +189,13 @@ const createTree = (schemaMappingArg) => {
             handleObjectType(newNode, newNodeData, schema, schemaTypeName, listOfUnions);
         }
         else {
-            logger.warn(`---------------- NEW NODE KIND ----------------\n${schema.getTypeMap()[schemaTypeName].astNode.kind}`);
+            logger.warn(`NEW NODE KIND: ${schema.getTypeMap()[schemaTypeName].astNode.kind}`);
             continue;
         }
         treeFromSchema[schema.getTypeMap()[schemaTypeName]["name"]] = newNode;
     }
 
-    // saveTreeToFile(treeFromSchema, "../output.json")
-
+    saveTreeToFile(treeFromSchema, "../output.json"); 
     return treeFromSchema;
 };
 

@@ -2,7 +2,7 @@ const { GraphQLError } = require("graphql");
 const jsonld = require("jsonld");
 const validators = require("./validate-functions");
 const appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`); 
+const logger = require(`${appRoot}/config/winston`);
 
 
 function classMutations(database, mutation, field, schemaMapping, objectsFromSchemaObjectTree) {
@@ -59,17 +59,13 @@ const beforeInsert = (database, objectID, fieldFromSchemaTree, req, schemaMappin
     for (let propertyName in fieldFromSchemaTree.data) {
         if (propertyName !== "_id" && propertyName !== "_type") {
             if (req.input[propertyName] !== undefined) {
-                if (fieldFromSchemaTree.data[propertyName].kind !== undefined && fieldFromSchemaTree.data[propertyName].kind === "ListType") {
-                    continue;
+                let uri = schemaMapping["@context"][propertyName];
+                validators.validateURI(uri, propertyName);
+                let search = database.getObjectsValueArray((objectID), (uri));
+                if (search.length > 0) {
+                    throw new GraphQLError({ key: "ERROR", message: `Can not override field: ${propertyName}. The field is already defined in object` });
                 }
-                else {
-                    let uri = schemaMapping["@context"][propertyName];
-                    validators.validateURI(uri, propertyName);
-                    let search = database.getObjectsValueArray((objectID), (uri));
-                    if (search.length > 0) {
-                        throw new GraphQLError({ key: "ERROR", message: `Can not override field: ${propertyName}. The field is already defined in object` });
-                    }
-                }
+
             }
         }
     }

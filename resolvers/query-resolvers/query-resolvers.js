@@ -19,7 +19,6 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     for (var propertyName in tree) { objectsFromSchemaObjectTree.push(tree[propertyName]); }
 
     for (var object in tree) {
-
         if (tree[object].type === "http://schema.org/DataType") {
             let newResolver = tree[object].name;
             queryResolverBody["Data"][newResolver] = handleDataTypeResolver(tree, object, schemaMapping);
@@ -65,7 +64,6 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         else {
             logger.warn("UNHANDLED TYPE");
             logger.warn(object);
-            logger.warn(tree[object].type);
         }
     }
     return queryResolverBody;

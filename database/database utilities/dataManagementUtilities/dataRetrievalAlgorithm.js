@@ -91,12 +91,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                 if (newParentName === undefined) {
                     newParentName = {};
                 }
-                if (newParentName.kind === "ListType") {
-                    newParentName = newParentName.data.name;
-                }
-                else {
-                    newParentName = newParentName.name;
-                }
+                newParentName = newParentName.name;
 
                 await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName);
             }

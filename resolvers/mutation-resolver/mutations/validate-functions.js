@@ -131,9 +131,7 @@ const validateUnion = (fieldFromSchemaTree, schemaMapping, req, objectsFromSchem
                 objectFromInput = objectsFromInput[objectFromInput];
                 if (objectFromInput !== undefined) {
 
-                    let returnType = fieldFromSchemaTree.data[propertyName].kind === "ListType" ?
-                        fieldFromSchemaTree.data[propertyName].data.name :
-                        fieldFromSchemaTree.data[propertyName].name;
+                    let returnType = fieldFromSchemaTree.data[propertyName].name;
 
                     returnType = objectsFromSchemaObjectTree.filter(x => x.name === returnType)[0];
 

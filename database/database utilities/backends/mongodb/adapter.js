@@ -123,12 +123,9 @@ class MongodbAdapter {
             if (fieldData === undefined) {
                 return {};
             }
-            if (fieldData.kind === "ListType") {
-                fieldData = tree[fieldData.data.name];
-            }
-            else {
-                fieldData = tree[fieldData.name];
-            }
+            
+            fieldData = tree[fieldData.name];
+            
         }
  
         for (let argument of selection.arguments) {

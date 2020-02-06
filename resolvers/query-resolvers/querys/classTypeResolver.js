@@ -5,13 +5,7 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
     let newResolverBody = {};
 
     for (var propertyName in tree[object].data) {
-        let currentObject = tree[object].data[propertyName];
-        let isItList = false;
-
-        if (currentObject.kind == "ListType") {
-            currentObject = currentObject.data;
-            isItList = true;
-        }
+        let currentObject = tree[object].data[propertyName]; 
 
         if (propertyName === "_id") {
             newResolverBody["_id"] = (parent) => { return parent; };
@@ -52,7 +46,7 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
                     }
 
                     if (isItList) {
-                        if (objectType === "http://schema.org/DataType") {
+                        if (objectType === undefined) {
                             let data = await database.getObjectsValueArray((parent), (name), true);
                             return data;
                         }
@@ -65,8 +59,8 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
                         return database.getSingleLiteral((parent), (name));
                     }
                 });
-            };
-            newResolverBody[propertyName] = constr(name, isItList, type, tree[currentObject.name].type);
+            }; 
+            newResolverBody[propertyName] = constr(name, currentObject["ListType"], type, tree[currentObject.name]);
         }
     }
     return newResolverBody;
