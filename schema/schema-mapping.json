@@ -18,7 +18,10 @@
     "employee": "http://schema.org/employee",
     "affiliation": "http://schema.org/affiliation",
     "noOfEmployees": "http://schema.org/noOfEmployees",
-    "name": "http://schema.org/name"
+    "name": "http://schema.org/name",
+    "revenue": "http://schema.org/revenue",
+    "age": "http://schema.org/age",
+    "isMarried": "http://schema.org/isMarried"
   },
   "@graph": [
     {

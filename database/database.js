@@ -141,7 +141,7 @@ class Database {
     }
 
     // Array of uri
-    getObjectsValueArray(sub, pred, expectLiterals = false) {
+    getObjectsValueArray(sub, pred) {
         sub = factory.namedNode(sub);
         pred = factory.namedNode(pred);
 
@@ -150,12 +150,8 @@ class Database {
         var itr = temp.quads();
         var x = itr.next();
         while (!x.done) {
-            if (expectLiterals) {
-                data.push(x.value.object);
-            }
-            else {
-                data.push(x.value.object.value);
-            }
+            data.push(x.value.object.value);
+            
             x = itr.next();
         }
 
@@ -240,7 +236,7 @@ class Database {
             return null;
         }
 
-        return x.value.object;
+        return x.value.object.value;
     }
 
     // returns array of uri - Core Query
