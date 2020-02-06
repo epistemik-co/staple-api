@@ -6,10 +6,12 @@ const uuidv1 = require("uuid/v1");
 const logger = require("./config/winston"); 
 const staple = require("./index");
 const appRoot = require("app-root-path");
+const util = require("util");
 
 class Demo {
     constructor() {
         let stapleApi = new staple("./schema/schema", "./schema/schema-mapping" , require(appRoot+"/config/database.js"));
+        this.database = stapleApi.database;
         let schema = stapleApi.schema;
         this.server = new ApolloServer({
             schema,
@@ -78,7 +80,9 @@ class Demo {
                 logger.info(`UUID FOR NEW RDF ${uuid}`);
                 await this.database.insertRDF(todo, true, uuid);
                 logger.info(`Database size: ${this.database.database.size}`);
-                //logger.info(await this.database.getFlatJson());
+                logger.info(await this.database.getFlatJson());
+                console.log(util.inspect(this.database.flatJsons, false, null, true) );
+                console.log(JSON.stringify(this.database.flatJsons));
                 this.database.countObjects();
             } catch (error) {
                 logger.error(error);

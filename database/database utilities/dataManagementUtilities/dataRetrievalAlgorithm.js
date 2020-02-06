@@ -16,11 +16,7 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree) {
 
     for (let coreSelection in coreSelectionSet["selections"]) {
         let selectionSet = coreSelectionSet["selections"][coreSelection];
-        if (coreSelectionSet["selections"][0].name.value === "_OBJECT") {
-            await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree);
-            coreIds = await database.getSubjectsByType(uri, database.stampleDataType, inferred, page);
-        }
-        else if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
+        if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
             await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree);
             coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
             await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName);

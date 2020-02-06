@@ -54,6 +54,7 @@ class Database {
         if (this.adapter) {
             await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree);
         }
+
     }
 
     async loadObjectsByUris(sub) {
@@ -177,6 +178,20 @@ class Database {
             x = itr.next();
         }
         return data;
+    }
+
+    // Array of uri
+    async getSubjects() {
+
+        const temp = this.database.match(null, null, null);
+        var itr = temp.quads();
+        var x = itr.next();
+        let uris = new Set();
+        while (!x.done) {
+            uris.add(x.value.subject.value);
+            x = itr.next();
+        }
+        return [...uris];
     }
 
     // Array of uri

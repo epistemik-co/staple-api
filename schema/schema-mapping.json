@@ -3,6 +3,7 @@
     "_id": "@id",
     "_value": "@value",
     "_type": "@type",
+    "@base": "http://schema.org/",
     "_reverse": "@reverse",
     "Thing": "http://schema.org/Thing",
     "Organization": "http://schema.org/Organization",

@@ -5,16 +5,16 @@ const logger = require(`${appRoot}/config/winston`);
 // ---=== SUMMARY ===---
 // Function takes database as argument and creates flatjson snapshot of it. The object will be saved in database object as flatJsons property and it will be also returned.
 
-async function getFlatJson(databaseObject) {
+async function getFlatJson(database) {
     // find all objects
-    let ids = await databaseObject.getSubjectsByType("http://schema.org/Thing", databaseObject.stampleDataType);
-
+    let ids = await database.getSubjects();
+  
     // for each object in database ...
     for (let i in ids) {
         let id = ids[i];
         let allRelatedQuads = [];
 
-        var temp = databaseObject.database.match(factory.namedNode(id), null, null);
+        var temp = database.database.match(factory.namedNode(id), null, null);
         var itr = temp.quads();
         var x = itr.next();
         while (!x.done) {
@@ -22,7 +22,7 @@ async function getFlatJson(databaseObject) {
             x = itr.next();
         }
 
-        temp = databaseObject.database.match(null, null, factory.namedNode(id));
+        temp = database.database.match(null, null, factory.namedNode(id));
         itr = temp.quads();
         x = itr.next();
         while (!x.done) {
@@ -42,17 +42,18 @@ async function getFlatJson(databaseObject) {
             // logger.debug(quad)
             if (quad.subject.value === id) { //type
                 if (quad.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type") {
-                    let contextKey = databaseObject.schemaMapping["@revContext"][quad.object.value];
+                    let contextKey = database.schemaMapping["@revContext"][quad.object.value];
                     newJson["_type"] = contextKey;
                 }
                 else if (quad.object.datatype !== undefined) { //Literal
                     //find key 
                     let fieldKey = quad.predicate.value;
-                    if (quad.predicate.value === databaseObject.schemaMapping["@context"][quad.predicate.value.split("http://schema.org/")[1]]) {
+                    //???
+                    if (quad.predicate.value === database.schemaMapping["@context"][quad.predicate.value.split("http://schema.org/")[1]]) {
                         fieldKey = quad.predicate.value.split("http://schema.org/")[1];
                     }
                     else {
-                        fieldKey = databaseObject.schemaMapping["@revContext"][quad.predicate.value];
+                        fieldKey = database.schemaMapping["@revContext"][quad.predicate.value];
                     }
 
                     if (fieldKey !== undefined) {
@@ -61,10 +62,7 @@ async function getFlatJson(databaseObject) {
                             newJson[fieldKey] = [];
                         }
 
-                        newJson[fieldKey].push({
-                            _value: quad.object.value,
-                            _type: databaseObject.schemaMapping["@revContext"][quad.object.datatype.value],
-                        });
+                        newJson[fieldKey].push(quad.object.value);
                     }
                     else {
                         logger.warn(`Unexpected predicate in quad with literal ${quad.predicate.value}`);
@@ -72,7 +70,7 @@ async function getFlatJson(databaseObject) {
 
                 }
                 else if (quad.predicate.value === "http://staple-api.org/datamodel/type") { // _inferred
-                    let contextKey = databaseObject.schemaMapping["@revContext"][quad.object.value];
+                    let contextKey = database.schemaMapping["@revContext"][quad.object.value];
                     if (contextKey !== undefined) {
                         newJson["_inferred"].push(contextKey);
                     }
@@ -81,7 +79,7 @@ async function getFlatJson(databaseObject) {
                     }
                 }
                 else { // object
-                    let contextKey = databaseObject.schemaMapping["@revContext"][quad.predicate.value];
+                    let contextKey = database.schemaMapping["@revContext"][quad.predicate.value];
 
                     if (contextKey !== undefined) {
                         if (newJson[contextKey] === undefined) {
@@ -98,9 +96,9 @@ async function getFlatJson(databaseObject) {
  
         }
         //add flat json to database object
-        databaseObject.flatJsons.push(newJson);
+        database.flatJsons.push(newJson);
     } 
-    return databaseObject.flatJsons;
+    return database.flatJsons;
 }
 
 module.exports = { 
