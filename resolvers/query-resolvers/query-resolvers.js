@@ -11,7 +11,6 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     let queryResolverBody = {};
     queryResolverBody["Query"] = {};
     queryResolverBody["Objects"] = {};
-    queryResolverBody["Data"] = {};
 
     // -------------------------------------------------- CREATE RESOLVERS
     let objectsFromSchemaObjectTree = [];

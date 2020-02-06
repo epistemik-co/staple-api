@@ -6,7 +6,6 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree) {
     database.dbCallCounter = 0; // debug only
     database.drop(); // clear db before new query.
 
-
     let coreIds = [];
     let resolverName = database.schemaMapping["@revContext"][uri];
     if (resolverName === undefined) {

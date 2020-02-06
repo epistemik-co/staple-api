@@ -21,10 +21,7 @@ class rootResolver {
 
         for (const [key] of Object.entries(queryResolvers["Objects"])) {
             this.rootResolver[key] = queryResolvers["Objects"][key];
-        }
-        for (const [key] of Object.entries(queryResolvers["Data"])) {
-            this.rootResolver[key] = queryResolvers["Data"][key];
-        }
+        } 
         logger.info("Query Resolvers are ready");
 
 

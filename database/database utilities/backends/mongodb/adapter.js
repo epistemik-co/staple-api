@@ -15,7 +15,6 @@ class MongodbAdapter {
     async loadCoreQueryDataFromDB(database, type, page = 1,  selectionSet = undefined, inferred = false, tree = undefined) {
 
         let query = this.preparefilters(database, selectionSet, tree);
-
         if (database.client === undefined) {
             database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }
@@ -116,14 +115,14 @@ class MongodbAdapter {
         // console.log(util.inspect(selection,false,null,true)) 
         let query = {};
         let fieldName = selection.name.value;
-        let fieldData = tree[fieldName];
-
+        let fieldData = tree[fieldName]; 
+        
         if (fieldData === undefined) {
             fieldData = tree[parentName].data[fieldName];
             if (fieldData === undefined) {
                 return {};
             }
-            
+
             fieldData = tree[fieldData.name];
             
         }
