@@ -295,22 +295,7 @@ class Database {
     }
 
     countObjects() {
-        let type = "http://schema.org/Thing";
-        let predicate = this.stampleDataType;
-
-        type = factory.namedNode(type);
-        predicate = factory.namedNode(predicate);
-
-
-        const temp = this.database.match(null, predicate, type);
-        let counter = 0;
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            counter = counter + 1;
-            x = itr.next();
-        }
-        return counter;
+        return this.getSubjects().length; 
     }
 
     // binding database ----------------------------------------------------------------------------------------------

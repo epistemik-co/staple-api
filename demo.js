@@ -7,6 +7,7 @@ const logger = require("./config/winston");
 const staple = require("./index");
 const appRoot = require("app-root-path");
 const util = require("util");
+const mongodbAddOrUpdate = require("./database/database utilities/backends/mongodb/Utilities");
 
 class Demo {
     constructor() {
@@ -84,6 +85,7 @@ class Demo {
                 console.log(util.inspect(this.database.flatJsons, false, null, true) );
                 console.log(JSON.stringify(this.database.flatJsons));
                 this.database.countObjects();
+                mongodbAddOrUpdate.mongodbAddOrUpdate(this.database.flatJsons);
             } catch (error) {
                 logger.error(error);
                 return res.status(500).send({

@@ -5,7 +5,6 @@
     "_type": "@type",
     "@base": "http://schema.org/",
     "_reverse": "@reverse",
-    "Thing": "http://schema.org/Thing",
     "Organization": "http://schema.org/Organization",
     "Person": "http://schema.org/Person",
     "Agent": "http://schema.org/Agent",
@@ -26,15 +25,6 @@
   },
   "@graph": [
     {
-      "@id": "http://schema.org/Thing",
-      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-        {
-          "@id": "http://schema.org/Thing"
-        }
-      ]
-    },
-    {
       "@id": "http://schema.org/Organization",
       "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
       "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
@@ -42,16 +32,16 @@
           "@id": "http://schema.org/Organization"
         },
         {
-          "@id": "http://schema.org/Thing"
+          "@id": "http://schema.org/Agent"
         }
       ]
     },
     {
       "@id": "http://schema.org/Agent",
       "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [ 
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
         {
-          "@id": "http://schema.org/Thing"
+          "@id": "http://schema.org/Agent"
         }
       ]
     },
@@ -63,52 +53,7 @@
           "@id": "http://schema.org/Person"
         },
         {
-          "@id": "http://schema.org/Thing"
-        }
-      ]
-    },
-    {
-      "@id": "http://schema.org/Patient",
-      "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-        {
-          "@id": "http://schema.org/Patient"
-        },
-        {
-          "@id": "http://schema.org/Person"
-        },
-        {
-          "@id": "http://schema.org/Thing"
-        }
-      ]
-    },
-    {
-      "@id": "http://schema.org/Text",
-      "@type": "http://schema.org/DataType",
-      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-        {
-          "@id": "http://schema.org/Text"
-        }
-      ]
-    },
-    {
-      "@id": "http://schema.org/Number",
-      "@type": "http://schema.org/DataType",
-      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-        {
-          "@id": "http://schema.org/Number"
-        }
-      ]
-    },
-    {
-      "@id": "http://schema.org/Integer",
-      "@type": "http://schema.org/DataType",
-      "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
-        {
-          "@id": "http://schema.org/Integer"
-        },
-        {
-          "@id": "http://schema.org/Number"
+          "@id": "http://schema.org/Agent"
         }
       ]
     },

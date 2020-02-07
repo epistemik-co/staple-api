@@ -26,7 +26,7 @@ function updateInference(database) {
     let itr = temp.quads();
     let itrData = itr.next();
     while (!itrData.done) {
-        if (itrData.value.predicate.value === database.stampleDataType && itrData.value.object.value !== database.schemaMapping["@context"]["Thing"]) {
+        if (itrData.value.predicate.value === database.stampleDataType ) {
             database.database.delete(itrData.value);
         }
         itrData = itr.next();

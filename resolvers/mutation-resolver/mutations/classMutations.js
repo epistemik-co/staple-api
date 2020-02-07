@@ -18,7 +18,7 @@ function classMutations(database, mutation, field, schemaMapping, objectsFromSch
         validators.validateIsIdDefined(objectID);
         validators.validateURI(objectID, "id");
         validators.validateflattenedJson(req.input);
-        validators.validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", false, ensureExists);
+        // validators.validateIsObjectInDatabase(database, objectID, "http://staple-api.org/datamodel/type", "http://schema.org/Thing", false, ensureExists);
 
         let fieldName = mutation.fields[field].name.value;
         let fieldFromSchemaTree = objectsFromSchemaObjectTree.filter(x => x.name === fieldName);
