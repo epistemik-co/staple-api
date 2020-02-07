@@ -12,4 +12,4 @@
 
 [GitHub](https://github.com/epistemik-co/staple-api)
 [Documentation](/home/)
-[Playground](http://staple-api.org)
+[Playground](http://playground.staple-api.org)
