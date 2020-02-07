@@ -1,5 +1,5 @@
 <!-- docs/_sidebar.md -->
 
-* [Home](/#staple-api)
+* [Home](home/)
 * [Getting started](tutorial/)
 * [Documentation](docs/)

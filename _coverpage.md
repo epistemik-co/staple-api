@@ -11,5 +11,5 @@
 - under-the-hood JSON-LD conversions between JSONs and linked data
 
 [GitHub](https://github.com/epistemik-co/staple-api)
-[Documentation](#staple-api)
+[Documentation](/home/)
 [Playground](http://staple-api.org)
