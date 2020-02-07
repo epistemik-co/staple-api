@@ -2,21 +2,36 @@
 
 Staple API schemas are generated automatically from RDF ontologies expressed in the [schema.org data model](https://schema.org/docs/datamodel.html) (with slight extensions). This data model includes the following vocabulary elements:
 
-```
-| Vocabulary                    | Description                                 |
-|-------------------------------|---------------------------------------------|
-| rdfs:Class                    | An object type.                             |
-| schema:DataType               | A data type.                                |
-| schema:Thing                  | Top object type.                            |
-| rdfs:subClassOf               | A subtype of a given type.                  |
-| rdf:Property                  | A property / attribute.                     |
-| owl:FunctionalProperty        | A functional property.                      |
-| rdfs:comment                  | A description of a vocabulary item.         |
-| schema:domainIncludes         | A possible domain type of a given property. |
-| schema:rangeIncludes          | A possible range type of a given property.  |
-| schema:inverseOf              | An inverse property of a given property.    |
-|-----------------------------------------------------------------------------|
-```
+
+<!-- tabs:start -->
+
+#### **RDF ontology**
+
+| Construct                     | Description                                 |
+| ----------------------------- | ------------------------------------------- |
+| rdfs:Class                    | An object type                              |
+| rdfs:subClassOf               | A subtype of a given type                   |
+| rdf:Property                  | A property / attribute                      |                
+| owl:FunctionalProperty        | A functional property                       |                   
+| rdfs:comment                  | A description of a vocabulary item          |
+| schema:domainIncludes         | A possible domain type of a given property  |
+| schema:rangeIncludes          | A possible range type of a given property   |
+
+#### **GraphQL schema**
+
+
+| Construct                     | GraphQL functionality / construct           |
+| ----------------------------- | ------------------------------------------- |
+| rdfs:Class                    | An object type                              |
+| rdfs:subClassOf               | Implicit type inheritance/inference         |
+| rdf:Property                  | A field                                     |                
+| owl:FunctionalProperty        | A single-valued field                       |                   
+| rdfs:comment                  | A description of a construct                |
+| schema:domainIncludes         | The domain type on which the field occurs   |
+| schema:rangeIncludes          | The value type of the field                 |
+
+
+<!-- tabs:end -->
 
 ### Ontology example
 
