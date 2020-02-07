@@ -1,6 +1,6 @@
-const createTree = require("../schema/schema-tree");
-const createMutationResolvers = require("./mutation-resolver/mutation-resolvers");
-const createQueryResolvers = require("./query-resolvers/query-resolvers");
+const createTree = require("../schema/schemaTree");
+const createMutationResolvers = require("./mutationResolver/mutationResolvers");
+const createQueryResolvers = require("./queryResolvers/queryResolvers");
 var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 

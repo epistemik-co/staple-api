@@ -1,6 +1,6 @@
 const { buildSchemaFromTypeDefinitions } = require("graphql-tools");
 const schemaString = require("./schema");
-let schemaMapping = undefined;//require('./schema-mapping');
+let schemaMapping = undefined;
 var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 

@@ -1,12 +1,12 @@
 
 const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
-const databaseUtilities = require("./database utilities/dataManagementUtilities/dataManagementUtilities");
-const dataRetrievalAlgorithm = require("./database utilities/dataManagementUtilities/dataRetrievalAlgorithm");
+const databaseUtilities = require("./databaseUtilities/dataManagementUtilities/dataManagementUtilities");
+const dataRetrievalAlgorithm = require("./databaseUtilities/dataManagementUtilities/dataRetrievalAlgorithm");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 // const util = require("util");
-const BackendSelector = require("./database utilities/adapter/BackendSelector");
+const BackendSelector = require("./databaseUtilities/adapter/BackendSelector");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class Database {

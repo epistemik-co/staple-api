@@ -91,7 +91,6 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                 await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName);
             }
 
-
         }
         else {
             logger.debug("Skiped object from query");

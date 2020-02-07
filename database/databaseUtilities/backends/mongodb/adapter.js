@@ -110,6 +110,25 @@ class MongodbAdapter {
             logger.error(err);
         }
     }
+ 
+    async pushObjectToBackend(database, input) {
+
+        if (database.client === undefined) {
+            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        }
+
+        try {
+            const db = database.client.db(this.configFile.dbName);
+            let collection = db.collection(this.configFile.collectionName);
+
+            logger.debug(`Mongo db query:\n${util.inspect(input, false, null, true /* enable colors */)}`);
+
+            await collection.updateOne({ "_id": input["_id"] }, { "$set": input }, { upsert: true });
+
+        } catch (err) {
+            logger.error(err);
+        }
+    }
 
     preparefilters(database, selection, tree, parentName) {
         // console.log(util.inspect(selection,false,null,true)) 
@@ -163,38 +182,12 @@ class MongodbAdapter {
                     }
                 }
             }
-        }
-        // console.log("FINAL QUERY FILETRS");
-
-        // console.log(util.inspect(query, false, null, true));
-        // domyslnie taka postac
-        // { _id: 'http://data/bluesB4', "legalName": {$in : [{ "_type":"Text", "_value":"Blues Brothers" }]} }
+        } 
 
         if (Object.keys(query).length === 0 && query.constructor === Object) {
             return undefined;
         }
         return query;
-    }
-
-
-    // sub = [ ... ]
-    async pushObjectToBackend(database, input) {
-
-        if (database.client === undefined) {
-            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
-        }
-
-        try {
-            const db = database.client.db(this.configFile.dbName);
-            let collection = db.collection(this.configFile.collectionName);
-
-            logger.debug(`Mongo db query:\n${util.inspect(input, false, null, true /* enable colors */)}`);
-
-            await collection.updateOne({ "_id": input["_id"] }, { "$set": input }, { upsert: true });
-
-        } catch (err) {
-            logger.error(err);
-        }
     }
 }
 

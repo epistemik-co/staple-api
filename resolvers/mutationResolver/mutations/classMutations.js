@@ -1,4 +1,4 @@
-const validators = require("./validate-functions");
+const validators = require("./validateFunctions");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 // const util = require("util");

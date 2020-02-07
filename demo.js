@@ -9,7 +9,7 @@ const appRoot = require("app-root-path");
 
 class Demo {
     constructor() {
-        let stapleApi = new staple("./schema/schema", "./schema/schema-mapping" , require(appRoot+"/config/database.js"));
+        let stapleApi = new staple("./schema/schema", "./schema/schemaMapping" , require(appRoot+"/config/database.js"));
         this.database = stapleApi.database;
         let schema = stapleApi.schema;
         this.server = new ApolloServer({
