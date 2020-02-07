@@ -2,16 +2,22 @@ const { GraphQLError } = require("graphql");
 
 const validate = (req, schemaMapping, tree, field) => {
     // let type = req.type;
-    let input = req.input;
+    let input = req.input; 
     let objectName = field.name.value;
     let objectProps = tree[objectName].data;
     
     let objectID = input["_id"];
     validateURI(objectID, "_id");
 
+    let fixedProps = [
+        "_id",
+        "_type",
+        "_inferred"
+    ];
+
     for(let property in input){
-        if (property !== "_id" && property !== "_type") {
-            // is property a class type?  
+        if (!fixedProps.includes(property)) {
+            // is property a class type?    
             if(tree[objectProps[property].name] && tree[objectProps[property].name ].type === "http://www.w3.org/2000/01/rdf-schema#Class"){
                 validateURI(input[property], property);
             }
