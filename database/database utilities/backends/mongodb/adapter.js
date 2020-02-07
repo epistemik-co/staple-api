@@ -198,15 +198,8 @@ class MongodbAdapter {
             let collection = db.collection(this.configFile.collectionName);
  
             logger.debug(`Mongo db query:\n${util.inspect(input, false, null, true /* enable colors */)}`);
-
-            await collection.insert(input, function (err) {
-                if (err) {
-                    logger.error(err);
-                }
-                else {
-                    logger.info("Dodano obiekt do bazy");
-                }
-            });
+             
+            await collection.updateOne({"_id": input["_id"]}, { "$set":  input }, { upsert: true }  );
 
         } catch (err) {
             logger.error(err);
