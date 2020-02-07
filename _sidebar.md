@@ -1,3 +1,5 @@
 <!-- docs/_sidebar.md -->
 
-[Home](/)
+* [Home](/)
+* [Getting started](tutorial/)
+* [Documentation](docs/)
