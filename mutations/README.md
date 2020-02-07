@@ -11,7 +11,7 @@ There are five different mutation types:
 
 
 
-### Examples
+## Examples
 
 The following example shows default mutations in a schema with two object types `Organization` and `Person`:
 
@@ -31,7 +31,7 @@ For instance:
 CREATE(id: "http://example.com/elisabeth")
 ```
 
-### (V) Validation rules
+## (V) Validation rules
 
 > `[ERROR]` The object cannot exist in the database prior to this request.
 
@@ -46,7 +46,7 @@ For instance:
 DELETE(id: "http://example.com/elisabeth")
 ```
 
-### (V) Validation rules
+## (V) Validation rules
 
 > `[ERROR]` The object must exist in the database prior to this request.
 
@@ -175,13 +175,13 @@ For example, assuming the context and the schema used in all the running example
 
 Specifically, this flattened form of input objects must satisfy the following requirements:
 
-### (V) Validation rules
+## (V) Validation rules
 
 > [GRAPHQL-ERROR] the depth of the json object is at most 1 (where 0 is a flat key-value map, and 1 is a key-value map, where some values might also be key-value maps or arrays of key-value maps)
 
 > [GRAPHQL-ERROR] the key-value maps on level 1, might only be of one of the two possible forms specified below.
 
-### Acceptable forms of the key-value maps on level 1
+## Acceptable forms of the key-value maps on level 1
 
 ```javascript
 {
@@ -203,7 +203,7 @@ where `_value` is the string value of a literal and `_type` the name of its data
 
 Hence, the input object provided in any mutation type, must pass the following validation rules:
 
-### (V) Validation rules
+## (V) Validation rules
 
 > `[ERROR]` the input object is a valid flattened JSON-LD object under the assumed context
 
@@ -211,7 +211,7 @@ Hence, the input object provided in any mutation type, must pass the following v
 
 > `[ERROR]` **IF** datatypes are associated with some additional validators, these has to be positively verified on the provided values.
 
-### Conversion to quads
+## Conversion to quads
 In the following, by `RDF(input)` we denote the set of triples obtained by converting the input object, under the associated context, into a set of N-Quads.
 
 # INSERT
@@ -241,7 +241,7 @@ Inserts data about certain object into the database.
 ```
 
 
-### (V) Validation rules
+## (V) Validation rules
 
 > `[GRAPHQL-ERROR]` only properties present in the given type should be present.
 
@@ -291,7 +291,7 @@ Removes data about certain object from the database.
 ```
 
 
-### (V) Validation rules
+## (V) Validation rules
 
 > `[GRAPHQL-ERROR]` only properties present in the given type should be present.
 
@@ -333,7 +333,7 @@ For an object `URI`, replaces all data about this object with the new one.
 }
 ```
 
-### (V) Validation rules
+## (V) Validation rules
 
 > `[ERROR]` all objects mentioned in the input object must exist prior to this request whenever `ensureExists=true`. 
 

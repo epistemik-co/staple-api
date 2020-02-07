@@ -18,13 +18,6 @@ The live Staple API playground is available at: [http://staple-api.org](http://s
 
 For open technical issues and inquiries feel free to create a GitHub issue in this repository. All questions can also be sent to [staple-api@epistemik.co](staple-api@epistemik.co).
 
-## Contents
-* [Ontology and schema](schema/)
-* [Data](data/)
-* [Queries](query/)
-* [Inference & inheritance](inference/)
-* [Mutations](mutations/) 
-
 
 ## Overview
 
@@ -48,3 +41,10 @@ Staple API is a GraphQL-based application programming interface written in NodeJ
 * [JSON-LD](https://json-ld.org)
 * [Graphy](https://graphy.link/)
 * [NodeJS](https://nodejs.org)
+
+## Documentation topics
+* [Ontology and schema](schema/)
+* [Data](data/)
+* [Queries](query/)
+* [Inference & inheritance](inference/)
+* [Mutations](mutations/) 
