@@ -66,15 +66,13 @@ class Database {
         }
     }
 
-    async pushObjectToBackend(Id) {
+    async pushObjectToBackend(input) {
         logger.info("pushObjectToBackend was called");
-        logger.debug(`with arguments : Id: ${Id}`);
-        let flatJson = await this.getFlatJson();
-        console.log(this.getAllQuads());
+        // logger.debug(`with arguments : ${input}`);
         // console.log((util.inspect(await flatJson , false, null, true)));
         if (this.adapter) {
-            await this.adapter.pushObjectToBackend(this, Id, flatJson);
-        }
+            await this.adapter.pushObjectToBackend(this, input);
+        } 
     }
 
     // Memory database operations ---------------------------------------------------------------------------------------------------------

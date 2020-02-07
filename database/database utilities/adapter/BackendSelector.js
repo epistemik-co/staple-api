@@ -53,9 +53,9 @@ class BackendSelector {
     }
 
     // sub = [ ... ]
-    async pushObjectToBackend(database, sub, flatJson) {
+    async pushObjectToBackend(database, input) { 
         if (this.backend) {
-            await this.backend.pushObjectToBackend(database, sub, flatJson);
+            await this.backend.pushObjectToBackend(database, input);
         }
     }
 }
