@@ -140,10 +140,6 @@ class MongodbAdapter {
                         if (filterField.value.kind === "ListValue") {
                             let objectFilterName = filterField.name.value;
 
-                            if (filterField.name.value !== "_id") {
-                                objectFilterName = objectFilterName + "._value";
-                            }
-
                             query[objectFilterName] = {};
                             query[objectFilterName]["$in"] = [];
 
@@ -159,12 +155,7 @@ class MongodbAdapter {
                             }
                         }
                         else {
-                            if (filterField.name.value === "_id") {
-                                query[filterField.name.value] = { "_value": filterField.value.value };
-                            }
-                            else {
-                                query[filterField.name.value] = filterField.value.value;
-                            }
+                            query[filterField.name.value] = filterField.value.value;
                         }
                     }
                     else {
@@ -192,18 +183,18 @@ class MongodbAdapter {
         if (database.client === undefined) {
             database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }
- 
+
         try {
             const db = database.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
- 
+
             logger.debug(`Mongo db query:\n${util.inspect(input, false, null, true /* enable colors */)}`);
-             
-            await collection.updateOne({"_id": input["_id"]}, { "$set":  input }, { upsert: true }  );
+
+            await collection.updateOne({ "_id": input["_id"] }, { "$set": input }, { upsert: true });
 
         } catch (err) {
             logger.error(err);
-        } 
+        }
     }
 }
 

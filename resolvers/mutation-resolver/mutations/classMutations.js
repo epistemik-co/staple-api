@@ -1,33 +1,28 @@
-// const { GraphQLError } = require("graphql");
-// const jsonld = require("jsonld");
 const validators = require("./validate-functions");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
-const util = require("util");
+// const util = require("util");
 
 // function classMutations(database, mutation, field, schemaMapping, objectsFromSchemaObjectTree) {
 function classMutations(database, schemaMapping, tree, field) {
     return async (args, req) => {
         logger.info("Class mutation was called");
-        console.log(util.inspect(req, false, null, true)); 
+        // console.log(util.inspect(req, false, null, true)); 
 
         // Add type and inffered types
-        updateTypes(req, schemaMapping, tree, field);
+        updateTypes(req, schemaMapping, field);
         // VALIDATION
         validators.validate(req, schemaMapping, tree, field);
         // db push object
-
         if(req.type === "PUT"){
             await database.pushObjectToBackend(req.input, schemaMapping);
         }
 
         return true;
-
     };
-
 }
 
-const updateTypes = (req, schemaMapping, tree, field) => { 
+const updateTypes = (req, schemaMapping, field) => { 
     let objectName = field.name.value;
     let uri = schemaMapping["@context"][objectName];
     req.input["_type"] = objectName;
@@ -39,7 +34,6 @@ const updateTypes = (req, schemaMapping, tree, field) => {
             req.input["_inferred"].push(typeName);
         }
     }
-    
 };
  
 module.exports = classMutations;
