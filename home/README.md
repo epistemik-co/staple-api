@@ -20,7 +20,7 @@ Staple API is a GraphQL-based application programming interface written in NodeJ
 
 ## Playground
 
-The live Staple API playground is available at: [http://staple-api.org](http://staple-api.org).
+The live Staple API playground is available at: [http://playground.staple-api.org](http://playground.staple-api.org).
 
 
 ## GitHub
