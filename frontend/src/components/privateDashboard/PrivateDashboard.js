@@ -20,7 +20,7 @@ class PrivateDashboard extends Component {
     error: "",
     compiledMessage: "",
     playgroundVersion: 1,
-    source: "staple-api.org", // "localhost", // 
+    source: "playground.staple-api.org", // "localhost", // 
   }
 
   componentDidMount = () => {
@@ -185,7 +185,7 @@ class PrivateDashboard extends Component {
           </div>
           <div className="doc-link">
             <p>
-              Full documentation avaible here : <a href="https://github.com/epistemik-co/staple-api-docs">https://github.com/epistemik-co/staple-api-docs</a>
+              Full documentation available here : <a href="http://staple-api.org">http://staple-api.org</a>
               <span>Questions? Contact: staple-api@epistemik.co</span>
             </p>
           </div>
