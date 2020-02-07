@@ -3,7 +3,6 @@ const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
 const databaseUtilities = require("./database utilities/dataManagementUtilities/dataManagementUtilities");
 const dataRetrievalAlgorithm = require("./database utilities/dataManagementUtilities/dataRetrievalAlgorithm");
-const flatJsonGenerator = require("./database utilities/flatJsonGenerator/flatjsonGenerator");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 // const util = require("util");
@@ -297,10 +296,7 @@ class Database {
     }
 
     // binding database ----------------------------------------------------------------------------------------------
-
-    async getFlatJson() {
-        return await flatJsonGenerator.getFlatJson(this);
-    }
+ 
 
     updateInference() {
         databaseUtilities.updateInference(this);
