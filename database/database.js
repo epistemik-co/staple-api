@@ -248,7 +248,7 @@ class Database {
             return null;
         }
 
-        return x.value.object.value;
+        return x.value.object;
     }
 
     // returns array of uri - Core Query

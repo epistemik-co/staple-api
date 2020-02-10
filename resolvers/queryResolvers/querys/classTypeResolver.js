@@ -21,7 +21,6 @@ let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
                 logger.warn(`Uri not found for: ${propertyName} in schema mapping`);
                 uri = "http://schema.org/" + propertyName;
             }
-            
             newResolverBody[propertyName] = dataResolver(database, uri, currentObject["ListType"]);
         }
     }
@@ -39,7 +38,12 @@ const dataResolver = (database, name, isItList) => {
             return await database.getObjectsValueArray((parent), (name));
         }
         else {
-            return database.getSingleLiteral((parent), (name));
+            let value = database.getSingleLiteral((parent), (name));
+            if(value.datatype.value === "http://www.w3.org/2001/XMLSchema#boolean"){
+                let isTrueSet = (value.value == "true");
+                return isTrueSet;
+            }
+            return value.value;
         }
     });
 };
@@ -50,7 +54,7 @@ const typeResolver = (database, schemaMapping) => {
         if (args.inferred) {
             types = await database.getObjectsValueArray((parent), database.stampleDataType);
         }
-
+        
         types = types.map(x => {
             for (let key in schemaMapping["@context"]) {
                 if (schemaMapping["@context"][key] === x)
@@ -58,7 +62,6 @@ const typeResolver = (database, schemaMapping) => {
             }
             return "";
         });
-
         return types;
     };
 };
