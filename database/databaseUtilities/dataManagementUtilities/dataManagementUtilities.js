@@ -21,7 +21,7 @@ function createGraphMap(schemaMapping){
 }
 
 function updateInference(database) {
-    // remove all staple : datatype but not Thing 
+    // remove all staple : datatype 
     let temp = database.database.match(null, null, null);
     let itr = temp.quads();
     let itrData = itr.next();
@@ -53,24 +53,11 @@ function updateInference(database) {
     }
 }
 
-function insertRDFPromise(tree, rdf, schemaMapping) {
+function insertRDFPromise(tree, rdf) {
     return new Promise((resolve) => {
         let data = (y_quad) => { 
                 y_quad.graph = factory.namedNode(null);
-
-                // add inverses 
-                let inverse = schemaMapping["@graphMap"][y_quad.predicate.value];
-                if (inverse !== undefined) {
-                    if (inverse["http://schema.org/inverseOf"] !== undefined) {
-                        inverse["http://schema.org/inverseOf"].forEach(inversePredicate => {
-                            let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
-                            tree.add(quad);
-                        });
-                    }
-                }
-
                 tree.add(y_quad);
-            
         };
 
         let eof = () => {

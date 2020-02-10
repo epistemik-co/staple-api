@@ -15,13 +15,12 @@ class MongodbAdapter {
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
 
         let query = this.preparefilters(database, selectionSet, tree);
-        if (database.client === undefined) {
-            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        if (this.client === undefined) {
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }
 
-
         try {
-            const db = database.client.db(this.configFile.dbName);
+            const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
             let _type = undefined;
 
@@ -38,20 +37,10 @@ class MongodbAdapter {
                 else {
                     query["_type"] = _type;
                 }
-
             }
 
-            let result;
-            if (page === undefined) {
-                result = await collection.find(query).toArray();
-            }
-            else {
-                logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
-                result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
-            }
-
-            // save page conetnt
-            // database.pages[page] = result.map(x => x["_id"]);
+            logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+            let result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
 
             result = result.map(x => {
                 x["@context"] = database.schemaMapping["@context"];
@@ -72,25 +61,23 @@ class MongodbAdapter {
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
         logger.log("info", "loadChildObjectsByUris was called");
-        if (database.client === undefined) {
-            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        if (this.client === undefined) {
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }
 
         try {
-            const db = database.client.db(this.configFile.dbName);
+            const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
 
             let query = this.preparefilters(database, selection, tree, parentName);
             if (query === undefined) {
                 query = {};
             }
+            
             if (query["_id"] === undefined) {
                 query["_id"] = { "$in": sub };
-            } else {
-                // ???? remove rest of ids from sub from graphy ???
-                // apply filter in resolver !
-            }
-
+            } 
+            
             logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
             let result = await collection.find(query).toArray();
 
@@ -110,15 +97,15 @@ class MongodbAdapter {
             logger.error(err);
         }
     }
- 
+
     async pushObjectToBackend(database, input) {
 
-        if (database.client === undefined) {
-            database.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        if (this.client === undefined) {
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }
 
         try {
-            const db = database.client.db(this.configFile.dbName);
+            const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
 
             logger.debug(`Mongo db query:\n${util.inspect(input, false, null, true /* enable colors */)}`);
@@ -130,20 +117,14 @@ class MongodbAdapter {
         }
     }
 
-    preparefilters(database, selection, tree, parentName) {
+    preparefilters(database, selection, tree) {
         // console.log(util.inspect(selection,false,null,true)) 
         let query = {};
         let fieldName = selection.name.value;
         let fieldData = tree[fieldName];
 
         if (fieldData === undefined) {
-            fieldData = tree[parentName].data[fieldName];
-            if (fieldData === undefined) {
-                return {};
-            }
-
-            fieldData = tree[fieldData.name];
-
+            return {};
         }
 
         for (let argument of selection.arguments) {
@@ -163,14 +144,7 @@ class MongodbAdapter {
                             query[objectFilterName]["$in"] = [];
 
                             for (let elem of filterField.value.values) {
-
-                                if (filterField.name.value === "_id") {
-                                    query[objectFilterName]["$in"].push(elem.value);
-                                }
-                                else {
-                                    query[objectFilterName]["$in"].push(elem.value);
-
-                                }
+                                query[objectFilterName]["$in"].push(elem.value);
                             }
                         }
                         else {
@@ -182,7 +156,7 @@ class MongodbAdapter {
                     }
                 }
             }
-        } 
+        }
 
         if (Object.keys(query).length === 0 && query.constructor === Object) {
             return undefined;

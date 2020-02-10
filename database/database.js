@@ -191,50 +191,6 @@ class Database {
         return [...uris];
     }
 
-    // Array of uri
-    isTripleInDB(sub, pred, obj, gra = null) {
-        sub = factory.namedNode(sub);
-        pred = factory.namedNode(pred);
-        if (typeof (obj) !== "object" && obj !== undefined) {
-            obj = factory.namedNode(obj);
-        }
-        gra = factory.namedNode(gra);
-
-
-        let quad = factory.quad(sub, pred, obj, gra);
-        return this.database.has(quad);
-    }
-
-    // Array of Quads
-    getTriplesBySubject(sub) {
-        sub = factory.namedNode(sub);
-
-        const temp = this.database.match(sub, null, null);
-        let data = [];
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            data.push(x.value);
-            x = itr.next();
-        }
-        return data;
-    }
-
-    // Array of Quads
-    getTriplesByObjectUri(uri) {
-        uri = factory.namedNode(uri);
-
-        const temp = this.database.match(null, null, uri);
-        let data = [];
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            data.push(x.value);
-            x = itr.next();
-        }
-        return data;
-    }
-
     // returns single object value - data
     getSingleLiteral(sub, pred) {
         sub = factory.namedNode(sub);
@@ -297,13 +253,12 @@ class Database {
 
     // binding database ----------------------------------------------------------------------------------------------
  
-
     updateInference() {
         databaseUtilities.updateInference(this);
     }
 
     async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
-        await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
+        await databaseUtilities.insertRDFPromise(this.database, rdf);
         this.updateInference();
     }
 

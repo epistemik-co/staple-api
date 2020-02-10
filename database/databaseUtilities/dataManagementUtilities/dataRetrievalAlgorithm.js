@@ -41,7 +41,6 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
     let name = undefined;
     for (let selection of selectionSet["selections"]) {
 
-
         if (selection.kind === "InlineFragment") {
             await searchForDataRecursively(database, selection["selectionSet"], uri, tree, false, parentName);
         }
@@ -52,32 +51,27 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             logger.debug(util.inspect(selection.name, false, null, true));
 
             name = selection.name.value;
-            let newUris = [];
+            let newUris = new Set();
             let type = database.schemaMapping["@context"][name];
 
             for (let id of uri) {
                 let data = [];
-                if (reverse) {
-                    data = await database.getSubjectsValueArray(type, id);
-                }
-                else {
 
-                    data = await database.getObjectsValueArray(id, type);
-                    logger.debug("Asked for ID TYPE");
-                    logger.debug(util.inspect(id, false, null, true));
-                    logger.debug(util.inspect(type, false, null, true));
-                }
-
+                data = await database.getObjectsValueArray(id, type);
+                logger.debug("Asked for ID TYPE");
+                logger.debug(util.inspect(id, false, null, true));
+                logger.debug(util.inspect(type, false, null, true));
+            
                 for (let x of data) {
                     // eslint-disable-next-line no-useless-escape
                     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
                     if (pattern.test(x)) {
-                        newUris.push(x);
+                        newUris.add(x);
                     }
                 }
             }
 
-            newUris = [...new Set(newUris)];
+            newUris = [...newUris];
 
             if (newUris.length > 0) {
                 await database.loadChildObjectsByUris(newUris, selection, tree, parentName);
