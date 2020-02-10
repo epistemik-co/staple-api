@@ -1,5 +1,15 @@
-# staple-api
-Staple API - a structured data API
+# Staple API
 
-# documentation
-https://github.com/epistemik-co/staple-api-docs
+**Staple API** is a simple GraphQL-based API for managing **semantic knowledge graphs** modeled and virtualized as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html). 
+
+# Documentation
+Full documentation is available at [http://staple-api.org](http://staple-api.org).
+
+# Playground
+A live playground is available at: [http://playground.staple-api.org](http://playground.staple-api.org).
+
+# Contact
+
+For open technical issues and inquiries you can create a GitHub issue in this repository. 
+
+?> All questions can also be sent to [staple-api@epistemik.co](staple-api@epistemik.co).
