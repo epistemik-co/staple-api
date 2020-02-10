@@ -1,6 +1,6 @@
 <!-- _coverpage.md -->
 
-![logo](favicon-transparent.png)
+![logo](favicon-transparent.svg)
 
 > A lightweight GraphQL API for easy management of semantic knowledge graphs
 
