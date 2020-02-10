@@ -9,6 +9,7 @@ class BackendSelector {
         this.backend = undefined;
 
         if (configObject === undefined) {
+            logger.warn("You are using in memory database!")
             adapterType = require("../backends/memory/adapter");
             this.backend = new adapterType(schemaMapping);
             return;
