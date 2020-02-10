@@ -6,13 +6,13 @@
 
 :heavy_check_mark: Automatic generation of GraphQL schema from an RDF ontology.
 
-:heavy_check_mark: Automatic generation of resolvers for a set of default queries and mutations.
+:heavy_check_mark: Automatic generation of resolvers for a default set of queries and mutations.
 
-:heavy_check_mark: Addition of JSON-LD context enabling immediate mapping of API responses to JSON-LD objects. 
+:heavy_check_mark: JSON-LD context added to API responses on request. 
 
-:heavy_check_mark: A connector to a MongoDB persistent data storage.
+:heavy_check_mark: A connector to a MongoDB storage.
 
-:heavy_check_mark: An in-memory graph database for tapid testing and prototyping.
+:heavy_check_mark: An in-memory graph database for rapid testing and prototyping.
 
 <br>
 

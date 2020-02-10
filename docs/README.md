@@ -38,7 +38,7 @@ Staple API schemas are generated automatically from RDF ontologies expressed in 
 Currently the ontologies accepted by Staple API must be represented in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/). The following example presents a simple ontology including all supported constructs:
 
 
-```
+```turtle
 @prefix schema: <http://schema.org/> .
 @prefix example: <http://example.com/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -89,7 +89,7 @@ schema:children a rdf:Property ;
 Below you can find further explanations of specific ontology constructs and patterns, based on the example above.
 
 ---
-```
+```turtle
 @prefix schema: <http://schema.org/> .
 @prefix example: <http://example.com/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -99,7 +99,7 @@ Below you can find further explanations of specific ontology constructs and patt
 The definition of URI prefixes used in the ontology.
 
 ---
-```
+```turtle
 schema:Thing a rdfs:Class ;
     rdfs:comment "Anything." .
 ```
@@ -107,7 +107,7 @@ schema:Thing a rdfs:Class ;
 The definition of the top object type `schema:Thing`. Every entity in the domain is either a direct or indirect instance of `schema:Thing`.
 
 ---
-```
+```turtle
 schema:Place a rdfs:Class ;
     rdfs:comment "A place" ;
     rdfs:subClassOf schema:Thing .
@@ -115,15 +115,7 @@ schema:Place a rdfs:Class ;
 The definition of the object type `schema:Place`, which is a subtype of `schema:Thing`. This means that every entity of type `schema:Place` is indirectly an instance of `schema:Thing`. 
 
 ---
-```
-schema:Text a schema:DataType, rdfs:Class ;
-    rdfs:comment "This is text DataType." .
-```
-
-The definition of the data type `schema:Text`. 
-
----
-```
+```turtle
 schema:name a rdf:Property, owl:FunctionalProperty ;
     schema:domainIncludes schema:Thing ;
     schema:rangeIncludes schema:Text ;
@@ -133,17 +125,16 @@ schema:name a rdf:Property, owl:FunctionalProperty ;
 The definition of the property `schema:name`. It is declared to be a functional property, meaning that any entity can have at most one value of that property. The domain of `schema:name` includes `schema:Thing`, which means that any (direct or indirect) instance of that type can have this property. The range includes `schema:Text`, meaning that the values of `schema:name` are of type `schema:Text`. 
 
 ---
-```
+```turtle
 schema:birthPlace a rdf:Property, owl:FunctionalProperty ;
     schema:domainIncludes schema:Person ;
     schema:rangeIncludes schema:Place ;
-    schema:rangeIncludes schema:Text ;
     rdfs:comment "The birthplace of a the person." .
 ```
 The definition of the property `schema:birthPlace`. Only instances of `schema:Person` can have this property, while its values can be either objects of type `schema:Place` or literal values of type `schema:Text`. 
 
 ---
-```
+```turtle
 schema:parent a rdf:Property ;
     schema:domainIncludes schema:Person ;
     schema:rangeIncludes schema:Person ;
@@ -171,7 +162,7 @@ Every object type (e.g., `Person`) is mapped to a GraphQL type of the same name 
 * `_type` - corresponding to JSON-LD's `@type`, holding the types of each instance);
 
 
-```
+```graphql
 type Person {
     _id: ID!
     _type: [String]
@@ -183,7 +174,7 @@ type Person {
 Every data type (e.g., `Text`) is mapped to a GraphQL type of the same name with three special fields: 
 * `_value` - corresponding to JSON-LD's `@value`, holding the literal value of this data item;
 * `_type` - corresponding to JSON-LD's `@type`, holding the data types of this item.
-```
+```graphql
 type Text {
     _value: String!
     _type: [String]
@@ -195,7 +186,7 @@ Every property (e.g., `name`, `parent` or `birthPlace`) is mapped to fields of t
 * the `schema:rangeIncludes` declarations (single type `field: Type` vs. union types `field: Type-1_v_..._v_Type-n`, depending on the number of declared types in the range); 
 * by the `owl:FunctionalProperty` declarations on the properties (single values `field: Type` when declaration is present; multiple values `field: [Type]` when the declaration is missing)
 
-```
+```graphql
 type Person {
     name: Text
     parent: [Person]
@@ -208,15 +199,15 @@ union _Text_v_Place_ = Text | Place
 ---
 Finally, all object types and fields give rise to GraphQL queries, mutations and input objects for mutations, of matching names and structures. 
 
-```
+```graphql
 query Person(page: Int) : [Person]
 ```
 
-```
+```graphql
 muation Person(type: MutationType!, input: InputPerson!) : Boolean
 ```
 
-```
+```graphql
 input InputPerson {
     _id: ID!
     _type: [String]
@@ -228,7 +219,7 @@ input InputPerson {
 
 All type and property URIs used in the ontology and the additional special fields included in the GraphQL schema are automatically mapped to a basic [JSON-LD context](https://json-ld.org/spec/latest/json-ld/#the-context) of the following structure:
 
-```json
+```javascript
 {
     "_id": "@id",
     "_type": "@type",
@@ -253,7 +244,7 @@ The Staple API is intended for managing structured data, i.e., linked data expre
 For instance, the following objects are valid json data samples compatible with the ontology and schema example described in the [ontology and schema](./schema) section:
 
 
-```json
+```javascript
 {
   "_id": "http://example.com/elisabeth",
   "_type": "Person",
@@ -272,7 +263,7 @@ For instance, the following objects are valid json data samples compatible with 
 }
 ```
 
-```json
+```javascript
 {
   "_id": "http://example.com/charles",
   "_type": "Person",
@@ -291,7 +282,7 @@ For instance, the following objects are valid json data samples compatible with 
 }
 ```
 
-```json  
+```javascript  
 {
   "_id": "http://example.com/william",
   "_type": "Person",
@@ -305,7 +296,7 @@ For instance, the following objects are valid json data samples compatible with 
 }
 ```
 
-```json
+```javascript
 {
   "_id": "http://example.com/uk",
   "_type": "Place",
@@ -318,7 +309,7 @@ For instance, the following objects are valid json data samples compatible with 
 
 Every valid Staple API data object is a valid JSON-LD when extended with the context served by the API. For instance, the objects listed above should be interpreted as JSON-LD under the context:
 
-```json
+```javascript
 context = {
     "_id": "@id",
     "_value": "@value",
@@ -338,7 +329,7 @@ Thanks to the fixed JSON-LD context assumed and exposed by the API, each data sa
 
 For instance, the following are some self-contaiend semantic representations of the JSON data object:
 
-```json
+```javascript
 {
   "_id": "http://example.com/elisabeth",
   "_type": "Person",
@@ -360,7 +351,7 @@ For instance, the following are some self-contaiend semantic representations of 
 ---
 Flatenned JSON-LD:
 
-```json
+```javascript
 {
   "@context": context,
   "_id": "http://example.com/elisabeth",
@@ -383,7 +374,7 @@ Flatenned JSON-LD:
 ---
 Expanded JSON-LD:
 
-```json
+```javascript
 {
   "@context": context,
   "_id": "http://example.com/elisabeth",
@@ -416,7 +407,7 @@ N-Triples (RDF):
 ---
 Turtle (RDF):
 
-```
+```turtle
 @prefix schema: <http://schema.org/> .
 @prefix example: <http://example.com/> .
 
@@ -429,7 +420,7 @@ exmple:elisabeth a schema:Person ;
 
 Nested JSON objects are mapped to JSON-LD and interpretted as semantic graphs in an analogical fashion, for instance:
 
-```json
+```javascript
 {
   "@context": context,
   "_id": "http://example.com/elisabeth",
@@ -463,7 +454,7 @@ Nested JSON objects are mapped to JSON-LD and interpretted as semantic graphs in
 translates into the following Turtle (RDF) data:
 
 
-```
+```turtle
 @prefix schema: <http://schema.org/> .
 @prefix example: <http://example.com/> .
 
@@ -493,13 +484,13 @@ By default the Staple API exposes three types of queries:
 
 Each object type in the schema has a unique corresponding query of the same name and a fixed structure. For instance, instances of the type `Person` can be requested with the query:
 
-```
+```graphql
 query Person(page: Int) : [Person]
 ```
 
 These are standard GraphQL queries deterimned be the structure of the schema. For instance:
 
-```javascript
+```graphql
 
 {
   Person {
@@ -528,7 +519,7 @@ These are standard GraphQL queries deterimned be the structure of the schema. Fo
 
 The following query could return the response:
 
-```
+```javascript
 {
   "data": {
     "Person": [
@@ -603,7 +594,7 @@ This corresponds directly to the associated JSON-LD context:
 ```
 
 
-```
+```graphql
 {
   _CONTEXT {
     _id
@@ -615,7 +606,7 @@ This corresponds directly to the associated JSON-LD context:
 }
 ```
 
-```
+```javascript
 {
   "data": {
     "_CONTEXT": {
@@ -651,7 +642,7 @@ To find all (indirect / inferred) instances of a certain type you can use the `i
 ---
 Without inference:
 
-```
+```graphql
 {
   Thing {
     _id
@@ -659,7 +650,7 @@ Without inference:
 }
 ```
 
-```
+```graphql
 {
   "data": {
     "Thing": [
@@ -672,7 +663,7 @@ Without inference:
 ---
 With inference:
 
-```
+```graphql
 {
   Thing(inferred:true) {
     _id
@@ -680,7 +671,7 @@ With inference:
 }
 ```
 
-```
+```javascript
 {
   "data": {
     "Thing": [
