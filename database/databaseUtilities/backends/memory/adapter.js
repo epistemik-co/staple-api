@@ -5,7 +5,7 @@ const factory = require("@graphy/core.data.factory");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 const databaseUtilities = require("./Utilities");
-const jsonld = require("jsonld");
+const jsonld = require("jsonld"); 
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class MemoryDatabase {
@@ -34,12 +34,7 @@ class MemoryDatabase {
 
         // all ids
         let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-        // Add to graphy
-        console.log(ids)
-        console.log(ids)
-        console.log(ids)
-        console.log(ids)
-        console.log(ids)
+        // Add to graphy 
         for (let sub of ids) {
             sub = factory.namedNode(sub);
 
@@ -47,7 +42,6 @@ class MemoryDatabase {
             var itr = temp.quads();
             var x = itr.next();
             while (!x.done) {
-                console.log(x.value)
                 database.database.add(x.value);
                 x = itr.next();
             }
@@ -155,18 +149,18 @@ class MemoryDatabase {
             x = itr.next();
         }
 
+
         return data;
     }
 
     async insertRDF(rdf, tryToFix = false, uuid = undefined) {
-
         await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
-        // this.updateInference();
+        databaseUtilities.updateInference(this);
     }
 
     async removeRDF(rdf, ID) {
         await databaseUtilities.removeRDFPromise(this.database, ID, rdf);
-        // this.updateInference();
+        databaseUtilities.updateInference(this);
     }
 
     // returns all quads
