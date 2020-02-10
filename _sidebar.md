@@ -1,5 +1,5 @@
 <!-- docs/_sidebar.md -->
 
-* [Home](home/)
+* [Overview](home/)
 * [Getting started](tutorial/)
 * [Documentation](docs/)

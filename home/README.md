@@ -1,15 +1,18 @@
-## Overview
+## Staple API
 
-**Staple API** is a simple GraphQL-based API for managing **semantic knowledge graphs**. Such graphs are expressed and modeled as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html)). 
+ **Staple API** is a simple GraphQL-based API for managing **semantic knowledge graphs**, which are expressed and modeled as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html). 
 
-!> **Note**: *This project is at very early stages of development*
+## Key features
 
-Current features include:
+:heavy_check_mark: Automatic generation of GraphQL schema from an RDF ontology.
 
-- [x] Automatic generation of GraphQL schema from an RDF ontology.
-- [x] Automatic generation of resolvers for a set of default queries and mutations.
-- [x] Addition of JSON-LD context enabling immediate mapping of API responses to JSON-LD objects. 
-- [x] A default connector to a MongoDB backend for storing data.
+:heavy_check_mark: Automatic generation of resolvers for a set of default queries and mutations.
+
+:heavy_check_mark: Addition of JSON-LD context enabling immediate mapping of API responses to JSON-LD objects. 
+
+:heavy_check_mark: A connector to a MongoDB persistent data storage.
+
+:heavy_check_mark: An in-memory graph database for tapid testing and prototyping.
 
 <br>
 
@@ -18,18 +21,23 @@ Current features include:
 </p>
 
 
+
+
+!> **Note**: *This project is at very early stages of development*
+
+
 ## Playground
 
-The live playground is available at: [http://playground.staple-api.org](http://playground.staple-api.org).
+?> The live playground is available at: [http://playground.staple-api.org](http://playground.staple-api.org).
 
 
 ## GitHub
 
-The GitHub repository is available at: [https://github.com/epistemik-co/staple-api](https://github.com/epistemik-co/staple-api).
+?> The GitHub repository is available at: [https://github.com/epistemik-co/staple-api](https://github.com/epistemik-co/staple-api).
 
 ## License
 
-This software is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
+?> This software is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
 
 ## Technologies used
 
@@ -42,4 +50,6 @@ This software is available under the [MIT license](https://github.com/epistemik-
 
 ## Contact
 
-For open technical issues and inquiries feel free to create a GitHub issue in this repository. All questions can also be sent to [staple-api@epistemik.co](staple-api@epistemik.co).
+For open technical issues and inquiries you can create a GitHub issue in this repository. 
+
+?> All questions can also be sent to [staple-api@epistemik.co](staple-api@epistemik.co).
