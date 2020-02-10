@@ -37,58 +37,10 @@ class MemoryDatabase {
         let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
 
         // filter
-        //  id filter
-        logger.debug("START FILTERS");
         if (fieldData) {
-            for (let argument of selection.arguments) {
-                if (argument.name.value === "filter") {
-                    for (let filterField of argument.value.fields) {
-                        logger.debug("OBJECT");
-                        logger.debug(filterField);
-                        logger.debug("\n\n");
-                        if (fieldData.data[filterField.name.value] !== undefined) {
-                            logger.debug("ADD TO THE FILTER QUERY");
-                            logger.debug(fieldData.data[filterField.name.value]);
-                            let uri = fieldData.data[filterField.name.value].uri;
-                            let value = filterField.value;
-
-                            if (value.kind === "ListValue") {
-                                value = value.values.map(x => x.value.toString());
-                            }
-                            else {
-                                value = [value.value.toString()];
-                            }
-
-                            if (uri === "@id") {
-                                logger.debug(value);
-                                ids = ids.filter(x => value.includes(x));
-                            }
-                            else {
-                                // value or child id?
-                                logger.debug(value);
-                                logger.debug(uri);
-                                ids = ids.filter(x => {
-                                    let propValue = this.getSingleLiteral(x, uri);
-                                    logger.debug(propValue);
-                                    if (value.includes(propValue.value)) {
-                                        return true;
-                                    }
-                                    return false;
-                                });
-
-                            }
-                        }
-                        else {
-                            console.log("SKIP");
-                        }
-                    }
-                }
-            }
+            this.preparefilters(ids, fieldData, selection);
         }
-        else {
-            logger.warn("Could not find object data for filters");
-        }
-
+        
         // Add to graphy 
         for (let sub of ids) {
             sub = factory.namedNode(sub);
@@ -104,6 +56,54 @@ class MemoryDatabase {
         // console.log(util.inspect(selection, false, null, true));
 
         return;
+    }
+
+    preparefilters(ids, fieldData, selection) {
+        for (let argument of selection.arguments) {
+            if (argument.name.value === "filter") {
+                for (let filterField of argument.value.fields) {
+                    logger.debug("OBJECT");
+                    logger.debug(filterField);
+                    logger.debug("\n\n");
+                    if (fieldData.data[filterField.name.value] !== undefined) {
+                        logger.debug("ADD TO THE FILTER QUERY");
+                        logger.debug(fieldData.data[filterField.name.value]);
+                        let uri = fieldData.data[filterField.name.value].uri;
+                        let value = filterField.value;
+
+                        if (value.kind === "ListValue") {
+                            value = value.values.map(x => x.value.toString());
+                        }
+                        else {
+                            value = [value.value.toString()];
+                        }
+
+                        if (uri === "@id") {
+                            logger.debug(value);
+                            ids = ids.filter(x => value.includes(x));
+                        }
+                        else {
+                            // value or child id?
+                            logger.debug(value);
+                            logger.debug(uri);
+                            ids = ids.filter(x => {
+                                let propValue = this.getSingleLiteral(x, uri);
+                                logger.debug(propValue);
+                                if (value.includes(propValue.value)) {
+                                    return true;
+                                }
+                                return false;
+                            });
+
+                        }
+                    }
+                    else {
+                        console.log("SKIP");
+                    }
+                }
+            }
+        }
+
     }
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
