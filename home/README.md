@@ -11,8 +11,10 @@ Current features include:
 - [x] Addition of JSON-LD context enabling immediate mapping of API responses to JSON-LD objects. 
 - [x] A default connector to a MongoDB backend for storing data.
 
+<br>
+
 <p align="center">
-  <img width="700" src="staple-api-architecture.png">
+  <img src="staple-api-architecture.png">
 </p>
 
 
