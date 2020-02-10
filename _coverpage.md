@@ -5,7 +5,7 @@
 <!-- # Staple API <small>0.1</small> -->
 
 <!-- > Semantic knowledge graph app in 15 min -->
-> This site is under construction!!
+> This site is under construction!
 
 - GraphQL-API for structured data
 
