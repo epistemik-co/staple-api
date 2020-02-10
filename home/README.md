@@ -1,6 +1,10 @@
-## Staple API
+## What is it?
 
- **Staple API** is a simple GraphQL-based API for managing **semantic knowledge graphs** modeled and virtualized as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html). 
+**Staple API** is a lightweight GraphQL-based API for managing **semantic knowledge graphs**, modeled and virtualized as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html). 
+
+## What is it good for?
+
+It is intended as a simple, yet flexible, **data abstraction middleware**, which you can set up within minutes to power your web app with the ability of storing and retrieving its data resources as parts of a connected, semantic knowledge graph, via a standard GraphQL interface. 
 
 ## Key features
 
@@ -8,16 +12,16 @@
 
 :heavy_check_mark: Automatic generation of resolvers for a default set of queries and mutations.
 
-:heavy_check_mark: JSON-LD context added to API responses on request. 
+:heavy_check_mark: JSON-LD context included to support immediate JSON-to/from-graph conversions.
 
-:heavy_check_mark: A connector to a MongoDB storage.
+:heavy_check_mark: A connector to a MongoDB storage (other backends coming soon :exclamation:).
 
 :heavy_check_mark: An in-memory graph database for rapid testing and prototyping.
 
 <br>
 
 <p align="center">
-  <img src="staple-api-architecture.png">
+  <img src="staple-api-architecture2.png">
 </p>
 
 
