@@ -1,5 +1,4 @@
 const MongoClient = require("mongodb").MongoClient;
-
 var appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 
@@ -30,7 +29,6 @@ class MongodbAdapter {
             }
 
             if (_type !== undefined) {
-
                 if (inferred) {
                     query["_inferred"] = _type;
                 }
@@ -73,7 +71,7 @@ class MongodbAdapter {
             if (query === undefined) {
                 query = {};
             }
-            
+
             if (query["_id"] === undefined) {
                 query["_id"] = { "$in": sub };
             } 
@@ -135,8 +133,6 @@ class MongodbAdapter {
                     // console.log("\n\n");
                     if (fieldData.data[filterField.name.value] !== undefined) {
                         // console.log("ADD TO THE FILTER QUERY");
-
-
                         if (filterField.value.kind === "ListValue") {
                             let objectFilterName = filterField.name.value;
 

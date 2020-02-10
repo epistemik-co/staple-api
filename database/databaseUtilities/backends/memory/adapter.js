@@ -26,7 +26,6 @@ class MemoryDatabase {
         // search selectionSet for core objects load them
         // console.log(selectionSet);
         let fieldName = selection.name.value;
-        // let fieldData = tree[fieldName];
 
         if (fieldName === undefined) {
             logger.error("Could not find type of object");
@@ -35,63 +34,12 @@ class MemoryDatabase {
 
         // all ids
         let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-
-        // id filter
-        // if (fieldData) {
-        //     for (let argument of selection.arguments) {
-        //         if (argument.name.value === "filter") {
-        //             for (let filterField of argument.value.fields) {
-        //                 // console.log("OBJECT");
-        //                 // console.log(filterField);
-        //                 // console.log("\n\n");
-        //                 if (fieldData.data[filterField.name.value] !== undefined) {
-        //                     // console.log("ADD TO THE FILTER QUERY");
-
-        //                     if (filterField.value.kind === "ListValue") {
-        //                         let objectFilterName = filterField.name.value;
-
-        //                         // if (filterField.name.value !== "_id") {
-        //                         //     objectFilterName = objectFilterName + "._value";
-        //                         // }
-
-        //                         // query[objectFilterName] = {};
-        //                         // query[objectFilterName]["$in"] = [];
-
-        //                         for (let elem of filterField.value.values) {
-
-        //                             if (filterField.name.value === "_id") {
-        //                                 let allowedIds = filterField.value.values.map(x => x.value);
-        //                                 ids = ids.filter(x => allowedIds.includes(x));
-        //                             }
-        //                             else {
-        //                                 // query[objectFilterName]["$in"].push(elem.value);
-
-        //                             }
-        //                         }
-        //                     }
-        //                     else {
-        //                         if (filterField.name.value === "_id") {
-        //                             let allowedId = filterField.value.value;
-        //                             console.log(allowedId);
-        //                             ids = ids.filter(x => allowedId === x);
-        //                         }
-        //                         else {
-        //                             // query[filterField.name.value] = filterField.value.value;
-        //                         }
-        //                     }
-        //                 }
-        //                 else {
-        //                     console.log("SKIP");
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // else {
-        //     logger.warn("Could not find object data for filters");
-        // }
-
         // Add to graphy
+        console.log(ids)
+        console.log(ids)
+        console.log(ids)
+        console.log(ids)
+        console.log(ids)
         for (let sub of ids) {
             sub = factory.namedNode(sub);
 
@@ -99,6 +47,7 @@ class MemoryDatabase {
             var itr = temp.quads();
             var x = itr.next();
             while (!x.done) {
+                console.log(x.value)
                 database.database.add(x.value);
                 x = itr.next();
             }
@@ -149,22 +98,10 @@ class MemoryDatabase {
         return;
     }
 
-    async pushObjectToBackend(database, sub, flatJson) {
-        // search selectionSet for core objects load them
-        let data = flatJson.filter(x => sub.includes(x["_id"]));
-        // data = await data.map(x => {
-        //     x["@context"] = ;
-        //     return x;
-        // });
-        for(let obj of data){
-
-            obj["@context"] = database.schemaMapping["@context"];
-            const rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
-            await this.insertRDF(rdf);
-        }
-
-
-
+    async pushObjectToBackend(database, input) {
+        input["@context"] = database.schemaMapping["@context"];
+        const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
+        await this.insertRDF(rdf);
 
         console.log("\n\n\n");
         console.log("DATABASE SHOULD CONTAIN DATA NOW");
@@ -177,172 +114,6 @@ class MemoryDatabase {
     //     return undefined;
     // }
 
-    loadFakeData() {
-        let data = [
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://schema.org/employee" },
-                object: { value: "http://sony.com/AkioMorita" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://schema.org/employee" },
-                object: { value: "http://sony.com/KenichiroYoshida" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://schema.org/hasShareholder" },
-                object: { value: "http://sony.com/AkioMorita" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://schema.org/hasShareholder" },
-                object: { value: "http://sony.com/MasaruIbuka" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://schema.org/legalName" },
-                object: { value: "Sony" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://schema.org/noOfEmployees" },
-                object: { value: "2" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Organization" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://staple-api.org/datamodel/type" },
-                object: { value: "http://schema.org/Organization" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com" },
-                predicate: { value: "http://staple-api.org/datamodel/type" },
-                object: { value: "http://schema.org/Thing" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita" },
-                predicate: { value: "http://schema.org/affiliation" },
-                object: { value: "http://sony.com" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita" },
-                predicate: { value: "http://schema.org/name" },
-                object: { value: "Akio Morita" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita" },
-                predicate: { value: "http://schema.org/shareholderOf" },
-                object: { value: "http://sony.com" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-
-            {
-                subject: { value: "http://sony.com/AkioMorita1" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-
-            {
-                subject: { value: "http://sony.com/AkioMorita2" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-
-            {
-                subject: { value: "http://sony.com/AkioMorita3" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-
-            {
-                subject: { value: "http://sony.com/AkioMorita4" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-
-            {
-                subject: { value: "http://sony.com/AkioMorita5" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita" },
-                predicate: { value: "http://staple-api.org/datamodel/type" },
-                object: { value: "http://schema.org/Thing" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/AkioMorita" },
-                predicate: { value: "http://staple-api.org/datamodel/type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/KenichiroYoshida" },
-                predicate: { value: "http://schema.org/affiliation" },
-                object: { value: "http://sony.com" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/KenichiroYoshida" },
-                predicate: { value: "http://schema.org/name" },
-                object: { value: "Kenichiro Yoshida" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/KenichiroYoshida" },
-                predicate: { value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/KenichiroYoshida" },
-                predicate: { value: "http://staple-api.org/datamodel/type" },
-                object: { value: "http://schema.org/Thing" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/KenichiroYoshida" },
-                predicate: { value: "http://staple-api.org/datamodel/type" },
-                object: { value: "http://schema.org/Person" },
-                graph: { value: "null" }
-            },
-            {
-                subject: { value: "http://sony.com/MasaruIbuka" },
-                predicate: { value: "http://schema.org/shareholderOf" },
-                object: { value: "http://sony.com" },
-                graph: { value: "null" }
-            }];
-
-        data.forEach(quad => this.create(quad.subject.value, quad.predicate.value, quad.object.value));
-    }
 
     create(sub, pred, obj, gra = null) {
         sub = factory.namedNode(sub);

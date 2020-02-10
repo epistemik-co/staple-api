@@ -39,7 +39,10 @@ const dataResolver = (database, name, isItList) => {
         }
         else {
             let value = database.getSingleLiteral((parent), (name));
-            if(value.datatype.value === "http://www.w3.org/2001/XMLSchema#boolean"){
+            if(value === null){
+                return value;
+            }
+            if(value.datatype && value.datatype.value === "http://www.w3.org/2001/XMLSchema#boolean"){
                 let isTrueSet = (value.value == "true");
                 return isTrueSet;
             }
