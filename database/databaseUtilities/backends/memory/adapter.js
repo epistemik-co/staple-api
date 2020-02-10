@@ -38,29 +38,53 @@ class MemoryDatabase {
 
         // filter
         //  id filter
-        console.log("START FILTERS");
+        logger.debug("START FILTERS");
         if (fieldData) {
             for (let argument of selection.arguments) {
                 if (argument.name.value === "filter") {
                     for (let filterField of argument.value.fields) {
-                        console.log("OBJECT");
-                        console.log(filterField);
-                        console.log("\n\n");
+                        logger.debug("OBJECT");
+                        logger.debug(filterField);
+                        logger.debug("\n\n");
                         if (fieldData.data[filterField.name.value] !== undefined) {
-                            console.log("ADD TO THE FILTER QUERY");
-                            console.log(fieldData.data[filterField.name.value]);
+                            logger.debug("ADD TO THE FILTER QUERY");
+                            logger.debug(fieldData.data[filterField.name.value]);
                             let uri = fieldData.data[filterField.name.value].uri;
                             let value = filterField.value;
+
+                            if(value.kind === "ListValue"){
+                                value = value.values.map(x => x.value.toString());
+                            }
+                            else{
+                                value = [value.value.toString()];
+                            }
+
                             if(uri === "@id"){
-                                console.log(value);
-                                if(value.kind === "ListValue"){
-                                    value = value.values.map(x => x.value);
+                                logger.debug(value);
+                                ids = ids.filter( x => value.includes(x));
+                            }
+                            else{
+                                // value or child id?
+                                let fieldInfo = this.schemaMapping["@revContext"][uri];
+                                let propType = this.schemaMapping["@context"][fieldData.data[fieldInfo].name];
+                                if(propType === undefined){
+                                    // data
+                                    console.log("DATA");
+                                    console.log(value)
+                                    console.log(uri)
+                                    ids = ids.filter( x => {
+                                        let propValue = this.getSingleLiteral(x, uri);
+                                        console.log(propValue);
+                                        if(value.includes( propValue.value )){
+                                            return true;
+                                        }
+                                        return false;
+                                    });
                                 }
                                 else{
-                                    value = [value.value];
+                                    // class
+                                    console.log("CLASS");
                                 }
-                                console.log(value);
-                                ids = ids.filter( x => value.includes(x));
                             }
                         }
                         else {
@@ -192,6 +216,22 @@ class MemoryDatabase {
 
         return data;
     }
+
+    getSingleLiteral(sub, pred) {
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+
+        const temp = this.database.match(sub, pred, null);
+        var itr = temp.quads();
+        var x = itr.next();
+
+        if (x.value === undefined) {
+            return null;
+        }
+
+        return x.value.object;
+    }
+
 
     async insertRDF(rdf, tryToFix = false, uuid = undefined) {
         await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
