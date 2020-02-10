@@ -38,7 +38,7 @@ class MemoryDatabase {
 
         // filter
         if (fieldData) {
-            this.preparefilters(ids, fieldData, selection);
+            ids = this.preparefilters(ids, fieldData, selection);
         }
         
         // Add to graphy 
@@ -59,6 +59,7 @@ class MemoryDatabase {
     }
 
     preparefilters(ids, fieldData, selection) {
+        let newIds = ids;
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
                 for (let filterField of argument.value.fields) {
@@ -80,13 +81,13 @@ class MemoryDatabase {
 
                         if (uri === "@id") {
                             logger.debug(value);
-                            ids = ids.filter(x => value.includes(x));
+                            newIds = newIds.filter(x => value.includes(x));
                         }
                         else {
                             // value or child id?
                             logger.debug(value);
                             logger.debug(uri);
-                            ids = ids.filter(x => {
+                            newIds = newIds.filter(x => {
                                 let propValue = this.getSingleLiteral(x, uri);
                                 logger.debug(propValue);
                                 if (value.includes(propValue.value)) {
@@ -103,7 +104,7 @@ class MemoryDatabase {
                 }
             }
         }
-
+        return newIds;
     }
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
