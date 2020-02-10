@@ -1,6 +1,6 @@
-<!-- _coverpage.md -->
-
-![logo](favicon-transparent.svg)
+<p align="center">
+  <img src="favicon-transparent.svg" style="max-width:100%">
+</p>
 
 > A lightweight GraphQL API for easy management of semantic knowledge graphs
 
