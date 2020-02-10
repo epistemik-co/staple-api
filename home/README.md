@@ -1,6 +1,6 @@
 ## Staple API
 
- **Staple API** is a simple GraphQL-based API for managing **semantic knowledge graphs**, which are expressed and modeled as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html). 
+ **Staple API** is a simple GraphQL-based API for managing **semantic knowledge graphs** modeled and virtualized as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html). 
 
 ## Key features
 
