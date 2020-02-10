@@ -5,7 +5,7 @@ const factory = require("@graphy/core.data.factory");
 const appRoot = require("app-root-path");
 const logger = require(`${appRoot}/config/winston`);
 const databaseUtilities = require("./Utilities");
-const jsonld = require("jsonld"); 
+const jsonld = require("jsonld");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
 class MemoryDatabase {
@@ -52,39 +52,30 @@ class MemoryDatabase {
                             let uri = fieldData.data[filterField.name.value].uri;
                             let value = filterField.value;
 
-                            if(value.kind === "ListValue"){
+                            if (value.kind === "ListValue") {
                                 value = value.values.map(x => x.value.toString());
                             }
-                            else{
+                            else {
                                 value = [value.value.toString()];
                             }
 
-                            if(uri === "@id"){
+                            if (uri === "@id") {
                                 logger.debug(value);
-                                ids = ids.filter( x => value.includes(x));
+                                ids = ids.filter(x => value.includes(x));
                             }
-                            else{
+                            else {
                                 // value or child id?
-                                let fieldInfo = this.schemaMapping["@revContext"][uri];
-                                let propType = this.schemaMapping["@context"][fieldData.data[fieldInfo].name];
-                                if(propType === undefined){
-                                    // data
-                                    console.log("DATA");
-                                    console.log(value)
-                                    console.log(uri)
-                                    ids = ids.filter( x => {
-                                        let propValue = this.getSingleLiteral(x, uri);
-                                        console.log(propValue);
-                                        if(value.includes( propValue.value )){
-                                            return true;
-                                        }
-                                        return false;
-                                    });
-                                }
-                                else{
-                                    // class
-                                    console.log("CLASS");
-                                }
+                                logger.debug(value);
+                                logger.debug(uri);
+                                ids = ids.filter(x => {
+                                    let propValue = this.getSingleLiteral(x, uri);
+                                    logger.debug(propValue);
+                                    if (value.includes(propValue.value)) {
+                                        return true;
+                                    }
+                                    return false;
+                                });
+
                             }
                         }
                         else {
