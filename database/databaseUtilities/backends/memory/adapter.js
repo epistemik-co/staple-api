@@ -26,6 +26,7 @@ class MemoryDatabase {
         // search selectionSet for core objects load them
         // console.log(selectionSet);
         let fieldName = selection.name.value;
+        let fieldData = tree[fieldName];
 
         if (fieldName === undefined) {
             logger.error("Could not find type of object");
@@ -34,6 +35,45 @@ class MemoryDatabase {
 
         // all ids
         let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
+
+        // filter
+        //  id filter
+        console.log("START FILTERS");
+        if (fieldData) {
+            for (let argument of selection.arguments) {
+                if (argument.name.value === "filter") {
+                    for (let filterField of argument.value.fields) {
+                        console.log("OBJECT");
+                        console.log(filterField);
+                        console.log("\n\n");
+                        if (fieldData.data[filterField.name.value] !== undefined) {
+                            console.log("ADD TO THE FILTER QUERY");
+                            console.log(fieldData.data[filterField.name.value]);
+                            let uri = fieldData.data[filterField.name.value].uri;
+                            let value = filterField.value;
+                            if(uri === "@id"){
+                                console.log(value);
+                                if(value.kind === "ListValue"){
+                                    value = value.values.map(x => x.value);
+                                }
+                                else{
+                                    value = [value.value];
+                                }
+                                console.log(value);
+                                ids = ids.filter( x => value.includes(x));
+                            }
+                        }
+                        else {
+                            console.log("SKIP");
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            logger.warn("Could not find object data for filters");
+        }
+
         // Add to graphy 
         for (let sub of ids) {
             sub = factory.namedNode(sub);
@@ -97,10 +137,10 @@ class MemoryDatabase {
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         await this.insertRDF(rdf);
 
-        console.log("\n\n\n");
-        console.log("DATABASE SHOULD CONTAIN DATA NOW");
-        console.log(this.getAllQuads());
-        console.log("\n\n\n");
+        // console.log("\n\n\n");
+        // console.log("DATABASE SHOULD CONTAIN DATA NOW");
+        // console.log(this.getAllQuads());
+        // console.log("\n\n\n");
         return;
     }
     // // filters need to be implemented
