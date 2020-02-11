@@ -21,7 +21,7 @@ It is intended as a simple, yet flexible, **data abstraction middleware**, which
 <br>
 
 <p align="center">
-  <img src="staple-api-architecture2.png">
+  <img src="staple-api-architecture.png">
 </p>
 
 
