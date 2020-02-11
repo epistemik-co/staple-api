@@ -257,7 +257,7 @@ class Database {
         databaseUtilities.updateInference(this);
     }
 
-    async insertRDF(rdf, ID, tryToFix = false, uuid = undefined) {
+    async insertRDF(rdf) {
         await databaseUtilities.insertRDFPromise(this.database, rdf);
         this.updateInference();
     }

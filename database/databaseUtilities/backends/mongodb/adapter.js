@@ -14,7 +14,6 @@ class MongodbAdapter {
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
 
         let query = this.preparefilters(database, selectionSet, tree);
-        console.log(query)
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }

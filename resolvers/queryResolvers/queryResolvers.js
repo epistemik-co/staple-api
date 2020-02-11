@@ -25,10 +25,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             //OBJECT
             let newResolver = tree[object].name;
             queryResolverBody["Objects"][newResolver] = handleClassTypeResolver(tree, object, database, schemaMapping);
-        }  
-        else if (object === "_CONTEXT") {
-            queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"]; };
-        } 
+        }   
         else if (tree[object].type === "EnumType") {
             continue;
         } 
@@ -36,6 +33,10 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             logger.warn(`UNHANDLED TYPE: ${object}`);
         }
     }
+
+    queryResolverBody["Query"]["_context"] = () => { return JSON.stringify( schemaMapping["@niceContext"] ); };
+
+    
     return queryResolverBody;
 };
  

@@ -56,7 +56,7 @@ function updateInference(database) {
 function insertRDFPromise(tree, rdf) {
     return new Promise((resolve) => {
         let data = (y_quad) => { 
-                if(y_quad.object.datatype && y_quad.object.datatype.value === 'http://www.w3.org/2001/XMLSchema#double' ){
+                if(y_quad.object.datatype && y_quad.object.datatype.value === "http://www.w3.org/2001/XMLSchema#double" ){
                     y_quad.object.value = parseFloat(y_quad.object.value).toString();
                 }
 
