@@ -74,6 +74,13 @@ class Database {
         } 
     }
 
+    async removeObject(objectID){
+        logger.info("removeObject was called"); 
+        if (this.adapter) {
+           return await this.adapter.removeObject(this, objectID);
+        } 
+    }
+
     // Memory database operations ---------------------------------------------------------------------------------------------------------
     create(sub, pred, obj, gra = null) {
         sub = factory.namedNode(sub);

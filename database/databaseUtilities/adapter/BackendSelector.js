@@ -59,6 +59,14 @@ class BackendSelector {
             await this.backend.pushObjectToBackend(database, input);
         }
     }
+
+    async removeObject(database, objectID){
+        logger.info("removeObject was called"); 
+        if (this.backend) {
+            return await this.backend.removeObject(this, objectID);
+        } 
+    }
+ 
 }
 
 module.exports = BackendSelector;

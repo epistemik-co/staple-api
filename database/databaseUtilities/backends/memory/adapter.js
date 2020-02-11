@@ -161,6 +161,10 @@ class MemoryDatabase {
         // console.log("\n\n\n");
         return;
     }
+
+    async removeObject(database, objectID) {
+        return this.deleteID(objectID);
+    }
     // // filters need to be implemented
     // preparefilters(database, selection, tree, parentName) {
     //     return undefined;
