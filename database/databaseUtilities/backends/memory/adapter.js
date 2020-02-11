@@ -227,8 +227,8 @@ class MemoryDatabase {
     }
 
 
-    async insertRDF(rdf, tryToFix = false, uuid = undefined) {
-        await databaseUtilities.insertRDFPromise(this.database, rdf, this.schemaMapping, tryToFix, uuid);
+    async insertRDF(rdf) {
+        await databaseUtilities.insertRDFPromise(this.database, rdf);
         databaseUtilities.updateInference(this);
     }
 
