@@ -59,18 +59,13 @@ function insertRDFPromise(tree, rdf, schemaMapping, tryToFix = false, uuid) {
                 if (tryToFix) {
                     y_quad = quadFix(y_quad, uuid);
                 }
-                y_quad.graph = factory.namedNode(null);
-
-                // add inverses  
-                let inverse = schemaMapping["@graphMap"][y_quad.predicate.value];
-                if (inverse !== undefined) {
-                    if (inverse["http://schema.org/inverseOf"] !== undefined) {
-                        inverse["http://schema.org/inverseOf"].forEach(inversePredicate => {
-                            let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
-                            tree.add(quad);
-                        });
-                    }
+                // double to string
+                if(y_quad.object.datatype && y_quad.object.datatype.value === 'http://www.w3.org/2001/XMLSchema#double' ){
+                    y_quad.object.value = parseFloat(y_quad.object.value).toString();
                 }
+
+                y_quad.graph = factory.namedNode(null);
+                
 
                 tree.add(y_quad);
             

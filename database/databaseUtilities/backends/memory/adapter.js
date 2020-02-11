@@ -20,6 +20,7 @@ class MemoryDatabase {
 
         // this.loadFakeData();
         logger.log("info", "Database is ready to use");
+
     }
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selection = undefined, inferred = false, tree = undefined) {
@@ -86,7 +87,7 @@ class MemoryDatabase {
                         else {
                             // value or child id?
                             logger.debug(value);
-                            logger.debug(uri);
+                            logger.debug(uri);  
                             newIds = newIds.filter(x => {
                                 let propValue = this.getSingleLiteral(x, uri);
                                 logger.debug(propValue);
@@ -95,7 +96,6 @@ class MemoryDatabase {
                                 }
                                 return false;
                             });
-
                         }
                     }
                     else {
