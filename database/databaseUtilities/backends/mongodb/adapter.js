@@ -14,6 +14,7 @@ class MongodbAdapter {
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
 
         let query = this.preparefilters(database, selectionSet, tree);
+        console.log(query)
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
         }
@@ -46,7 +47,6 @@ class MongodbAdapter {
             });
 
             const rdf = await jsonld.toRDF(result, { format: "application/n-quads" });
-
             logger.debug("Graphy database rdf insert start");
             await database.insertRDF(rdf);
             logger.debug("Graphy database rdf insert end");
@@ -74,8 +74,8 @@ class MongodbAdapter {
 
             if (query["_id"] === undefined) {
                 query["_id"] = { "$in": sub };
-            } 
-            
+            }
+
             logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
             let result = await collection.find(query).toArray();
 
@@ -140,15 +140,31 @@ class MongodbAdapter {
                             query[objectFilterName]["$in"] = [];
 
                             for (let elem of filterField.value.values) {
-                                query[objectFilterName]["$in"].push(elem.value);
+                                if (elem.kind === "IntValue") {
+                                    query[objectFilterName]["$in"].push( parseInt(elem.value) );
+                                }
+                                else if (elem.kind === "FloatValue") {
+                                    query[objectFilterName]["$in"].push( parseFloat(elem.value) );
+                                }
+                                else {
+                                    query[objectFilterName]["$in"].push( elem.value );
+                                }
                             }
                         }
                         else {
-                            query[filterField.name.value] = filterField.value.value;
+                            if (filterField.value.kind === "IntValue") {
+                                query[filterField.name.value] = parseInt(filterField.value.value);
+                            }
+                            else if (filterField.value.kind === "FloatValue") {
+                                query[filterField.name.value] = parseFloat(filterField.value.value);
+                            }
+                            else {
+                                query[filterField.name.value] = filterField.value.value;
+                            }
                         }
                     }
                     else {
-                        console.log("SKIP");
+                        logger.debug("SKIP");
                     }
                 }
             }
