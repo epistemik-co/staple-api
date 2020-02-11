@@ -40,7 +40,7 @@ class MemoryDatabase {
         if (fieldData) {
             ids = this.preparefilters(ids, fieldData, selection);
         }
-        
+
         // Add to graphy 
         for (let sub of ids) {
             sub = factory.namedNode(sub);
@@ -149,6 +149,8 @@ class MemoryDatabase {
     }
 
     async pushObjectToBackend(database, input) {
+        let objectID = input["_id"];
+        this.deleteID(objectID);
         input["@context"] = database.schemaMapping["@context"];
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         await this.insertRDF(rdf);
@@ -247,6 +249,32 @@ class MemoryDatabase {
         }
         return data;
     }
+
+    // returns boolean 
+    deleteID(id) {
+        id = factory.namedNode(id);
+
+        let removed = false;
+        var temp = this.database.match(id, null, null);
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            this.database.delete(x.value);
+            removed = true;
+            x = itr.next();
+        }
+
+        temp = this.database.match(null, null, id);
+        itr = temp.quads();
+        x = itr.next();
+        while (!x.done) {
+            this.database.delete(x.value);
+            removed = true;
+            x = itr.next();
+        }
+        return removed;
+    }
+
 
 }
 
