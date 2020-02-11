@@ -131,6 +131,14 @@ input Person_FILTER {
 """CRUD operations over objects of specifc types."""
 type Mutation {
 
+  """
+  Deletes an existing object by the provided ID (including all data about it).
+  """ 
+  DELETE(
+    """A valid URI of an existing object"""
+    id: ID!
+  ): Boolean
+
     """Perform mutation over an object of type: Agent."""
    Agent(
     """The type of the mutation to be applied."""
