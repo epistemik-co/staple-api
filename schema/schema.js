@@ -8,15 +8,9 @@ returned by other queries and inserted via mutations.
 type _CONTEXT {
   """@id"""
   _id: String
-
-  """@value"""
-  _value: String
-
+ 
   """@type"""
   _type: String
-
-  """http://schema.org/Thing"""
-  Thing: String
 
   """http://schema.org/Organization"""
   Organization: String

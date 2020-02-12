@@ -1,7 +1,6 @@
 {
   "@context": {
     "_id": "@id",
-    "_value": "@value",
     "_type": "@type",
     "@base": "http://schema.org/",
     "Organization": "http://schema.org/Organization",
