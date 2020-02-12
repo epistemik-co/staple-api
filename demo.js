@@ -8,10 +8,11 @@ const staple = require("./index");
 const appRoot = require("app-root-path");
 
 async function Demo() {
+    let demo = {};
     let stapleApi = await staple("./schema/schema", "./schema/schemaMapping", require(appRoot + "/config/database.js"));
-    this.database = stapleApi.database;
+    demo.database = stapleApi.database;
     let schema = stapleApi.schema;
-    this.server = new ApolloServer({
+    demo.server = new ApolloServer({
         schema,
         formatResponse: response => {
             if (response.errors !== undefined) {
@@ -29,32 +30,32 @@ async function Demo() {
     });
     logger.info("Endpoint is ready");
 
-    run();
+    run(demo);
 }
 
-function run() {
+function run(demo) {
     const app = express();
     app.use(bodyParser.json({ limit: "50mb", extended: true }));
     app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
     app.use(bodyParser.text({ limit: "50mb", extended: true }));
 
-    this.server.applyMiddleware({ app });
+    demo.server.applyMiddleware({ app });
     app.listen({ port: 4000 }, () =>
-        logger.log("info", `🚀 Server ready at http://localhost:4000${this.server.graphqlPath}`)
+        logger.log("info", `🚀 Server ready at http://localhost:4000${demo.server.graphqlPath}`)
     );
 
-    this.addEndPoints(app);
+    addEndPoints(app, demo);
 
-    this.app = app;
+    demo.app = app;
 }
 
-function addEndPoints(app) {
+function addEndPoints(app, demo) {
     app.post("/api/upload", async (req, res) => {
         try {
             const todo = req.body;
             const rdf = await jsonld.toRDF(todo, { format: "application/n-quads" });
             logger.silly(rdf);
-            this.database.insertRDF(rdf);
+            demo.database.insertRDF(rdf);
 
         } catch (error) {
             return res.status(500).send({
@@ -73,14 +74,14 @@ function addEndPoints(app) {
     // does not work
     app.post("/api/uploadRDF", async (req, res) => {
         try {
-            this.database.drop();
+            demo.database.drop();
             logger.info("Recived RDF");
             const todo = req.body;
             let uuid = uuidv1();
             logger.info(`UUID FOR NEW RDF ${uuid}`);
-            await this.database.insertRDF(todo, true, uuid);
-            logger.info(`Database size: ${this.database.database.size}`);
-            this.database.countObjects();
+            await demo.database.insertRDF(todo, true, uuid);
+            logger.info(`Database size: ${demo.database.database.size}`);
+            demo.database.countObjects();
         } catch (error) {
             logger.error(error);
             return res.status(500).send({
