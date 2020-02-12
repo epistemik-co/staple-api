@@ -1,24 +1,26 @@
 const { makeExecutableSchema } = require("graphql-tools");
 const DatabaseInterface = require("./database/database");
 const Resolver = require("./resolvers/resolvers");
+const schemaFromOntology = require("./schema/schemaFromOntology");
+const jsonldFromOntology = require("./schema/jsonldFromOntology");
 
-// configLocation - obiekt
-class Staple {
-    constructor(schemaLocation, contextLocation, configObject) { 
-        this.schemaString = require(schemaLocation);
-        this.schemaMapping = require(contextLocation);
+async function init(ontologyLocation, contextLocation, configObject){
+    let schemaObj = {};
 
-        this.database = new DatabaseInterface(this.schemaMapping, configObject);
+    let schema = await schemaFromOntology.generateSchema("./schema/test.ttl");
 
-        this.Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
-        this.rootResolver = new Resolver(this.database, this.Warnings, this.schemaMapping, this.schemaString).rootResolver; // Generate Resolvers for graphql
+    schemaObj.schemaMapping = await jsonldFromOntology.process("./schema/test.ttl");
+    schemaObj.database = new DatabaseInterface(schemaObj.schemaMapping, configObject);
 
-        this.schema = makeExecutableSchema({
-            typeDefs: this.schemaString,
-            resolvers: this.rootResolver,
-        });
-        
-    }  
+    schemaObj.Warnings = []; // Warnings can be added as object to schemaObj array. Array is clear after each query.
+    schemaObj.rootResolver = new Resolver(schemaObj.database, schemaObj.Warnings, schemaObj.schemaMapping, schema).rootResolver; // Generate Resolvers for graphql
+
+    schemaObj.schema = makeExecutableSchema({
+        typeDefs: schema,
+        resolvers: schemaObj.rootResolver,
+    });
+
+    return schemaObj;
 }
 
-module.exports = Staple;
+module.exports = init;

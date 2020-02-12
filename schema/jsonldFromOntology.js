@@ -3,7 +3,7 @@ const DatabaseInterface = require("./database/Database");
 const database = new DatabaseInterface();
 var fs = require("fs");
 
-function processTypes(classes, data, enums, schema_spec) { 
+function processTypes(classes, data, enums, schema_spec) {
     for (var cla in classes) {
         var rdfsclass = classes[cla];
         var n = rdfsclass.lastIndexOf("/");
@@ -50,7 +50,7 @@ function getIndirectSublassesOfClass(schema_spec, ofClass, datatype) {
         for (let sub of schema_spec.classes[ofClass].sub) {
 
             schema_spec.classes[sub].sup = union(schema_spec.classes[sub].sup, schema_spec.classes[ofClass].sup);
-            
+
             if (sub != ofClass) {
                 if (!allSubs.includes(sub)) {
                     allSubs.push(sub);
@@ -155,7 +155,7 @@ function union(set1, set2) {
 }
 
 
-async function process(filename="test.ttl") {
+async function process(filename = "test.ttl") {
     await database.readFromFile(filename);
 
     let schema_spec = {
@@ -199,33 +199,34 @@ async function process(filename="test.ttl") {
     var graph = [];
 
     for (var c in schema_spec.classes) {
-        if (schema_spec.classes[c]["name"] != "integer" && schema_spec.classes[c]["name"] != "decimal" && schema_spec.classes[c]["name"] != "boolean" && schema_spec.classes[c]["name"] != "string"){
-        if (schema_spec.classes[c].type == "Object") {
-            context[schema_spec.classes[c].name] = c;
-            graph.push({
-                "@id": c,
-                "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
-                "http://www.w3.org/2000/01/rdf-schema#subClassOf": schema_spec.classes[c].sup.map(function (supClass) {
-                    return {
-                        "@id": supClass
-                    };
-                })
-            });
+        if (schema_spec.classes[c]["name"] != "integer" && schema_spec.classes[c]["name"] != "decimal" && schema_spec.classes[c]["name"] != "boolean" && schema_spec.classes[c]["name"] != "string") {
+            if (schema_spec.classes[c].type == "Object") {
+                context[schema_spec.classes[c].name] = c;
+                graph.push({
+                    "@id": c,
+                    "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
+                    "http://www.w3.org/2000/01/rdf-schema#subClassOf": schema_spec.classes[c].sup.map(function (supClass) {
+                        return {
+                            "@id": supClass
+                        };
+                    })
+                });
 
-        } else {
-            context[schema_spec.classes[c].name] = c;
-            graph.push({
-                "@id": c,
-                "@type": "http://schema.org/DataType",
-                "http://www.w3.org/2000/01/rdf-schema#subClassOf": schema_spec.classes[c].sup.map(function (supClass) {
-                    return {
-                        "@id": supClass
-                    };
-                })
-            });
+            } else {
+                context[schema_spec.classes[c].name] = c;
+                graph.push({
+                    "@id": c,
+                    "@type": "http://schema.org/DataType",
+                    "http://www.w3.org/2000/01/rdf-schema#subClassOf": schema_spec.classes[c].sup.map(function (supClass) {
+                        return {
+                            "@id": supClass
+                        };
+                    })
+                });
+            }
+
         }
-
-    }}
+    }
     for (var p in schema_spec.properties) {
         context[schema_spec.properties[p].name] = p;
         graph.push({
@@ -239,13 +240,18 @@ async function process(filename="test.ttl") {
         "@graph": graph
     };
 
-    var jsonldContent = JSON.stringify(jsonld, null, 2);
-    fs.writeFile("context.jsonld", jsonldContent, "utf8", function (err) {
-        if (err) {
-            console.log("An error occured while writing JSON Object to File.");
-            return console.log(err);
-        }
-        console.log("context.jsonld file has been saved.");
-    });
+    return jsonld;
+
+    // var jsonldContent = JSON.stringify(jsonld, null, 2);
+    // fs.writeFile("context.jsonld", jsonldContent, "utf8", function (err) {
+    //     if (err) {
+    //         console.log("An error occured while writing JSON Object to File.");
+    //         return console.log(err);
+    //     }
+    //     console.log("context.jsonld file has been saved.");
+    // });
 }
-process();
+
+module.exports = {
+    process: process
+};
