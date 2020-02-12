@@ -4,7 +4,14 @@
 
 ## What is it good for?
 
-It is intended as a simple, yet flexible, **data abstraction middleware**, which you can set up within minutes to power your web app with the ability to manage its data resources as fragments of a connected, semantic knowledge graph, using a standard GraphQL interface. 
+It is intended as a simple, yet flexible, **data abstraction middleware**, which you can set up within minutes to power your web app with the ability to manage its data  as fragments of a connected, semantic knowledge graph, using a standard GraphQL interface. 
+
+<br>
+
+<p align="center">
+  <img src="staple-api-architecture1.png">
+</p>
+
 
 ## Key features
 
