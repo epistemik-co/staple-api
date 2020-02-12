@@ -37,7 +37,14 @@ async function createClassList(filename = "test.ttl") {
       )) {
         classList[[domain_name]] = { "name": domain_name, "fields": {} };
       }
-      ranges = ranges.map(r => r.replace("http://schema.org/", ""));
+
+      // TO NIE KONIECZNIE DZIAŁA :/
+      try {
+        ranges = ranges.map(r => r.replace("http://schema.org/", ""));
+      } catch (error) {
+        console.log(ranges);
+      }
+
       for (var r in ranges) {
         if (ranges[r] == "http://www.w3.org/2001/XMLSchema#integer") {
           ranges[r] = graphql.GraphQLInt;
@@ -64,7 +71,11 @@ function createQueryType(classList) {
 
   const getFields = (object) => {
     return () => {
-      let fields = {};
+      let fields = {
+        "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID) },
+        "_type": { type: graphql.GraphQLList(graphql.GraphQLString) }
+      };
+
       for (let fieldName in object.fields) {
         let fieldType = object.fields[fieldName]["type"];
         if (fieldType == "Int") {
@@ -95,12 +106,12 @@ function createQueryType(classList) {
   };
   for (var c in classList) {
     // eslint-disable-next-line no-undef
-    gqlObjects[c] = new graphql.GraphQLObjectType({
+    gqlObjects[c] = graphql.GraphQLList( new graphql.GraphQLObjectType({
       name: c,
       fields: getFields(classList[c])
-    });
+    }));
     // eslint-disable-next-line no-undef
-    queryType.fields["get" + c] = { type: gqlObjects[c] };
+    queryType.fields[c] = { type: gqlObjects[c] };
 
   }
   queryType = new graphql.GraphQLObjectType(queryType);
@@ -119,9 +130,9 @@ async function main() {
   app.listen(4000);
   console.log("Running a GraphQL API server at localhost:4000/graphql");
   return schema;
-} 
+}
 
-async function generateSchema(file){
+async function generateSchema(file) {
   var classList = await createClassList(file);
   var queryType = createQueryType(classList);
   return new graphql.GraphQLSchema({ query: queryType });
