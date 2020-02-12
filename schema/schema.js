@@ -1,4 +1,40 @@
 let schemaString = `
+
+"""
+Exposes linked data context mapppings for this schema. Response to the full
+_CONTEXT query returns a valid JSON-LD context sufficient to interpret data
+returned by other queries and inserted via mutations.
+"""
+type _CONTEXT {
+  """@id"""
+  _id: String
+
+  """@value"""
+  _value: String
+
+  """@type"""
+  _type: String
+
+  """http://schema.org/Thing"""
+  Thing: String
+
+  """http://schema.org/Organization"""
+  Organization: String
+
+  """http://schema.org/Person"""
+  Person: String
+
+  """http://schema.org/employee"""
+  employee: String
+
+  """http://schema.org/affiliation"""
+  affiliation: String
+
+  """http://schema.org/name"""
+  name: String
+}
+
+
 """An agent"""
 type Agent {
   """Name of the agent"""
@@ -57,7 +93,7 @@ type Query {
   """
   The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema.
   """
-  _context: String
+  _CONTEXT: _CONTEXT
  
   """Get objects of type: Agent."""
   Agent(

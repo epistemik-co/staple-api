@@ -29,12 +29,14 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
         else if (tree[object].type === "EnumType") {
             continue;
         } 
+        else if (tree[object].type === "_CONTEXT") {
+            queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"] };
+        }
         else {
             logger.warn(`UNHANDLED TYPE: ${object}`);
         }
     }
 
-    queryResolverBody["Query"]["_context"] = () => { return JSON.stringify( schemaMapping["@niceContext"] ); };
 
     
     return queryResolverBody;
