@@ -1,24 +1,25 @@
 ## Install Node.js
 
-You need to ensure Node.js is installed on your machine. You can do it by executing the following command:
+You need to ensure Node.js is installed. You can do that by executing the following command:
 
 ```bash
 node -v
 ```
 
-If no version is printed as result please consult the installation guide at [https://nodejs.org/](https://nodejs.org/) to install the recent version of Node.js.
+If no version is shown, please consult the download and installation instructions at [https://nodejs.org/](https://nodejs.org/).
 
 ## Install Staple API
+
+Staple API is available as an [npm package](https://www.npmjs.com/package/staple-api) and can be installed with the following command:
 
 ```bash
 npm i staple-api
 ```
 
 
-## Provide an ontology file
+## Ontology
 
-
-For instance, create a text file called `ontology.ttl` containing the following specification:
+The schema and resolvers of the GraphQL serivce inside Staple API are generated automatically based on the input [RDF ontology](/docs/?id=ontology-and-schema). The ontology should be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/) and provided in a file. For instance, we can use the following ontology saved in a file `ontology.ttl`:
 
 ```turtle
 @prefix schema: <http://schema.org/> .
@@ -26,58 +27,63 @@ For instance, create a text file called `ontology.ttl` containing the following 
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix example: <http://example.com#> .
 
-schema:Agent a rdfs:Class ;
-    rdfs:comment "An agent" .
+# classes (-> GraphQL types )
 
-schema:Organization a rdfs:Class ;
+example:Agent a rdfs:Class ;
+    rdfs:comment "An agent (individual or legal)" .
+
+example:Organization a rdfs:Class ;
     rdfs:comment "An organization such as a school, NGO, corporation, club, etc." ;
-    rdfs:subClassOf schema:Agent .
+    rdfs:subClassOf example:Agent .
 
-schema:Person a rdfs:Class ;
+example:Person a rdfs:Class ;
     rdfs:comment "A person" ;
-    rdfs:subClassOf schema:Agent .
+    rdfs:subClassOf example:Agent .
 
-schema:name a rdf:Property, owl:FunctionalProperty ;
+# properties ( -> GraphQL fields )
+
+example:name a rdf:Property, owl:FunctionalProperty ;
     rdfs:comment "Name of the agent" ;
-    schema:domainIncludes schema:Agent ;
-    schema:rangeIncludes xsd:string ;
+    schema:domainIncludes example:Agent ;
+    schema:rangeIncludes xsd:string .
 
-schema:age a rdf:Property, owl:FunctionalProperty ;
+example:age a rdf:Property, owl:FunctionalProperty ;
     rdfs:comment "Age of the person" ;
-    schema:domainIncludes schema:Person ;
-    schema:rangeIncludes xsd:integer ;
+    schema:domainIncludes example:Person ;
+    schema:rangeIncludes xsd:integer .
 
-schema:isMarried a rdf:Property, owl:FunctionalProperty ;
-    rdfs:comment "The person is married." ;
-    schema:domainIncludes schema:Person ;
-    schema:rangeIncludes xsd:boolean ;
+example:isMarried a rdf:Property, owl:FunctionalProperty ;
+    rdfs:comment "This person is married" ;
+    schema:domainIncludes example:Person ;
+    schema:rangeIncludes xsd:boolean .
 
-schema:revenue a rdf:Property, owl:FunctionalProperty ;
-    rdfs:comment "The annual revenue of the organization." ;
-    schema:domainIncludes schema:Organization ;
-    schema:rangeIncludes xsd:decimal ;
+example:revenue a rdf:Property, owl:FunctionalProperty ;
+    rdfs:comment "The annual revenue of the organization" ;
+    schema:domainIncludes example:Organization ;
+    schema:rangeIncludes xsd:decimal .
 
-schema:employee a rdf:Property ;
-    rdfs:comment "An employee of an organization." ;
-    schema:domainIncludes schema:Organization ;
-    schema:rangeIncludes schema:Person .
+example:employee a rdf:Property ;
+    rdfs:comment "An employee of an organization" ;
+    schema:domainIncludes example:Organization ;
+    schema:rangeIncludes example:Person .
+
+example:customerOf a rdf:Property ;
+    rdfs:comment "An customer of an organization" ;
+    schema:domainIncludes example:Agent ;
+    schema:rangeIncludes example:Organization .
 ```
 
 
-## Provide a configuration file
-
-For the first test with an in-memory graph database, the following JSON saved in a file called `config.json` is sufficient:
+## Hello world!
 
 ```javascript
-{
-    "ontology": "./ontology.ttl"
+require staple-api 
+
+let config = {
+    ontology: "./ontology.ttl"
 }
 ```
 
-## Start the API
-
-```bash
-npm start run
-```
-
+## Running as a server

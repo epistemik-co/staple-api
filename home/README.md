@@ -1,6 +1,6 @@
 ## What is it?
 
-**Staple API** is a lightweight GraphQL-based API for an easy management of **semantic knowledge graphs**, modeled and virtualized as linked data in the [schema.org data model](https://schema.org/docs/datamodel.html). 
+**Staple API** is a lightweight GraphQL-based API for an easy management of **semantic knowledge graphs**, modelled and virtualized as linked data and structured by an RDF ontology. 
 
 ## What is it good for?
 
@@ -48,7 +48,7 @@ It is intended as a simple, yet flexible, **data abstraction middleware**, which
 
 ## License
 
-?> This software is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
+?> This software has been created by [EPISTEMIK](http://epistemik.co) and is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
 
 ## Technologies used
 
@@ -56,12 +56,12 @@ It is intended as a simple, yet flexible, **data abstraction middleware**, which
 * [Apollo Server](https://www.apollographql.com/)
 * [schema.org](http://schema.org)
 * [JSON-LD](https://json-ld.org)
-* [Graphy](https://graphy.link/)
+* [graphy.js](https://graphy.link/)
 * [MongoDB](https://www.mongodb.com/)
 * [NodeJS](https://nodejs.org)
 
 ## Contact
 
-For open technical issues and inquiries you can create a GitHub issue in this repository. 
+For open technical issues and questions please create a GitHub issue in this repository. 
 
-?> All questions can also be sent to [staple-api@epistemik.co](staple-api@epistemik.co).
+?> All inquiries can also be sent to [staple-api@epistemik.co](staple-api@epistemik.co).

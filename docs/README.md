@@ -1,6 +1,16 @@
 ## Ontology and schema
 
-Staple API schemas are generated automatically from RDF ontologies expressed in the [schema.org data model](https://schema.org/docs/datamodel.html) (with slight extensions). This data model includes the following vocabulary elements:
+Staple API schemas are generated automatically from RDF ontologies expressed in the alightly adapted [schema.org data model](https://schema.org/docs/datamodel.html). This data model is based on the following vocabularies:
+
+```turtle
+@prefix schema: <http://schema.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+```
+
+and includes the following vocabulary elements:
 
 
 <!-- tabs:start -->
@@ -9,140 +19,150 @@ Staple API schemas are generated automatically from RDF ontologies expressed in 
 
 | Construct                     | Description                                 |
 | ----------------------------- | ------------------------------------------- |
-| rdfs:Class                    | An object type                              |
-| rdfs:subClassOf               | A subtype of a given type                   |
-| rdf:Property                  | A property / attribute                      |                
-| owl:FunctionalProperty        | A functional property                       |                   
-| rdfs:comment                  | A description of a vocabulary item          |
-| schema:domainIncludes         | A possible domain type of a given property  |
-| schema:rangeIncludes          | A possible range type of a given property   |
+| `rdfs:Class`                  | A class                                     |
+| `rdfs:subClassOf`             | A subclass of another class                 |
+| `rdf:Property`                | A property                                  |                
+| `owl:FunctionalProperty`      | A functional property (accepts at most one value)   |                   
+| `rdfs:comment`                | A description of a vocabulary element       |
+| `schema:domainIncludes`       | An allowed domain type of a property        |
+| `schema:rangeIncludes`        | An allowed range type of a property         |
+| `xsd:string`                  | The (xsd) `string` datatype                 |
+| `xsd:integer`                 | The (xsd) `integer` datatype                |
+| `xsd:decimal`                 | The (xsd) `decimal` datatype                |
+| `xsd:boolean`                 | The (xsd) `boolean` datatype                |
 
 #### **GraphQL schema**
 
 
 | Construct                     | GraphQL functionality / construct           |
 | ----------------------------- | ------------------------------------------- |
-| rdfs:Class                    | An object type                              |
-| rdfs:subClassOf               | Implicit type inheritance/inference         |
-| rdf:Property                  | A field                                     |                
-| owl:FunctionalProperty        | A single-valued field                       |                   
-| rdfs:comment                  | A description of a construct                |
-| schema:domainIncludes         | The domain type on which the field occurs   |
-| schema:rangeIncludes          | The value type of the field                 |
-
-
+| `rdfs:Class`                  | A type                                      |
+| `rdfs:subClassOf`             | Implicit type inheritance/inference         |
+| `rdf:Property`                | A field                                     |                
+| `owl:FunctionalProperty`      | A single-valued field                       |                   
+| `rdfs:comment`                | A description of a construct                |
+| `schema:domainIncludes`       | The domain type on which the field occurs   |
+| `schema:rangeIncludes`        | The value type of the field                 |
+| `xsd:string`                  | `String` scalar type                        |
+| `xsd:integer`                 | `Int` scalar type                           |
+| `xsd:decimal`                 | `Float` scalar type                         |
+| `xsd:boolean`                 | `Bool` scalar type                          |
 <!-- tabs:end -->
 
 ### Ontology example
 
-Currently the ontologies accepted by Staple API must be represented in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/). The following example presents a simple ontology including all supported constructs:
+Currently the ontologies accepted by Staple API must be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/). The following example presents a simple ontology including all supported constructs:
 
 
 ```turtle
 @prefix schema: <http://schema.org/> .
-@prefix example: <http://example.com/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix example: <http://example.com#> .
 
-schema:Thing a rdfs:Class ;
-    rdfs:comment "Anything." .
+# classes (-> GraphQL types )
 
-schema:Person a rdfs:Class ;
+example:Agent a rdfs:Class ;
+    rdfs:comment "An agent (individual or legal)" .
+
+example:Organization a rdfs:Class ;
+    rdfs:comment "An organization such as a school, NGO, corporation, club, etc." ;
+    rdfs:subClassOf example:Agent .
+
+example:Person a rdfs:Class ;
     rdfs:comment "A person" ;
-    rdfs:subClassOf schema:Thing .
-    
-schema:Place a rdfs:Class ;
-    rdfs:comment "A place" ;
-    rdfs:subClassOf schema:Thing .
-    
-schema:Text a schema:DataType, rdfs:Class ;
-    rdfs:comment "This is text DataType." .
-    
-schema:name a rdf:Property, owl:FunctionalProperty ;
-    schema:domainIncludes schema:Thing ;
-    schema:rangeIncludes schema:Text ;
-    rdfs:comment "The name of an entity." .
-    
-schema:birthPlace a rdf:Property, owl:FunctionalProperty ;
-    schema:domainIncludes schema:Person ;
-    schema:rangeIncludes schema:Place ;
-    schema:rangeIncludes schema:Text ;
-    rdfs:comment "The birthplace of a the person." .
-    
-schema:parent a rdf:Property ;
-    schema:domainIncludes schema:Person ;
-    schema:rangeIncludes schema:Person ;
-    schema:inverseOf schema:children ;
-    rdfs:comment "A parent of this person." .
+    rdfs:subClassOf example:Agent .
 
-schema:children a rdf:Property ;
-    schema:domainIncludes schema:Person ;
-    schema:rangeIncludes schema:Person ;
-    schema:inverseOf schema:parent ;
-    rdfs:comment "A child of this person." .
-    
+# properties ( -> GraphQL fields )
+
+example:name a rdf:Property, owl:FunctionalProperty ;
+    rdfs:comment "Name of the agent" ;
+    schema:domainIncludes example:Agent ;
+    schema:rangeIncludes xsd:string .
+
+example:age a rdf:Property, owl:FunctionalProperty ;
+    rdfs:comment "Age of the person" ;
+    schema:domainIncludes example:Person ;
+    schema:rangeIncludes xsd:integer .
+
+example:isMarried a rdf:Property, owl:FunctionalProperty ;
+    rdfs:comment "This person is married" ;
+    schema:domainIncludes example:Person ;
+    schema:rangeIncludes xsd:boolean .
+
+example:revenue a rdf:Property, owl:FunctionalProperty ;
+    rdfs:comment "The annual revenue of the organization" ;
+    schema:domainIncludes example:Organization ;
+    schema:rangeIncludes xsd:decimal .
+
+example:employee a rdf:Property ;
+    rdfs:comment "An employee of an organization" ;
+    schema:domainIncludes example:Organization ;
+    schema:rangeIncludes example:Person .
+
+example:customerOf a rdf:Property ;
+    rdfs:comment "An customer of an organization" ;
+    schema:domainIncludes example:Agent ;
+    schema:rangeIncludes example:Organization .
 ```
 
-### Ontology constructs and patterns
+### Ontology elements
 
-Below you can find further explanations of specific ontology constructs and patterns, based on the example above.
+In this section we summarise and further explain specific elements and patterns used in ontologies, using the ontology above as a running example:
 
----
+#### Prefix declarations:
+
+Prefix declarations, placed in the beginning of the ontology, define mappings from the shortcut prefixes for specific vocabularies to the full URI namespaces they denote, e.g.:
+
 ```turtle
 @prefix schema: <http://schema.org/> .
-@prefix example: <http://example.com/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-```
-The definition of URI prefixes used in the ontology.
-
----
-```turtle
-schema:Thing a rdfs:Class ;
-    rdfs:comment "Anything." .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix example: <http://example.com#> .
 ```
 
-The definition of the top object type `schema:Thing`. Every entity in the domain is either a direct or indirect instance of `schema:Thing`.
 
----
+
+#### Class definitions:
+
+A class definition specifies the name of the class, its description and its direct superclasses, e.g.:
+
 ```turtle
-schema:Place a rdfs:Class ;
-    rdfs:comment "A place" ;
-    rdfs:subClassOf schema:Thing .
+example:Person a rdfs:Class ;
+    rdfs:comment "A person" ;
+    rdfs:subClassOf example:Agent .
 ```
-The definition of the object type `schema:Place`, which is a subtype of `schema:Thing`. This means that every entity of type `schema:Place` is indirectly an instance of `schema:Thing`. 
+This definition describes the class `example:Person` as "*A person*" and as a subclass of `example:Agent`. This means that every instance of `example:Person` is indirectly an instance of `example:Agent`. 
 
----
+!> Note that each class can have zero or more direct superclasses.
+
+
+#### Property definitions:
+
+A property definition specifies the name of a property, its description, the classes of objects to which it applies, and the type of values it accepts, e.g.:
+
 ```turtle
-schema:name a rdf:Property, owl:FunctionalProperty ;
-    schema:domainIncludes schema:Thing ;
-    schema:rangeIncludes schema:Text ;
-    rdfs:comment "The name of an entity." .
+example:name a rdf:Property, owl:FunctionalProperty ;
+    rdfs:comment "Name of the agent" ;
+    schema:domainIncludes example:Agent ;
+    schema:rangeIncludes xsd:string .
 ```
 
-The definition of the property `schema:name`. It is declared to be a functional property, meaning that any entity can have at most one value of that property. The domain of `schema:name` includes `schema:Thing`, which means that any (direct or indirect) instance of that type can have this property. The range includes `schema:Text`, meaning that the values of `schema:name` are of type `schema:Text`. 
+This definition describes the property `example:name` as "*Name of the agent*". It is declared to be a functional property, meaning that an instance can have at most one value of this property (i.e., one `example:name`). The domain of `example:name` includes `example:Agent`, which means that it applies only to (direct and indirect) instances of `example:Agent` (i.e., including instances of `example:Person` and `example:Organization`). The values of `example:name` must be of type `xsd:string`. 
 
----
 ```turtle
-schema:birthPlace a rdf:Property, owl:FunctionalProperty ;
-    schema:domainIncludes schema:Person ;
-    schema:rangeIncludes schema:Place ;
-    rdfs:comment "The birthplace of a the person." .
+example:employee a rdf:Property ;
+    rdfs:comment "An employee of an organization" ;
+    schema:domainIncludes example:Organization ;
+    schema:rangeIncludes example:Person .
 ```
-The definition of the property `schema:birthPlace`. Only instances of `schema:Person` can have this property, while its values can be either objects of type `schema:Place` or literal values of type `schema:Text`. 
+This definition describes the property `example:employee` as "*An employee of an organization*". The domain of `example:employee` includes `example:Organization`, which means that it applies only to (direct and indirect) instances of `example:Organization`. The (zero or more) values of `example:employee` must be of type `example:Person`. 
 
----
-```turtle
-schema:parent a rdf:Property ;
-    schema:domainIncludes schema:Person ;
-    schema:rangeIncludes schema:Person ;
-    schema:inverseOf schema:children ;
-    rdfs:comment "The husband of this person." .
-``` 
-The definition of the property `schema:parent`. This property is defined as the inverse of `schema:children`, meaning that whenever person X is the value of `schema:parent` for entity Y, it can be inferred that Y is a value of `schema:children` for person X. 
-
+!> Note that each property must have at least one `schema:domainIncludes` value and (currently) exactly one `schema:rangeIncludes` value.
     
 ### URIs 
 
