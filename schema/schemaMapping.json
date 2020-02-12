@@ -4,53 +4,14 @@
     "_value": "@value",
     "_type": "@type",
     "@base": "http://schema.org/",
-    "_reverse": "@reverse",
     "Organization": "http://schema.org/Organization",
     "Person": "http://schema.org/Person",
     "Agent": "http://schema.org/Agent",
-    "Patient": "http://schema.org/Patient",
-    "Text": "http://schema.org/Text",
-    "Number": "http://schema.org/Number",
-    "Integer": "http://schema.org/Integer",
-    "legalName": "http://schema.org/legalName",
-    "hasShareholder": "http://schema.org/hasShareholder",
-    "shareholderOf": "http://schema.org/shareholderOf",
     "employee": "http://schema.org/employee",
-    "affiliation": "http://schema.org/affiliation",
-    "noOfEmployees": "http://schema.org/noOfEmployees",
     "name": "http://schema.org/name",
     "revenue": "http://schema.org/revenue",
     "age": "http://schema.org/age",
     "isMarried": "http://schema.org/isMarried"
-  },
-  "@niceContext": {
-    "_type": "@type",
-    "_id": "@id",
-    "@base": "http://default_namespace/",
-    "Agent": "http://schema.org/Agent",
-    "Organization": "http://schema.org/Organization",
-    "Person": "http://schema.org/Person",
-    "name": {
-        "@id": "http://schema.org/name",
-        "@type": "http://www.w3.org/2001/XMLSchema#string"
-    },
-    "age": {
-        "@id": "http://schema.org/age",
-        "@type": "http://www.w3.org/2001/XMLSchema#integer"
-    },
-    "revenue": {
-        "@id": "http://schema.org/revenue",
-        "@type": "http://www.w3.org/2001/XMLSchema#decimal"
-    },
-    "isMarried": {
-        "@id": "http://schema.org/isMarried",
-        "@type": "http://www.w3.org/2001/XMLSchema#boolean"
-    },
-    "employee": {
-        "@id": "http://schema.org/employee",
-        "@type": "@id"
-    }
-
   },
   "@graph": [
     {
