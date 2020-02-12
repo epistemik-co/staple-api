@@ -114,6 +114,27 @@ class MongodbAdapter {
         }
     }
 
+    async removeObject(database, objectID) {
+        let query = { "_id": objectID };
+
+        if (this.client === undefined) {
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+        }
+
+        try {
+            const db = this.client.db(this.configFile.dbName);
+            let collection = db.collection(this.configFile.collectionName);
+
+            logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+
+            let res = await collection.deleteOne(query);
+            return res.result.n;
+            
+        } catch (err) {
+            logger.error(err);
+        }
+    }
+
     preparefilters(database, selection, tree) {
         // console.log(util.inspect(selection,false,null,true)) 
         let query = {};
@@ -140,13 +161,13 @@ class MongodbAdapter {
 
                             for (let elem of filterField.value.values) {
                                 if (elem.kind === "IntValue") {
-                                    query[objectFilterName]["$in"].push( parseInt(elem.value) );
+                                    query[objectFilterName]["$in"].push(parseInt(elem.value));
                                 }
                                 else if (elem.kind === "FloatValue") {
-                                    query[objectFilterName]["$in"].push( parseFloat(elem.value) );
+                                    query[objectFilterName]["$in"].push(parseFloat(elem.value));
                                 }
                                 else {
-                                    query[objectFilterName]["$in"].push( elem.value );
+                                    query[objectFilterName]["$in"].push(elem.value);
                                 }
                             }
                         }
