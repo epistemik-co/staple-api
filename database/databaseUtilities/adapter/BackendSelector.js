@@ -34,7 +34,7 @@ class BackendSelector {
     // selectionSet - graphql query
     // inferred - true if inferred types are expected
     // tree - structure describing data
-    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined) {
         if (this.backend) {
             await this.backend.loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
         }

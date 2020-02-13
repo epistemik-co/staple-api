@@ -23,7 +23,7 @@ class MemoryDatabase {
 
     }
 
-    async loadCoreQueryDataFromDB(database, type, page = 1, selection = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selection = undefined, inferred = false, tree = undefined) {
         // search selectionSet for core objects load them
         // console.log(selectionSet);
         let fieldName = selection.name.value;
@@ -185,7 +185,7 @@ class MemoryDatabase {
     }
 
     // returns array of uri - Core Query
-    async getSubjectsByType(type, predicate, inferred = false, page) {
+    async getSubjectsByType(type, predicate, inferred = false, page = undefined) {
         type = factory.namedNode(type);
         let i = 0;
 
@@ -202,11 +202,16 @@ class MemoryDatabase {
         var x = itr.next();
         while (!x.done) {
             i++;
-            if (i > (page - 1) * 10) {
-                data.push(x.value.subject.value);
+            if(page){
+                if (i > (page - 1) * 10) {
+                    data.push(x.value.subject.value);
+                }
+                if (i + 1 > page * 10) {
+                    break;
+                }
             }
-            if (i + 1 > page * 10) {
-                break;
+            else{
+                data.push(x.value.subject.value);
             }
             x = itr.next();
         }
