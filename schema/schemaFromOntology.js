@@ -216,7 +216,7 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
       name: "Filter" + c,
       fields: filterGetFields(filterClassList["Filter" + c])
     });
-    queryType.fields[c] = { type: gqlObjects[c], args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean }, "filter": { type: gqlObjects["Filter" + c] } } };
+    queryType.fields[c] = { type: gqlObjects[c], args: { "page": { type: graphql.GraphQLInt, defaultValue: 1}, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false}, "filter": { type: gqlObjects["Filter" + c] } } };
   }
 
   queryType = new graphql.GraphQLObjectType(queryType);
@@ -276,7 +276,7 @@ function createMutationType(classList, inputClassList) {
       name: "Input" + c,
       fields: getFields(inputClassList["Input" + c])
     });
-    mutationType.fields[c] = { type: graphql.GraphQLBoolean, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + c]) }, type: { type: inputEnum } } };
+    mutationType.fields[c] = { type: graphql.GraphQLBoolean, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + c]) }, type: { type: inputEnum, defaultValue: 0 } } };
   }
 
   mutationType = new graphql.GraphQLObjectType(mutationType);
