@@ -122,6 +122,7 @@ function createQueryType(classList) {
 }
 
 function createMutationType(classList, inputClassList){
+  var inputEnum = new graphql.GraphQLEnumType({name: "MutationType", values: {"PUT": {value: 0}}});
   var mutationType = {
     name: "Mutation",
     fields: {
@@ -153,7 +154,7 @@ function createMutationType(classList, inputClassList){
                 };
             }else {
                 fields[fieldName] = {
-                    type: gqlObjects["Input" + fieldType]
+                    type: graphql.GraphQLList(graphql.GraphQLID)
                 };
             }
 
@@ -167,8 +168,9 @@ function createMutationType(classList, inputClassList){
           name: "Input" + c,
           fields: getFields(inputClassList["Input" + c]) 
           });
-      mutationType.fields[c] = {type: gqlObjects[c], args: { input: {type: gqlObjects["Input" + c]}}};
+      mutationType.fields[c] = {type: gqlObjects[c], args: { input: {type: graphql.GraphQLNonNull(gqlObjects["Input" + c])}, mutationType: {type: inputEnum}}};
   }
+
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;
 }
@@ -199,4 +201,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-// main();
+main();
