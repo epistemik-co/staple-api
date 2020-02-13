@@ -70,7 +70,7 @@ example:employee a rdf:Property ;
     schema:rangeIncludes example:Person .
 
 example:customerOf a rdf:Property ;
-    rdfs:comment "An customer of an organization" ;
+    rdfs:comment "An organization this agent is a customer of" ;
     schema:domainIncludes example:Agent ;
     schema:rangeIncludes example:Organization .
 ```
