@@ -5,6 +5,7 @@ var express = require("express");
 var graphqlHTTP = require("express-graphql");
 var graphql = require("graphql");
 
+//map of GraphQLObjectTypes and GraphQLInputObjectTypes
 var gqlObjects = {};
 
 var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
@@ -12,11 +13,17 @@ var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
   "http://www.w3.org/2001/XMLSchema#boolean",
   "http://www.w3.org/2001/XMLSchema#decimal"];
 
-async function createClassList(filename = "test.ttl") { 
+/**
+ * Create classList creates all helper class lists later used to create queryType and mutationType
+ * @param  {String} filename name of ontology file
+ */
+
+async function createClassList(filename = "test.ttl") {
+  //load file to in-memory graphy.js database 
   await database.readFromFile(filename);
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
-  const subClassesAll = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
-  const subClassesObcjects = database.getAllObjs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
+  const subClasses = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
+  const superiorClasses = database.getAllObjs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
   const domainIncludes = database.getAllObjs("http://schema.org/domainIncludes");
   const rangeIncludes = database.getAllObjs("http://schema.org/rangeIncludes");
   const dataTypes = database.getInstances("http://schema.org/DataType");
@@ -25,30 +32,38 @@ async function createClassList(filename = "test.ttl") {
   const propertiesRangeIncludes = database.getAllSubs("http://schema.org/rangeIncludes");
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
   const inverseFunctionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#InverseFunctionalProperty");
-  let classesSet = [...new Set([...classes, ...subClassesAll, ...subClassesObcjects, ...domainIncludes, ...rangeIncludes, ...dataTypes, ...rangeIncludes])];
+
+  //list of all classes
+
+  let classesSet = [...new Set([...classes, ...subClasses, ...superiorClasses, ...domainIncludes, ...rangeIncludes, ...dataTypes, ...rangeIncludes])];
   classesSet = classesSet.filter(item => item !== "http://www.w3.org/2000/01/rdf-schema#Class" && item !== "http://schema.org/Enumeration");
+
+  //list of all properties
+
   let properties = [...new Set([...propertiesInstances, ...propertiesDomainIncludes, ...propertiesRangeIncludes, ...functionalProperties, ...inverseFunctionalProperties])];
+
+  //helper objects initialisation
+
   var classList = {};
   var inputClassList = {};
   var filterClassList = {};
 
-  for (var i in properties) {
-    var name_of_property = properties[i].replace("http://schema.org/", "");
-    var domains = database.getObjs(properties[i], "http://schema.org/domainIncludes");
-    var ranges = database.getObjs(properties[i], "http://schema.org/rangeIncludes");
-    for (var d in domains) {
-      // console.log(domains[d]);
-      // var sup = database.getObjs(domains[d], "http://www.w3.org/2000/01/rdf-schema#subClassOf");
-      // console.log(sup);
-      var domain_name = String(domains[d].split("/")[3]);
-      if (!(domain_name in classList
+  //filling the helper objects with hierarchy of classes and properties
+
+  for (var propertyIter in properties) {
+    var nameOfProperty = removeNamespace(properties[propertyIter]);
+    var domains = database.getObjs(properties[propertyIter], "http://schema.org/domainIncludes");
+    var ranges = database.getObjs(properties[propertyIter], "http://schema.org/rangeIncludes");
+    for (var domainIter in domains) {
+      var domainName = removeNamespace(domains[domainIter]);
+      if (!(domainName in classList
       )) {
-        classList[[domain_name]] = { "name": domain_name, "fields": {} };
-        inputClassList[["Input" + domain_name]] = { "name": "Input" + domain_name, "fields": {} };
-        filterClassList[["Filter" + domain_name]] = { "name": "Filter" + domain_name, "fields": {} };
+        classList[[domainName]] = { "name": domainName, "fields": {} };
+        inputClassList[["Input" + domainName]] = { "name": "Input" + domainName, "fields": {} };
+        filterClassList[["Filter" + domainName]] = { "name": "Filter" + domainName, "fields": {} };
       }
 
-      // TO NIE KONIECZNIE DZIAŁA :/
+      // TO NIE KONIECZNIE DZIAŁA :/ removeNamespace tu nie działa
       try {
         ranges = ranges.map(r => r.replace("http://schema.org/", ""));
         var inputRanges = ranges.map(r => r.replace("http://schema.org/", "Input"));
@@ -71,18 +86,19 @@ async function createClassList(filename = "test.ttl") {
           inputRanges[r] = graphql.GraphQLFloat;
         }
       }
-      classList[[domain_name]]["fields"][name_of_property] = { "type": ranges };
-      inputClassList[["Input" + domain_name]]["fields"][name_of_property] = { "type": inputRanges };
-      filterClassList[["Filter" + domain_name]]["fields"][name_of_property] = { "type": [inputRanges] };
+      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges };
+      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges };
+      filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges] };
     }
 
   }
 
-  //DZIEDZICZENIE
-  for (var baseClass of classesSet){
+  //inheritance
+
+  for (var baseClass of classesSet) {
     var sup = database.getObjs(baseClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
     var inheritedProperties = {};
-    for (var superiorClassName of sup){
+    for (var superiorClassName of sup) {
       inheritedProperties = classList[removeNamespace(superiorClassName)].fields;
       inheritedProperties = inputClassList["Input" + removeNamespace(superiorClassName)].fields;
       inheritedProperties = filterClassList["Filter" + removeNamespace(superiorClassName)].fields;
@@ -107,25 +123,39 @@ async function createClassList(filename = "test.ttl") {
   return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesSet: classesSet, properties: properties };
 }
 
-function removeNamespace(name) {
-  name = name.split(["/"]);
-  name = name[name.length - 1];
-  return name;
+/**
+ * Remove namespace removes namespace prefixes
+ * @param  {String} nameWithNamesapace 
+ */
+
+function removeNamespace(nameWithNamesapace) {
+  nameWithNamesapace = nameWithNamesapace.split(["/"]);
+  nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
+  return nameWithNamesapace;
 }
+
+/**
+ * Create query type
+ * @param  {} 
+ */
 
 function createQueryType(classList, filterClassList, classesSet, properties) {
   properties = properties.map(e => removeNamespace(e));
   classesSet = classesSet.filter(e => !scalarTypes.includes(e)).map(e => removeNamespace(e));
 
-  var contextType = {name: "_CONTEXT", fields: {"_id": { type: graphql.GraphQLString},
-  "_type": { type: graphql.GraphQLString }}};
+  var contextType = {
+    name: "_CONTEXT", fields: {
+      "_id": { type: graphql.GraphQLString},
+      "_type": { type: graphql.GraphQLString}
+    }
+  };
 
-  for(var prop of properties){
-    contextType.fields[prop] = {type: graphql.GraphQLString};
+  for (var prop of properties) {
+    contextType.fields[prop] = { type: graphql.GraphQLString };
   }
 
-  for(var className of classesSet){
-    contextType.fields[className] = {type: graphql.GraphQLString};
+  for (var className of classesSet) {
+    contextType.fields[className] = { type: graphql.GraphQLString };
   }
 
 
@@ -134,7 +164,7 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
   var queryType = {
     name: "Query",
     fields: {
-      "_CONTEXT": {type: contextType}
+      "_CONTEXT": { type: contextType }
     }
   };
 
@@ -142,7 +172,7 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
     return () => {
       let fields = {
         "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID) },
-        "_type": { type: graphql.GraphQLList(graphql.GraphQLString) }
+        "_type": { type: graphql.GraphQLList(graphql.GraphQLString), args: {"inferred": {type: graphql.GraphQLBoolean, defaultValue: false}} }
       };
 
       for (let fieldName in object.fields) {
@@ -216,22 +246,27 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
       name: "Filter" + c,
       fields: filterGetFields(filterClassList["Filter" + c])
     });
-    queryType.fields[c] = { type: gqlObjects[c], args: { "page": { type: graphql.GraphQLInt, defaultValue: 1}, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false}, "filter": { type: gqlObjects["Filter" + c] } } };
+    queryType.fields[c] = { type: gqlObjects[c], args: { "page": { type: graphql.GraphQLInt}, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + c] } } };
   }
 
   queryType = new graphql.GraphQLObjectType(queryType);
   return queryType;
 }
 
+/**
+ * Create query type
+ * @param  {} 
+ */
+
 function createMutationType(classList, inputClassList) {
   var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", values: { "PUT": { value: 0 } } });
   var mutationType = {
     name: "Mutation",
     fields: {
-      "DELETE" : {
+      "DELETE": {
         type: graphql.GraphQLBoolean,
         args: {
-          "id" : {type: graphql.GraphQLNonNull(graphql.GraphQLID)}
+          "id": { type: graphql.GraphQLNonNull(graphql.GraphQLID) }
         }
       },
     }
@@ -283,6 +318,11 @@ function createMutationType(classList, inputClassList) {
   return mutationType;
 }
 
+/**
+ * Create query type
+ * @param  {} 
+ */
+
 async function main() {
   var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList();
   var queryType = createQueryType(classList, filterClassList, classesSet, properties);
@@ -298,6 +338,11 @@ async function main() {
   return schema;
 }
 
+/**
+ * Create query type
+ * @param  {} 
+ */
+
 async function generateSchema(file) {
   var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList(file);
   var queryType = createQueryType(classList, filterClassList, classesSet, properties);
@@ -309,4 +354,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-// main();
+main();
