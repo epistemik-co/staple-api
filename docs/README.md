@@ -405,16 +405,27 @@ type Person {
 The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema.
 """
 type _CONTEXT {
+  """@id"""
   _id: String
+  """@type"""
   _type: String
+  """http://example.com/Agent"""
   Agent: String
+  """http://example.com/Organization"""
   Organization: String
+  """http://example.com/Person"""
   Person: String
+  """http://example.com/name"""
   name: String
+  """http://example.com/age"""
   age: String
+  """http://example.com/revenue"""
   revenue: String
+  """http://example.com/isMarried"""
   isMarried: String
+  """http://example.com/employee"""
   employee: String
+  """http://example.com/customerOf"""
   customerOf: String
 }
 
@@ -665,16 +676,17 @@ All type and property URIs used in the ontology and the additional special field
 
 ```javascript
 {
-    "_id": "@id",
-    "_type": "@type",
-    "Thing": "http://schema.org/Thing",
-    "Person": "http://schema.org/Person",
-    "Place": "http://schema.org/Place",
-    "Text": "http://schema.org/Text",
-    "name": "http://schema.org/name",
-    "birthPlace": "http://schema.org/birthPlace",
-    "parent": "http://schema.org/parent",
-    "children": "http://schema.org/children"
+      "_id": "@id",
+      "_type": "@type",
+      "Agent": "http://example.com/Agent",
+      "Organization": "http://example.com/Organization",
+      "Person": "http://example.com/Person",
+      "name": "http://example.com/name",
+      "age": "http://example.com/age",
+      "revenue": "http://example.com/revenue",
+      "isMarried": "http://example.com/isMarried",
+      "employee": "http://example.com/employee",
+      "customerOf": "http://example.com/customerOf"
 }
 ```
 This context is served via a dedicated `_CONTEXT` query in the Staple API schema and can be used to interepret every Staple API query response and input objects as valid JSON-LD objects (see [data](./data) section)
