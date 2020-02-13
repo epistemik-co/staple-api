@@ -17,7 +17,7 @@ and includes the following vocabulary elements:
 
 #### **RDF ontology**
 
-| Construct                     | Description                                 |
+| Construct                     | RDF construct / functionality               |
 | ----------------------------- | ------------------------------------------- |
 | `rdfs:Class`                  | A class                                     |
 | `rdfs:subClassOf`             | A subclass of another class                 |
@@ -40,8 +40,8 @@ and includes the following vocabulary elements:
 | `rdfs:subClassOf`             | Implicit type inheritance/inference         |
 | `rdf:Property`                | A field                                     |                
 | `owl:FunctionalProperty`      | A single-valued field                       |                   
-| `rdfs:comment`                | A description of a construct                |
-| `schema:domainIncludes`       | The domain type on which the field occurs   |
+| `rdfs:comment`                | A description of a type or field            |
+| `schema:domainIncludes`       | A type on which the field occurs   |
 | `schema:rangeIncludes`        | The value type of the field                 |
 | `xsd:string`                  | `String` scalar type                        |
 | `xsd:integer`                 | `Int` scalar type                           |
@@ -49,7 +49,7 @@ and includes the following vocabulary elements:
 | `xsd:boolean`                 | `Bool` scalar type                          |
 <!-- tabs:end -->
 
-### Ontology example
+## RDF ontology
 
 Currently the ontologies accepted by Staple API must be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/). The following example presents a simple ontology including all supported constructs:
 
@@ -103,16 +103,14 @@ example:employee a rdf:Property ;
     schema:rangeIncludes example:Person .
 
 example:customerOf a rdf:Property ;
-    rdfs:comment "An customer of an organization" ;
+    rdfs:comment "An organization this agent is a customer of" ;
     schema:domainIncludes example:Agent ;
     schema:rangeIncludes example:Organization .
 ```
 
-### Ontology elements
+In the following points we summarize and further explain specific elements and patterns used in RDF ontologies, using the above one as a running example.
 
-In this section we summarise and further explain specific elements and patterns used in ontologies, using the ontology above as a running example:
-
-#### Prefix declarations:
+### Prefix declarations
 
 Prefix declarations, placed in the beginning of the ontology, define mappings from the shortcut prefixes for specific vocabularies to the full URI namespaces they denote, e.g.:
 
@@ -127,7 +125,7 @@ Prefix declarations, placed in the beginning of the ontology, define mappings fr
 
 
 
-#### Class definitions:
+### Class definitions
 
 A class definition specifies the name of the class, its description and its direct superclasses, e.g.:
 
@@ -141,7 +139,7 @@ This definition describes the class `example:Person` as "*A person*" and as a su
 !> Note that each class can have zero or more direct superclasses.
 
 
-#### Property definitions:
+### Property definitions
 
 A property definition specifies the name of a property, its description, the classes of objects to which it applies, and the type of values it accepts, e.g.:
 
@@ -164,22 +162,271 @@ This definition describes the property `example:employee` as "*An employee of an
 
 !> Note that each property must have at least one `schema:domainIncludes` value and (currently) exactly one `schema:rangeIncludes` value.
     
-### URIs 
+### Ontology URIs 
 
-The URIs aff all types and properties used in the ontology can be arbtirary provided that their local name part (after the last `/` or `#` symbol in the URI):
-* is unique across the ontology;
+?> A valid URI consists of two parts: **namespace** + **local name**. The namespace of a URI is its initial substring *up to and including* the last symbol `\` or `#`. The local name is the remainder of the string, *after* the last symbol `\` or `#`. For instance, the URI `http://example.com/Name` consists of the namespace `http://example.com/` and the local name `Name`. 
+
+The URIs of all classes and in the ontology acceptable by Staple API can be arbtirary, provided that their local name:
+* is unique across the ontology (e.g., there is no two URIs such as `http://example-domain-1.com/Name` and `http://example-domain-2.com/Name`)
+
+?> Positive example: 
+<br> :heavy_check_mark: `http://example.com/Name1` 
+<br> :heavy_check_mark: `http://example.com/Name2` 
+<br> :heavy_check_mark: `http://example.com#Name1` 
+<br> :heavy_check_mark: `http://example.com#Name2`
+<br><br> 
+Negative example: 
+<br> :x: `http://example-domain-1.com/Name` 
+<br> :x: `http://example-domain-2.com/Name`
+
 * is a valid GraphQL schema name (matching the regex: `/[_A-Za-z][_0-9A-Za-z]*/`).
 
+?> Positive examples: 
+<br> :heavy_check_mark: `http://example.com/Name` 
+<br> :heavy_check_mark: `http://example.com/Name123` 
+<br> :heavy_check_mark: `http://example.com#_123` 
+<br> :heavy_check_mark: `http://example.com#_name`
+<br><br> 
+Negative examples: 
+<br> :x: `http://example.com/name-with-dash` 
+<br> :x: `http://example.com#123nameStartingWithDigit`
 
-### GraphQL schema
 
-The RDF ontology is automatically mapped to the corresponding GraphQL schema, following the patterns described below.
+## GraphQL schema 
 
----
+The RDF ontology is automatically mapped to the corresponding GraphQL schema. For instance, the ontology above corresponds to the following schema represented in the [Schema Definition Language](https://alligator.io/graphql/graphql-sdl/):
 
-Every object type (e.g., `Person`) is mapped to a GraphQL type of the same name with fields corrsponding to properties with the matching domain types (see below) and three special ones: 
-* `_id` - corresponding to JSON-LD's `@id`, holding the URI of each instance);
-* `_type` - corresponding to JSON-LD's `@type`, holding the types of each instance);
+```graphql
+"""An agent"""
+type Agent {
+  """Name of the agent"""
+  name: String
+  """An organization this agent is a customer of"""
+  customerOf: [Organization]
+  """The unique identifier of the object"""
+  _id: ID!
+  """Types of the object."""
+  _type(
+    """Include inferred types for this object"""
+    inferred: Boolean = false
+  ): [String]
+}
+
+"""
+An organization such as a school, NGO, corporation, club, etc.
+Broader types: Agent
+"""
+type Organization {
+"""Name of the agent"""
+  name: String
+  """An employee of an organization"""
+  employee: [Person]
+  """The annual revenue of the organization"""
+  revenue: Float
+  """An organization this agent is a customer of"""
+  customerOf: [Organization]
+  """The unique identifier of the object"""
+  _id: ID!
+  """Types of the object"""
+  _type(
+    """Include inferred types for this object"""
+    inferred: Boolean = false
+  ): [String]
+}
+
+"""
+A person
+Broader types: Agent
+"""
+type Person {
+  """Name of the agent"""
+  name: String
+  """Age of the person"""
+  age: Int
+  """The person is married"""
+  isMarried: Boolean
+  """An organization this agent is a customer of"""
+  customerOf: [Organization]
+  """The unique identifier of the object"""
+  _id: ID!
+  """Types of the object"""
+  _type(
+    """Include inferred types for this object"""
+    inferred: Boolean = false
+  ): [String]
+}
+
+"""Get objects of specific types"""
+type Query {
+  """
+  The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema.
+  """
+  _context: String
+ 
+  """Get objects of type: Agent"""
+  Agent(
+    """
+    The number of the consecutive results page to be returned by the query
+    """
+    page: Int = 1
+    filter: Agent_FILTER
+    """Include inferred objects of this type"""
+    inferred: Boolean = false
+  ): [Agent]
+
+
+  """Get objects of type: Organization"""
+  Organization(
+    """
+    The number of the consecutive results page to be returned by the query
+    """
+    page: Int = 1
+    filter: Organization_FILTER
+    """Include inferred objects of this type"""
+    inferred: Boolean = false
+  ): [Organization]
+
+
+  """Get objects of type: Person"""
+  Person(
+    """
+    The number of the consecutive results page to be returned by the query
+    """
+    page: Int = 1
+    filter: Person_FILTER
+    """Include inferred objects of this type"""
+    inferred: Boolean = false
+  ): [Person]
+}
+
+"""Filter on type: Agent"""
+input Agent_FILTER {
+  """Possible values on field: _id)"""
+  _id: [ID]
+  """Possible values on field: name"""
+  name: [String]
+  """Possible values on field: customerOf"""
+  customerOf: [ID]
+}
+
+"""Filter on type: Organization"""
+input Organization_FILTER {
+  """Possible values on field: _id)"""
+  _id: [ID]
+  """Possible values on field: name"""
+  name: [String]
+  """Possible values on field: employee"""
+  employee: [ID]
+  """Possible values on field: revenue"""
+  revenue: [Float]
+  """Possible values on field: customerOf"""
+  customerOf: [ID]
+}
+
+"""Filter on type: Person"""
+input Person_FILTER {
+  """Possible values on field: _id)"""
+  _id: [ID]
+  """Possible values on field: name"""
+  name: [String]
+  """Possible values on field: age"""
+  age: [Int]
+  """Possible values on field: isMarried"""
+  isMarried: [Boolean]
+  """Possible values on field: customerOf"""
+  customerOf: [ID]
+}
+
+
+"""CRUD operations over objects of specific types"""
+type Mutation {
+   
+   """Delete an object"""
+   DELETE(
+   """An id of the object to be deleted"""
+   _id: ID
+   ): Boolean
+
+    """Perform mutation over an object of type: Agent"""
+   Agent(
+    """The type of the mutation to be applied"""
+    type: MutationType = PUT
+    """The input object of the mutation"""
+    input: Agent_INPUT!
+   ): Agent
+
+    """Perform mutation over an object of type: Organization"""
+   Organization(
+    """The type of the mutation to be applied"""
+    type: MutationType = PUT
+    """The input object of the mutation"""
+    input: Organization_INPUT!
+   ): Organization
+
+   """Perform mutation over an object of type: Person"""
+   Person(
+    """The type of the mutation to be applied"""
+    type: MutationType = PUT
+    """The input object of the mutation"""
+    input: Person_INPUT!
+   ): Person
+
+}
+
+enum MutationType {
+  """
+  Put the item into the database. If already exists - overwrite it. 
+  """
+  PUT
+}
+
+"""Input object of type: Agent"""
+input Agent_INPUT {
+  """The unique identifier of the object"""
+  _id: ID!
+  """Name of the agent"""
+  name: String
+  """An organization this agent is a customer of"""
+  customerOf: [ID]
+}
+
+"""Input object of type: Organization"""
+input Organization_INPUT {
+  """The unique identifier of the object"""
+  _id: ID!
+  """Name of the agent"""
+  name: String
+  """An employee of an organization"""
+  employee: [ID]
+  """The annual revenue of the organization"""
+  revenue: Float
+  """An organization this agent is a customer of"""
+  customerOf: [ID]
+}
+
+"""Input object of type Person"""
+input Person_INPUT {
+  """The unique identifier of the object"""
+  _id: ID!
+  """Name of the agent"""
+  name: String
+  """Age of the person"""
+  age: Int
+  """This person is married"""
+  isMarried: Boolean
+  """An organization this agent is a customer of"""
+  customerOf: [ID]
+}
+```
+ 
+ 
+The specific mappings and resulting GraphQL schema patterns are further described and explained below.
+
+### Types
+
+Every class (e.g., `example:Person`) is mapped to a GraphQL type called with the local name of the URI (i.e., `Person`). Its fields corrspond to properties with the matching domain types (see below) and two special ones: 
+* `_id` - holding the URI of each instance;
+* `_type` - holding the (direct or inherited) types of each instance;
 
 
 ```graphql
@@ -190,18 +437,10 @@ type Person {
 }
 ```
 
---- 
-Every data type (e.g., `Text`) is mapped to a GraphQL type of the same name with three special fields: 
-* `_value` - corresponding to JSON-LD's `@value`, holding the literal value of this data item;
-* `_type` - corresponding to JSON-LD's `@type`, holding the data types of this item.
-```graphql
-type Text {
-    _value: String!
-    _type: [String]
-}
-```
+This type is further associated with a unique query (e.g., `Person`), a query filter (e.g., `Person_FILTER`), a mutation (e.g., `Person`), an input type (e.g., `Person_INPUT`).
 
----
+### Fields
+
 Every property (e.g., `name`, `parent` or `birthPlace`) is mapped to fields of the same names on matching object types (the explicit types declared via `schema:domainIncludes` predicate and their subtypes declared by `rdfs:subClassOf`). The range of the fields is determined by two components:
 * the `schema:rangeIncludes` declarations (single type `field: Type` vs. union types `field: Type-1_v_..._v_Type-n`, depending on the number of declared types in the range); 
 * by the `owl:FunctionalProperty` declarations on the properties (single values `field: Type` when declaration is present; multiple values `field: [Type]` when the declaration is missing)
@@ -235,7 +474,9 @@ input InputPerson {
 }
 ```
 
-### JSON-LD context
+
+
+## JSON-LD context
 
 All type and property URIs used in the ontology and the additional special fields included in the GraphQL schema are automatically mapped to a basic [JSON-LD context](https://json-ld.org/spec/latest/json-ld/#the-context) of the following structure:
 
