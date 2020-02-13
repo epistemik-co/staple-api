@@ -37,8 +37,15 @@ class MongodbAdapter {
                 }
             }
 
-            logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
-            let result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+            let result;
+            if (page === undefined) {
+                result = await collection.find(query).toArray();
+            }
+            else {
+                logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+                result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+            }
+    
 
             result = result.map(x => {
                 x["@context"] = database.schemaMapping["@context"];

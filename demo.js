@@ -9,7 +9,7 @@ const appRoot = require("app-root-path");
 
 async function Demo() {
     let demo = {};
-    let stapleApi = await staple("./schema/test.ttl", require(appRoot + "/config/database.js"));
+    let stapleApi = await staple("./schema/test.ttl");//, require(appRoot + "/config/database.js"));
     demo.database = stapleApi.database;
     let schema = stapleApi.schema;
     demo.server = new ApolloServer({

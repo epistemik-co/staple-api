@@ -45,7 +45,7 @@ class Database {
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB was called");
         logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${selectionSet} inferred: ${inferred} `);
 
