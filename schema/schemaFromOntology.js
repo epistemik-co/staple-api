@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const DatabaseInterface = require("./database/Database");
 const database = new DatabaseInterface();
 var express = require("express");
@@ -6,6 +5,7 @@ var graphqlHTTP = require("express-graphql");
 var graphql = require("graphql");
 
 //map of GraphQLObjectTypes and GraphQLInputObjectTypes
+
 var gqlObjects = {};
 
 var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
@@ -18,8 +18,23 @@ var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
  * @param  {String} filename name of ontology file
  */
 
+/**
+ * Remove namespace removes namespace prefixes
+ * @param  {String} nameWithNamesapace 
+ */
+
+function removeNamespace(nameWithNamesapace) {
+  nameWithNamesapace = nameWithNamesapace.split(["/"]);
+  nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
+  nameWithNamesapace = nameWithNamesapace.split(["#"]);
+  nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
+  return nameWithNamesapace;
+}
+
 async function createClassList(filename = "test.ttl") {
+
   //load file to in-memory graphy.js database 
+
   await database.readFromFile(filename);
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
   const subClasses = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
@@ -63,25 +78,24 @@ async function createClassList(filename = "test.ttl") {
         filterClassList[["Filter" + domainName]] = { "name": "Filter" + domainName, "fields": {} };
       }
 
-      // TO NIE KONIECZNIE DZIAŁA :/ removeNamespace tu nie działa
       try {
-        ranges = ranges.map(r => r.replace("http://schema.org/", ""));
-        var inputRanges = ranges.map(r => r.replace("http://schema.org/", "Input"));
+        ranges = ranges.map(r => removeNamespace(r));
+        var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
       } catch (error) {
         console.log(ranges);
       }
 
       for (var r in ranges) {
-        if (ranges[r] == "http://www.w3.org/2001/XMLSchema#integer") {
+        if (ranges[r] == "integer") {
           ranges[r] = graphql.GraphQLInt;
           inputRanges[r] = graphql.GraphQLInt;
-        } else if (ranges[r] == "http://www.w3.org/2001/XMLSchema#string") {
+        } else if (ranges[r] == "string") {
           ranges[r] = graphql.GraphQLString;
           inputRanges[r] = graphql.GraphQLString;
-        } else if (ranges[r] == "http://www.w3.org/2001/XMLSchema#boolean") {
+        } else if (ranges[r] == "boolean") {
           ranges[r] = graphql.GraphQLBoolean;
           inputRanges[r] = graphql.GraphQLBoolean;
-        } else if (ranges[r] == "http://www.w3.org/2001/XMLSchema#decimal") {
+        } else if (ranges[r] == "decimal") {
           ranges[r] = graphql.GraphQLFloat;
           inputRanges[r] = graphql.GraphQLFloat;
         }
@@ -124,19 +138,11 @@ async function createClassList(filename = "test.ttl") {
 }
 
 /**
- * Remove namespace removes namespace prefixes
- * @param  {String} nameWithNamesapace 
- */
-
-function removeNamespace(nameWithNamesapace) {
-  nameWithNamesapace = nameWithNamesapace.split(["/"]);
-  nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
-  return nameWithNamesapace;
-}
-
-/**
  * Create query type
- * @param  {} 
+ * @param {classList}
+ * @param {filterClassList}
+ * @param {classesSet}
+ * @param {properties} 
  */
 
 function createQueryType(classList, filterClassList, classesSet, properties) {
@@ -157,7 +163,6 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
   for (var className of classesSet) {
     contextType.fields[className] = { type: graphql.GraphQLString };
   }
-
 
   contextType = new graphql.GraphQLObjectType(contextType);
 
@@ -376,4 +381,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-// main();
+main();
