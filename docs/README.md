@@ -439,9 +439,9 @@ type Query {
   """Get objects of type: Agent"""
   Agent(
     """
-    The number of the consecutive results page to be returned by the query
+    The number of the consecutive results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned. 
     """
-    page: Int = 1
+    page: Int
     filter: Agent_FILTER
     """Include inferred objects of this type"""
     inferred: Boolean = false
@@ -451,9 +451,9 @@ type Query {
   """Get objects of type: Organization"""
   Organization(
     """
-    The number of the consecutive results page to be returned by the query
+    The number of the consecutive results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned. 
     """
-    page: Int = 1
+    page: Int
     filter: Organization_FILTER
     """Include inferred objects of this type"""
     inferred: Boolean = false
@@ -463,9 +463,9 @@ type Query {
   """Get objects of type: Person"""
   Person(
     """
-    The number of the consecutive results page to be returned by the query
+    The number of the consecutive results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned. 
     """
-    page: Int = 1
+    page: Int
     filter: Person_FILTER
     """Include inferred objects of this type"""
     inferred: Boolean = false
