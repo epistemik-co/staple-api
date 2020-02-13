@@ -27,4 +27,6 @@ async function init(ontologyLocation, configObject){
     return schemaObj;
 }
 
+init("./schema/test.ttl");
+
 module.exports = init;

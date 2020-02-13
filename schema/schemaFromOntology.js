@@ -1,7 +1,5 @@
 const DatabaseInterface = require("./database/Database");
-const database = new DatabaseInterface();
-var express = require("express");
-var graphqlHTTP = require("express-graphql");
+const database = new DatabaseInterface(); 
 var graphql = require("graphql");
 
 //map of GraphQLObjectTypes and GraphQLInputObjectTypes
@@ -82,7 +80,7 @@ async function createClassList(filename = "test.ttl") {
         ranges = ranges.map(r => removeNamespace(r));
         var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
       } catch (error) {
-        console.log(ranges);
+        // console.log(ranges);
       }
 
       for (var r in ranges) {
@@ -349,21 +347,7 @@ function createMutationType(classList, inputClassList) {
  * Create query type
  * @param  {} 
  */
-
-async function main() {
-  var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList();
-  var queryType = createQueryType(classList, filterClassList, classesSet, properties);
-  var mutationType = createMutationType(classList, inputClassList);
-  var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
-  var app = express();
-  app.use("/graphql", graphqlHTTP({
-    schema: schema,
-    graphiql: true,
-  }));
-  app.listen(4000);
-  console.log("Running a GraphQL API server at localhost:4000/graphql");
-  return schema;
-}
+ 
 
 /**
  * Create query type
@@ -381,4 +365,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-main();
+// main();
