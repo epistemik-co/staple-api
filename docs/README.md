@@ -164,10 +164,10 @@ This definition describes the property `example:employee` as "*An employee of an
     
 ### Ontology URIs 
 
-?> A valid URI consists of two parts: **namespace** + **local name**. The namespace of a URI is its initial substring *up to and including* the last symbol `\` or `#`. The local name is the remainder of the string, *after* the last symbol `\` or `#`. For instance, the URI `http://example.com/Name` consists of the namespace `http://example.com/` and the local name `Name`. 
+?> A valid URI consists of two parts: **namespace** + **local name**. The namespace of a URI is its initial substring *up to and including* the last symbol `/` or `#`. The local name is the remainder of the string, *after* the last symbol `/` or `#`. For instance, the URI `http://example.com/Name` consists of the namespace `http://example.com/` and the local name `Name`. 
 
-The URIs of all classes and in the ontology acceptable by Staple API can be arbtirary, provided that their local name:
-* is unique across the ontology (e.g., there is no two URIs such as `http://example-domain-1.com/Name` and `http://example-domain-2.com/Name`)
+The URIs of classes and properties in the ontology are acceptable by Staple API provided that their local names meet two conditions:
+1. are unique across the ontology (e.g., there is no two URIs such as `http://example-domain-1.com/Name` and `http://example-domain-2.com/Name`)
 
 ?> Positive example: 
 <br> :heavy_check_mark: `http://example.com/Name1` 
@@ -179,7 +179,7 @@ Negative example:
 <br> :x: `http://example-domain-1.com/Name` 
 <br> :x: `http://example-domain-2.com/Name`
 
-* is a valid GraphQL schema name (matching the regex: `/[_A-Za-z][_0-9A-Za-z]*/`).
+2. are valid GraphQL schema names (matching the regex: `/[_A-Za-z][_0-9A-Za-z]*/`).
 
 ?> Positive examples: 
 <br> :heavy_check_mark: `http://example.com/Name` 
@@ -195,6 +195,151 @@ Negative examples:
 ## GraphQL schema 
 
 The RDF ontology is automatically mapped to the corresponding GraphQL schema. For instance, the ontology above corresponds to the following schema represented in the [Schema Definition Language](https://alligator.io/graphql/graphql-sdl/):
+
+
+<!-- tabs:start -->
+
+#### **GraphQL schema example (without descriptions)**
+```graphql
+
+type Agent {
+  name: String
+  customerOf: [Organization]
+  _id: ID!
+  _type(
+    inferred: Boolean = false
+  ): [String]
+}
+
+type Organization {
+  name: String
+  employee: [Person]
+  revenue: Float
+  customerOf: [Organization]
+  _id: ID!
+  _type(
+    inferred: Boolean = false
+  ): [String]
+}
+
+type Person {
+  name: String
+  age: Int
+  isMarried: Boolean
+  customerOf: [Organization]
+  _id: ID!
+  _type(
+    inferred: Boolean = false
+  ): [String]
+}
+
+type _CONTEXT {
+  _id: String
+  _type: String
+  Agent: String
+  Organization: String
+  Person: String
+  name: String
+  age: String
+  revenue: String
+  isMarried: String
+  employee: String
+  customerOf: String
+}
+
+type Query {
+  _CONTEXT: _CONTEXT
+ 
+  Agent(
+    page: Int = 1
+    filter: Agent_FILTER
+    inferred: Boolean = false
+  ): [Agent]
+
+  Organization(
+    page: Int = 1
+    filter: Organization_FILTER
+    inferred: Boolean = false
+  ): [Organization]
+
+  Person(
+    page: Int = 1
+    filter: Person_FILTER
+    inferred: Boolean = false
+  ): [Person]
+}
+
+input Agent_FILTER {
+  _id: [ID]
+  name: [String]
+  customerOf: [ID]
+}
+
+input Organization_FILTER {
+  _id: [ID]
+  name: [String]
+  employee: [ID]
+  revenue: [Float]
+  customerOf: [ID]
+}
+
+input Person_FILTER {
+  _id: [ID]
+  name: [String]
+  age: [Int]
+  isMarried: [Boolean]
+  customerOf: [ID]
+}
+
+type Mutation {
+  DELETE(
+  _id: ID
+  ): Boolean
+
+  Agent(
+  type: MutationType = PUT
+  input: Agent_INPUT!
+  ): Boolean
+
+  Organization(
+  type: MutationType = PUT
+  input: Organization_INPUT!
+  ): Boolean
+
+  Person(
+  type: MutationType = PUT
+  input: Person_INPUT!
+  ): Boolean
+}
+
+input Agent_INPUT {
+  _id: ID!
+  name: String
+  customerOf: [ID]
+}
+
+input Organization_INPUT {
+  _id: ID!
+  name: String
+  employee: [ID]
+  revenue: Float
+  customerOf: [ID]
+}
+
+input Person_INPUT {
+  _id: ID!
+  name: String
+  age: Int
+  isMarried: Boolean
+  customerOf: [ID]
+}
+
+enum MutationType {
+  PUT
+}
+
+```
+#### **GraphQL schema example (with descriptions)**
 
 ```graphql
 """An agent"""
@@ -256,12 +401,29 @@ type Person {
   ): [String]
 }
 
+"""
+The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema.
+"""
+type _CONTEXT {
+  _id: String
+  _type: String
+  Agent: String
+  Organization: String
+  Person: String
+  name: String
+  age: String
+  revenue: String
+  isMarried: String
+  employee: String
+  customerOf: String
+}
+
 """Get objects of specific types"""
 type Query {
   """
-  The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema.
+  Get elements of the _CONTEXT object
   """
-  _context: String
+  _CONTEXT: _CONTEXT
  
   """Get objects of type: Agent"""
   Agent(
@@ -337,47 +499,37 @@ input Person_FILTER {
   customerOf: [ID]
 }
 
-
 """CRUD operations over objects of specific types"""
 type Mutation {
-   
-   """Delete an object"""
-   DELETE(
-   """An id of the object to be deleted"""
-   _id: ID
-   ): Boolean
+  """Delete an object"""
+  DELETE(
+  """An id of the object to be deleted"""
+  _id: ID
+  ): Boolean
 
-    """Perform mutation over an object of type: Agent"""
-   Agent(
-    """The type of the mutation to be applied"""
-    type: MutationType = PUT
-    """The input object of the mutation"""
-    input: Agent_INPUT!
-   ): Agent
+  """Perform mutation over an object of type: Agent"""
+  Agent(
+  """The type of the mutation to be applied"""
+  type: MutationType = PUT
+  """The input object of the mutation"""
+  input: Agent_INPUT!
+  ): Boolean
 
-    """Perform mutation over an object of type: Organization"""
-   Organization(
-    """The type of the mutation to be applied"""
-    type: MutationType = PUT
-    """The input object of the mutation"""
-    input: Organization_INPUT!
-   ): Organization
+  """Perform mutation over an object of type: Organization"""
+  Organization(
+  """The type of the mutation to be applied"""
+  type: MutationType = PUT
+  """The input object of the mutation"""
+  input: Organization_INPUT!
+  ): Boolean
 
-   """Perform mutation over an object of type: Person"""
-   Person(
-    """The type of the mutation to be applied"""
-    type: MutationType = PUT
-    """The input object of the mutation"""
-    input: Person_INPUT!
-   ): Person
-
-}
-
-enum MutationType {
-  """
-  Put the item into the database. If already exists - overwrite it. 
-  """
-  PUT
+  """Perform mutation over an object of type: Person"""
+  Person(
+  """The type of the mutation to be applied"""
+  type: MutationType = PUT
+  """The input object of the mutation"""
+  input: Person_INPUT!
+  ): Boolean
 }
 
 """Input object of type: Agent"""
@@ -417,14 +569,23 @@ input Person_INPUT {
   """An organization this agent is a customer of"""
   customerOf: [ID]
 }
+
+enum MutationType {
+  """
+  Put the item into the database. If already exists - overwrite it. 
+  """
+  PUT
+}
 ```
+
+<!-- tabs:end -->
  
  
 The specific mappings and resulting GraphQL schema patterns are further described and explained below.
 
 ### Types
 
-Every class (e.g., `example:Person`) is mapped to a GraphQL type called with the local name of the URI (i.e., `Person`). Its fields corrspond to properties with the matching domain types (see below) and two special ones: 
+Every class (e.g., `example:Person`) is mapped to a GraphQL type called by the local name of the URI (i.e., `Person`). Its fields corrspond to properties with the compatible domain types (see below) and two special ones: 
 * `_id` - holding the URI of each instance;
 * `_type` - holding the (direct or inherited) types of each instance;
 
@@ -437,23 +598,45 @@ type Person {
 }
 ```
 
-This type is further associated with a unique query (e.g., `Person`), a query filter (e.g., `Person_FILTER`), a mutation (e.g., `Person`), an input type (e.g., `Person_INPUT`).
+This type is further associated with a unique query (e.g., `Person`), a query filter (e.g., `Person_FILTER`), a mutation (e.g., `Person`), an input type (e.g., `Person_INPUT`) - all addressed separately below. 
 
 ### Fields
 
-Every property (e.g., `name`, `parent` or `birthPlace`) is mapped to fields of the same names on matching object types (the explicit types declared via `schema:domainIncludes` predicate and their subtypes declared by `rdfs:subClassOf`). The range of the fields is determined by two components:
-* the `schema:rangeIncludes` declarations (single type `field: Type` vs. union types `field: Type-1_v_..._v_Type-n`, depending on the number of declared types in the range); 
-* by the `owl:FunctionalProperty` declarations on the properties (single values `field: Type` when declaration is present; multiple values `field: [Type]` when the declaration is missing)
+Every property (e.g., `example:name`, `example:employee`) is mapped to a field called by the local name of the URI (e.g., `name`, `employee`). The fields are added on all compatible types: 
+
+1. those corresponding to classes declared via `schema:domainIncludes` predicate in the ontology (e.g.: `Agent` for `name`)
+
+2. the inherited ones, which can be reached via a chain of `rdfs:subClassOf` steps in the ontology (e.g.: `Person` and `Organization` for `name`)
+
+The type of values allowed on specific fields is determined by two components:
+1. the `schema:rangeIncludes` declarations, e.g.:
+
+```turtle
+example:name schema:rangeIncludes xsd:string . 
+example:isMarried schema:rangeIncludes xsd:boolean .
+example:customerOf schema:rangeIncludes example:Organization .
+```
+
+2. by the `owl:FunctionalProperty` declarations on the properties 
+    * single values `field: Type` when such declaration is present
+    * multiple values `field: [Type]` when such declaration is missing
+
+E.g.:
+
+```turtle
+example:name a rdf:Property, owl:FunctionalProperty . 
+example:isMarried a rdf:Property, owl:FunctionalProperty . 
+example:customerOf a rdf:Property .
+```
 
 ```graphql
 type Person {
-    name: Text
-    parent: [Person]
-    birthPlace: _Text_v_Place_
+    ...
+    name: String
+    isMarried: Boolean
+    customerOf: [Organization]
     ...
 }
-
-union _Text_v_Place_ = Text | Place
 ```
 ---
 Finally, all object types and fields give rise to GraphQL queries, mutations and input objects for mutations, of matching names and structures. 
@@ -831,9 +1014,9 @@ The following query could return the response:
 
 
 
-### _context
+### _CONTEXT
 
-This query field returns a unique `_context_` object, which represents the expanded JSON-LD context that is assumed in the Staple API instance:
+This query field returns a unique `_CONTEXT` object, which represents the expanded JSON-LD context that is assumed in the Staple API instance:
 
 This corresponds directly to the associated JSON-LD context:
 
