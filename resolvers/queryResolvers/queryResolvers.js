@@ -1,6 +1,5 @@
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../config/winston`);
 const handleClassTypeResolver = require("./querys/classTypeResolver");
 const handleQueryTypeResolver = require("./querys/queryTypeResolver");
 

@@ -1,6 +1,5 @@
 
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../config/winston`);
 
 
 let handleClassTypeResolver = (tree, object, database, schemaMapping) => {

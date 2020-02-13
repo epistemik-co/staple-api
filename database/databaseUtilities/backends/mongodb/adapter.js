@@ -1,6 +1,5 @@
 const MongoClient = require("mongodb").MongoClient;
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../../config/winston`);
 
 /* eslint-disable require-atomic-updates */
 const jsonld = require("jsonld");

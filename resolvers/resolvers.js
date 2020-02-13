@@ -1,8 +1,7 @@
 const createTree = require("../schema/schemaTree");
 const createMutationResolvers = require("./mutationResolver/mutationResolvers");
 const createQueryResolvers = require("./queryResolvers/queryResolvers");
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../config/winston`);
 
 class rootResolver {
     constructor(db, Warnings, schemaMapping, schemaString) {

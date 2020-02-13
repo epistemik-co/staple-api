@@ -1,6 +1,5 @@
 const validators = require("./validateFunctions");
-const appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../config/winston`);
 // const util = require("util");
 
 // function classMutations(database, mutation, field, schemaMapping, objectsFromSchemaObjectTree) {

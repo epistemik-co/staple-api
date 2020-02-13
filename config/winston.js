@@ -1,5 +1,4 @@
 
-var appRoot = require("app-root-path");
 var winston = require("winston");
 const { format } = require("winston"); 
 
@@ -7,7 +6,7 @@ const { format } = require("winston");
 var options = {
     file: {
         level: "error",
-        filename: `${appRoot}/logs/app.log`,
+        filename: `../logs/app.log`,
         handleExceptions: true,
         json: true,
         maxsize: 5242880, // 5MB

@@ -1,5 +1,4 @@
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../config/winston`);
 
 class BackendSelector {
     // this.backend contains object with methods implemented for specyfic backend
@@ -9,7 +8,7 @@ class BackendSelector {
         this.backend = undefined;
 
         if (configObject === undefined) {
-            logger.warn("You are using in memory database!")
+            logger.warn("You are using in memory database!");
             adapterType = require("../backends/memory/adapter");
             this.backend = new adapterType(schemaMapping);
             return;
