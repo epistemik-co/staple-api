@@ -65,7 +65,6 @@ async function createClassList(filename = "test.ttl") {
       inputClassList[["Input" + domain_name]]["fields"][name_of_property] = { "type": inputRanges };
     }
   }
-  console.log(inputClassList)
   return {classList: classList, inputClassList: inputClassList};
 }
 
@@ -134,7 +133,6 @@ function createMutationType(classList, inputClassList){
       let fields = {
         "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID) },
       };
-        console.log(object);
         for (let fieldName in object.fields) {
             let fieldType = object.fields[fieldName]["type"];
             if (fieldType == "Int"){
@@ -164,45 +162,13 @@ function createMutationType(classList, inputClassList){
     };
   };
 
-  const getArgs = (object) => {
-        let fields = {};
-        for (let fieldName in object.fields) {
-            let fieldType = object.fields[fieldName]["type"];
-            if (fieldType == "Int"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLInt
-                };
-            }else if (fieldType == "Float"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLFloat
-                };
-            }else if (fieldType == "String"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLString
-                };
-            }else if (fieldType == "Boolean"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLBoolean
-                };
-            }else {
-                fields[fieldName] = {
-                    type: gqlObjects[fieldType]
-                };
-            }
-
-        }
-        return fields;
-  };
-
   for (var c in classList) {
-      // console.log(classList[c])
       gqlObjects["Input" + c] = new graphql.GraphQLInputObjectType({
           name: "Input" + c,
           fields: getFields(inputClassList["Input" + c]) 
           });
       mutationType.fields[c] = {type: gqlObjects[c], args: { input: {type: gqlObjects["Input" + c]}}};
   }
-  // console.log(JSON.stringify(mutationType));
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;
 }
@@ -212,7 +178,6 @@ async function main() {
   var queryType = createQueryType(classList);
   var mutationType = createMutationType(classList, inputClassList);
   var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType});
-  console.log(graphql.printSchema(schema));
   var app = express();
   app.use("/graphql", graphqlHTTP({
     schema: schema,
@@ -234,4 +199,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-main();
+// main();
