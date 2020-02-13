@@ -309,4 +309,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-main();
+// main();
