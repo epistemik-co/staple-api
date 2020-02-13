@@ -12,7 +12,7 @@ var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
   "http://www.w3.org/2001/XMLSchema#boolean",
   "http://www.w3.org/2001/XMLSchema#decimal"];
 
-async function createClassList(filename = "test.ttl") {
+async function createClassList(filename = "test.ttl") { 
   await database.readFromFile(filename);
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
   const subClassesAll = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
@@ -88,7 +88,7 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
   properties = properties.map(e => removeNamespace(e));
   classesSet = classesSet.filter(e => !scalarTypes.includes(e)).map(e => removeNamespace(e));
 
-  var contextType = {name: "context", fields: {"_id": { type: graphql.GraphQLString},
+  var contextType = {name: "_CONTEXT", fields: {"_id": { type: graphql.GraphQLString},
   "_type": { type: graphql.GraphQLString }}};
 
   for(var prop of properties){
@@ -247,7 +247,7 @@ function createMutationType(classList, inputClassList) {
       name: "Input" + c,
       fields: getFields(inputClassList["Input" + c])
     });
-    mutationType.fields[c] = { type: gqlObjects[c], args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + c]) }, mutationType: { type: inputEnum } } };
+    mutationType.fields[c] = { type: graphql.GraphQLBoolean, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + c]) }, type: { type: inputEnum } } };
   }
 
   mutationType = new graphql.GraphQLObjectType(mutationType);
@@ -270,7 +270,7 @@ async function main() {
 }
 
 async function generateSchema(file) {
-  var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList();
+  var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList(file);
   var queryType = createQueryType(classList, filterClassList, classesSet, properties);
   var mutationType = createMutationType(classList, inputClassList);
   return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
@@ -280,4 +280,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-main();
+// main();

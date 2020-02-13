@@ -30,7 +30,7 @@ let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
             continue;
         } 
         else if (object === "_CONTEXT") {
-            // queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"]; };
+            queryResolverBody["Query"]["_CONTEXT"] = () => { return schemaMapping["@context"]; };
         }
         else {
             logger.warn(`UNHANDLED TYPE: ${object}`);

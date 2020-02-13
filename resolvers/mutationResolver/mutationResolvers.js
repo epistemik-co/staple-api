@@ -21,7 +21,6 @@ const createMutationResolvers = (database, tree, Warnings, schemaMappingArg, sch
             newResolverBody[field.name.value] = classMutations(database, schemaMapping, tree, field, mutation, field );
         }
     }
-
     return newResolverBody;
 };
 

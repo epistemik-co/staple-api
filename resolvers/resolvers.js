@@ -25,8 +25,8 @@ class rootResolver {
         logger.info("Query Resolvers are ready");
 
 
-        // const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings, schemaMapping, schemaString);
-        // this.rootResolver["Mutation"] = mutationResolvers;
+        const mutationResolvers = createMutationResolvers(this.database, this.tree, Warnings, schemaMapping, schemaString);
+        this.rootResolver["Mutation"] = mutationResolvers;
         
 
     }
