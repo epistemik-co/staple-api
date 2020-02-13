@@ -7,6 +7,11 @@ var graphql = require("graphql");
 
 var gqlObjects = {};
 
+var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
+  "http://www.w3.org/2001/XMLSchema#integer",
+  "http://www.w3.org/2001/XMLSchema#boolean",
+  "http://www.w3.org/2001/XMLSchema#decimal"];
+
 async function createClassList(filename = "test.ttl") {
   await database.readFromFile(filename);
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
@@ -25,17 +30,21 @@ async function createClassList(filename = "test.ttl") {
   let properties = [...new Set([...propertiesInstances, ...propertiesDomainIncludes, ...propertiesRangeIncludes, ...functionalProperties, ...inverseFunctionalProperties])];
   var classList = {};
   var inputClassList = {};
+  var filterClassList = {};
 
   for (var i in properties) {
     var name_of_property = properties[i].replace("http://schema.org/", "");
     var domains = database.getObjs(properties[i], "http://schema.org/domainIncludes");
     var ranges = database.getObjs(properties[i], "http://schema.org/rangeIncludes");
     for (var d in domains) {
+      // console.log(domains[d]);
+      // var sup = database.getObjs(domains[d], "http://www.w3.org/2000/01/rdf-schema#subClassOf");
       var domain_name = String(domains[d].split("/")[3]);
       if (!(domain_name in classList
       )) {
         classList[[domain_name]] = { "name": domain_name, "fields": {} };
         inputClassList[["Input" + domain_name]] = { "name": "Input" + domain_name, "fields": {} };
+        filterClassList[["Filter" + domain_name]] = { "name": "Filter" + domain_name, "fields": {} };
       }
 
       // TO NIE KONIECZNIE DZIAŁA :/
@@ -63,15 +72,40 @@ async function createClassList(filename = "test.ttl") {
       }
       classList[[domain_name]]["fields"][name_of_property] = { "type": ranges };
       inputClassList[["Input" + domain_name]]["fields"][name_of_property] = { "type": inputRanges };
+      filterClassList[["Filter" + domain_name]]["fields"][name_of_property] = { "type": [inputRanges] };
     }
   }
-  return {classList: classList, inputClassList: inputClassList};
+  return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesSet: classesSet, properties: properties };
 }
 
-function createQueryType(classList) {
+function removeNamespace(name) {
+  name = name.split(["/"]);
+  name = name[name.length - 1];
+  return name;
+}
+
+function createQueryType(classList, filterClassList, classesSet, properties) {
+  properties = properties.map(e => removeNamespace(e));
+  classesSet = classesSet.filter(e => !scalarTypes.includes(e)).map(e => removeNamespace(e));
+
+  var contextType = {name: "context", fields: {"_id": { type: graphql.GraphQLString},
+  "_type": { type: graphql.GraphQLString }}};
+
+  for(var prop of properties){
+    contextType.fields[prop] = {type: graphql.GraphQLString};
+  }
+
+  for(var className of classesSet){
+    contextType.fields[className] = {type: graphql.GraphQLString};
+  }
+
+
+  contextType = new graphql.GraphQLObjectType(contextType);
+
   var queryType = {
     name: "Query",
     fields: {
+      "_CONTEXT": {type: contextType}
     }
   };
 
@@ -109,20 +143,59 @@ function createQueryType(classList) {
       return fields;
     };
   };
+
+  const filterGetFields = (object) => {
+    return () => {
+      let fields = {
+        "_id": { type: graphql.GraphQLList(graphql.GraphQLID) },
+      };
+
+      for (let fieldName in object.fields) {
+        let fieldType = object.fields[fieldName]["type"];
+        if (fieldType == "Int") {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLInt)
+          };
+        } else if (fieldType == "Float") {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLFloat)
+          };
+        } else if (fieldType == "String") {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLString)
+          };
+        } else if (fieldType == "Boolean") {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLBoolean)
+          };
+        } else {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLID)
+          };
+        }
+      }
+      return fields;
+    };
+  };
+
   for (var c in classList) {
-    gqlObjects[c] = graphql.GraphQLList( new graphql.GraphQLObjectType({
+    gqlObjects[c] = graphql.GraphQLList(new graphql.GraphQLObjectType({
       name: c,
       fields: getFields(classList[c])
     }));
-    queryType.fields[c] = { type: gqlObjects[c] };
-
+    gqlObjects["Filter" + c] = new graphql.GraphQLInputObjectType({
+      name: "Filter" + c,
+      fields: filterGetFields(filterClassList["Filter" + c])
+    });
+    queryType.fields[c] = { type: gqlObjects[c], args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean }, "filter": { type: gqlObjects["Filter" + c] } } };
   }
+
   queryType = new graphql.GraphQLObjectType(queryType);
   return queryType;
 }
 
-function createMutationType(classList, inputClassList){
-  var inputEnum = new graphql.GraphQLEnumType({name: "MutationType", values: {"PUT": {value: 0}}});
+function createMutationType(classList, inputClassList) {
+  var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", values: { "PUT": { value: 0 } } });
   var mutationType = {
     name: "Mutation",
     fields: {
@@ -134,41 +207,41 @@ function createMutationType(classList, inputClassList){
       let fields = {
         "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID) },
       };
-        for (let fieldName in object.fields) {
-            let fieldType = object.fields[fieldName]["type"];
-            if (fieldType == "Int"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLInt
-                };
-            }else if (fieldType == "Float"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLFloat
-                };
-            }else if (fieldType == "String"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLString
-                };
-            }else if (fieldType == "Boolean"){
-                fields[fieldName] = {
-                    type: graphql.GraphQLBoolean
-                };
-            }else {
-                fields[fieldName] = {
-                    type: graphql.GraphQLList(graphql.GraphQLID)
-                };
-            }
-
+      for (let fieldName in object.fields) {
+        let fieldType = object.fields[fieldName]["type"];
+        if (fieldType == "Int") {
+          fields[fieldName] = {
+            type: graphql.GraphQLInt
+          };
+        } else if (fieldType == "Float") {
+          fields[fieldName] = {
+            type: graphql.GraphQLFloat
+          };
+        } else if (fieldType == "String") {
+          fields[fieldName] = {
+            type: graphql.GraphQLString
+          };
+        } else if (fieldType == "Boolean") {
+          fields[fieldName] = {
+            type: graphql.GraphQLBoolean
+          };
+        } else {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLID)
+          };
         }
-        return fields;
+
+      }
+      return fields;
     };
   };
 
   for (var c in classList) {
-      gqlObjects["Input" + c] = new graphql.GraphQLInputObjectType({
-          name: "Input" + c,
-          fields: getFields(inputClassList["Input" + c]) 
-          });
-      mutationType.fields[c] = {type: gqlObjects[c], args: { input: {type: graphql.GraphQLNonNull(gqlObjects["Input" + c])}, mutationType: {type: inputEnum}}};
+    gqlObjects["Input" + c] = new graphql.GraphQLInputObjectType({
+      name: "Input" + c,
+      fields: getFields(inputClassList["Input" + c])
+    });
+    mutationType.fields[c] = { type: gqlObjects[c], args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + c]) }, mutationType: { type: inputEnum } } };
   }
 
   mutationType = new graphql.GraphQLObjectType(mutationType);
@@ -176,10 +249,10 @@ function createMutationType(classList, inputClassList){
 }
 
 async function main() {
-  var {classList, inputClassList} = await createClassList();
-  var queryType = createQueryType(classList);
+  var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList();
+  var queryType = createQueryType(classList, filterClassList, classesSet, properties);
   var mutationType = createMutationType(classList, inputClassList);
-  var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType});
+  var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
   var app = express();
   app.use("/graphql", graphqlHTTP({
     schema: schema,
@@ -191,8 +264,8 @@ async function main() {
 }
 
 async function generateSchema(file) {
-  var {classList, inputClassList} = await createClassList(file);
-  var queryType = createQueryType(classList);
+  var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList();
+  var queryType = createQueryType(classList, filterClassList, classesSet, properties);
   var mutationType = createMutationType(classList, inputClassList);
   return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
 }
