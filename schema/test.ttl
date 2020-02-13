@@ -20,8 +20,6 @@ schema:Person a rdfs:Class ;
 schema:name a rdf:Property, owl:FunctionalProperty ;
     rdfs:comment "Name of the agent" ;
     schema:domainIncludes schema:Agent ;
-    schema:domainIncludes schema:Organization ;
-    schema:domainIncludes schema:Person ;
     schema:rangeIncludes xsd:string .
 
 schema:age a rdf:Property, owl:FunctionalProperty ;

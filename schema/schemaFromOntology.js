@@ -39,6 +39,7 @@ async function createClassList(filename = "test.ttl") {
     for (var d in domains) {
       // console.log(domains[d]);
       // var sup = database.getObjs(domains[d], "http://www.w3.org/2000/01/rdf-schema#subClassOf");
+      // console.log(sup);
       var domain_name = String(domains[d].split("/")[3]);
       if (!(domain_name in classList
       )) {
@@ -74,7 +75,35 @@ async function createClassList(filename = "test.ttl") {
       inputClassList[["Input" + domain_name]]["fields"][name_of_property] = { "type": inputRanges };
       filterClassList[["Filter" + domain_name]]["fields"][name_of_property] = { "type": [inputRanges] };
     }
+
   }
+
+  //DZIEDZICZENIE
+  for (var baseClass of classesSet){
+    var sup = database.getObjs(baseClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
+    var inheritedProperties = {};
+    for (var superiorClassName of sup){
+      inheritedProperties = classList[removeNamespace(superiorClassName)].fields;
+      inheritedProperties = inputClassList["Input" + removeNamespace(superiorClassName)].fields;
+      inheritedProperties = filterClassList["Filter" + removeNamespace(superiorClassName)].fields;
+
+      classList[removeNamespace(baseClass)].fields = {
+        ...classList[removeNamespace(baseClass)].fields,
+        ...inheritedProperties
+      };
+
+      inputClassList["Input" + removeNamespace(baseClass)].fields = {
+        ...inputClassList["Input" + removeNamespace(baseClass)].fields,
+        ...inheritedProperties
+      };
+
+      filterClassList["Filter" + removeNamespace(baseClass)].fields = {
+        ...filterClassList["Filter" + removeNamespace(baseClass)].fields,
+        ...inheritedProperties
+      };
+    }
+  }
+
   return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesSet: classesSet, properties: properties };
 }
 
@@ -280,4 +309,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-// main();
+main();
