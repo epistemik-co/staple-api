@@ -474,7 +474,7 @@ type Query {
 
 """Filter on type: Agent"""
 input Agent_FILTER {
-  """Possible values on field: _id)"""
+  """Possible identifiers"""
   _id: [ID]
   """Possible values on field: name"""
   name: [String]
@@ -484,7 +484,7 @@ input Agent_FILTER {
 
 """Filter on type: Organization"""
 input Organization_FILTER {
-  """Possible values on field: _id)"""
+  """Possible identifiers"""
   _id: [ID]
   """Possible values on field: name"""
   name: [String]
@@ -498,7 +498,7 @@ input Organization_FILTER {
 
 """Filter on type: Person"""
 input Person_FILTER {
-  """Possible values on field: _id)"""
+  """Possible identifiers"""
   _id: [ID]
   """Possible values on field: name"""
   name: [String]
