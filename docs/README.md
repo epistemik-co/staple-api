@@ -1,6 +1,18 @@
+## Introduction
+
+**Staple API** is a lightweight GraphQL-based API enabling easy management of **semantic knowledge graphs**, virtualized as linked data and structured by an RDF ontology. The two driving principles behind the design of the API are:
+1. The core GraphQL service with its schema and resolvers is **induced fully automatically from a simple RDF ontology** and is coupled with a selected backend (currently only MongoDB or an in-memory graph databse). This makes configuring and starting the API possible in mere minutes. 
+2. All CRUD operations are done entirely via **the standard GraphQL interface and based exlusively on JSON** objects. This makes data management simple and intuitive for majority of developers. The semantic knowledge graph is an abstraction of the data and is virtulized as linked data via the optional JSON-LD JSON-to-graph mapping mechanism. 
+
+<br> 
+
+<p align="center">
+  <img src="staple-api-architecture2.png">
+</p>
+
 ## Ontology and schema
 
-Staple API schemas are generated automatically from RDF ontologies expressed in the alightly adapted [schema.org data model](https://schema.org/docs/datamodel.html). This data model is based on the following vocabularies:
+Staple API schema is generated automatically from an RDF ontology expressed in an extension of the [schema.org data model](https://schema.org/docs/datamodel.html). This data model is based on the following vocabularies:
 
 ```turtle
 @prefix schema: <http://schema.org/> .
@@ -843,7 +855,7 @@ For instance, the following query returns the first page of instances of type `P
 }
 ```
 
-!> All queries return instance of the type synonymous with those queries. 
+!> All queries return instances of the type synonymous with those queries. 
 
 #### Mutations and inputs
 
