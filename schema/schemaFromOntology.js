@@ -199,6 +199,12 @@ function createMutationType(classList, inputClassList) {
   var mutationType = {
     name: "Mutation",
     fields: {
+      "DELETE" : {
+        type: graphql.GraphQLBoolean,
+        args: {
+          "id" : {type: graphql.GraphQLNonNull(graphql.GraphQLID)}
+        }
+      },
     }
   };
 
