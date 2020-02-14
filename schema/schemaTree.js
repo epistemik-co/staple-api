@@ -193,7 +193,7 @@ const createTree = (schemaMappingArg, schemaString) => {
         treeFromSchema[schema.getTypeMap()[schemaTypeName]["name"]] = newNode;
     }
 
-    saveTreeToFile(treeFromSchema, "../output.json"); 
+    // saveTreeToFile(treeFromSchema, "../output.json"); 
     return treeFromSchema;
 };
 

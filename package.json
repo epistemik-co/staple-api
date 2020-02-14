@@ -1,7 +1,14 @@
 {
   "name": "staple-api",
-  "version": "1.0.5",
-  "description": "Staple API - a structured data API",
+  "version": "1.0.6",
+  "description": "Staple API - GraphQL API for semantic knowledge graphs.",
+  "keywords": [
+    "GraphQL",
+    "linked data",
+    "Knowledge graphs",
+    "Web API",
+    "JSON-LD" 
+  ],
   "main": "index.js",
   "dependencies": {
     "graphql": "^14.6.0",
@@ -32,5 +39,5 @@
   "bugs": {
     "url": "https://github.com/epistemik-co/staple-api/issues"
   },
-  "homepage": "https://staple-api.org/#/"
+  "homepage": "https://staple-api.org/"
 }
