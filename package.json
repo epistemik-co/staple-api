@@ -1,11 +1,10 @@
 {
   "name": "staple-api",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "Staple API - a structured data API",
   "main": "index.js",
   "dependencies": {
-    "app-root-path": "^2.2.1",
-    "graphql": "^14.3.1",
+    "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.4",
     "graphy": "^3.2.2",
