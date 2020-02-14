@@ -19,7 +19,11 @@ var graphQLScalarTypes = {
   "Boolean" : graphql.GraphQLBoolean,
   "String" : graphql.GraphQLString,
   "Float" : graphql.GraphQLFloat,
-  "Int" : graphql.GraphQLInt
+  "Int" : graphql.GraphQLInt,
+  "boolean" : graphql.GraphQLBoolean,
+  "string" : graphql.GraphQLString,
+  "decimal" : graphql.GraphQLFloat,
+  "integer" : graphql.GraphQLInt
 };
 
 /**
@@ -92,18 +96,9 @@ async function createClassList(filename = "test.ttl" /*example file*/) {
       var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
 
       for (var r in ranges) {
-        if (ranges[r] == "integer") {
-          ranges[r] = graphql.GraphQLInt;
-          inputRanges[r] = graphql.GraphQLInt;
-        } else if (ranges[r] == "string") {
-          ranges[r] = graphql.GraphQLString;
-          inputRanges[r] = graphql.GraphQLString;
-        } else if (ranges[r] == "boolean") {
-          ranges[r] = graphql.GraphQLBoolean;
-          inputRanges[r] = graphql.GraphQLBoolean;
-        } else if (ranges[r] == "decimal") {
-          ranges[r] = graphql.GraphQLFloat;
-          inputRanges[r] = graphql.GraphQLFloat;
+        if (graphQLScalarTypes[ranges[r]]){
+          ranges[r] = graphQLScalarTypes[ranges[r]];
+          inputRanges[r] = graphQLScalarTypes[ranges[r]];
         }
       }
       classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges };
@@ -152,9 +147,60 @@ async function createClassList(filename = "test.ttl" /*example file*/) {
  * @param {properties} 
  */
 
+function getFieldsQuery(object){
+  return () => {
+    let fields = {
+      "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
+      "_type": { type: graphql.GraphQLList(graphql.GraphQLString), description: "Types of the object", args: { "inferred": { type: graphql.GraphQLBoolean, description: "Include inferred types for this object", defaultValue: false } } }
+    };
+
+    for (let fieldName in object.fields) {
+      let fieldType = object.fields[fieldName]["type"];
+      if (graphQLScalarTypes[fieldType]){
+        fields[fieldName] = {
+          type: graphQLScalarTypes[fieldType],
+          description: fieldName + " of type " + fieldType
+        };
+      } else {
+        fields[fieldName] = {
+          type: gqlObjects[fieldType],
+          description: fieldName + " of type " + fieldType
+        };
+      }
+    }
+    return fields;
+  };
+}
+
+function filterGetFields(object){
+  return () => {
+    let fields = {
+      "_id": { type: graphql.GraphQLList(graphql.GraphQLID), description: "The unique identifier of the object" },
+    };
+
+    for (let fieldName in object.fields) {
+      let fieldType = object.fields[fieldName]["type"];
+      if (graphQLScalarTypes[fieldType]){
+        fields[fieldName] = {
+          type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
+          description: fieldName + " of type [" + fieldType + "]"
+        };
+      } else {
+        fields[fieldName] = {
+          type: graphql.GraphQLList(graphql.GraphQLID),
+          description: fieldName + " of type [ID]"
+        };
+      }
+    }
+    return fields;
+  };
+}
+
 function createQueryType(classList, filterClassList, classesURIs, propertiesURIs) {
   propertiesURIs = propertiesURIs.map(e => removeNamespace(e));
   classesURIs = classesURIs.filter(e => !scalarTypes.includes(e)).map(e => removeNamespace(e));
+
+//context query
 
   var contextType = {
     name: "_CONTEXT", fields: {
@@ -173,6 +219,8 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
 
   contextType = new graphql.GraphQLObjectType(contextType);
 
+//the rest of the queries
+
   var queryType = {
     name: "Query",
     description: "Get objects of specific types",
@@ -181,60 +229,11 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
     }
   };
 
-  const getFields = (object) => {
-    return () => {
-      let fields = {
-        "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
-        "_type": { type: graphql.GraphQLList(graphql.GraphQLString), description: "Types of the object", args: { "inferred": { type: graphql.GraphQLBoolean, description: "Include inferred types for this object", defaultValue: false } } }
-      };
-
-      for (let fieldName in object.fields) {
-        let fieldType = object.fields[fieldName]["type"];
-        if (graphQLScalarTypes[fieldType]){
-          fields[fieldName] = {
-            type: graphQLScalarTypes[fieldType],
-            description: fieldName + " of type " + fieldType
-          };
-        } else {
-          fields[fieldName] = {
-            type: gqlObjects[fieldType],
-            description: fieldName + " of type " + fieldType
-          };
-        }
-      }
-      return fields;
-    };
-  };
-
-  const filterGetFields = (object) => {
-    return () => {
-      let fields = {
-        "_id": { type: graphql.GraphQLList(graphql.GraphQLID), description: "The unique identifier of the object" },
-      };
-
-      for (let fieldName in object.fields) {
-        let fieldType = object.fields[fieldName]["type"];
-        if (graphQLScalarTypes[fieldType]){
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
-            description: fieldName + " of type [" + fieldType + "]"
-          };
-        } else {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLID),
-            description: fieldName + " of type [ID]"
-          };
-        }
-      }
-      return fields;
-    };
-  };
-
   for (var className in classList) {
     gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
       name: className,
       description: className,
-      fields: getFields(classList[className])
+      fields: getFieldsQuery(classList[className])
     }));
     gqlObjects["Filter" + className] = new graphql.GraphQLInputObjectType({
       name: "Filter" + className,
@@ -248,12 +247,34 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   return queryType;
 }
 
+function getFieldsMutation(object){
+  return () => {
+    let fields = {
+      "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
+    };
+    for (let fieldName in object.fields) {
+      let fieldType = object.fields[fieldName]["type"];
+      if (graphQLScalarTypes[fieldType]){
+        fields[fieldName] = {
+          type: graphQLScalarTypes[fieldType],
+          description: fieldName + " of type " + fieldType
+        };
+      } else {
+        fields[fieldName] = {
+          type: graphql.GraphQLList(graphql.GraphQLID),
+          description: fieldName + " of type [ID]"
+        };
+      }
+    }
+    return fields;
+  };
+}
+
 /**
  * Create mutation type
  * @param  {classList} classList is a helper object for accesssing output types
  * @param {inputClassList} inputClassList is a helper object for accessing input types
  */
-
 
 function createMutationType(classList, inputClassList) {
   var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", description: "Put the item into the database. If already exists - overwrite it.", values: { "PUT": { value: 0 } } });
@@ -271,34 +292,11 @@ function createMutationType(classList, inputClassList) {
     }
   };
 
-  const getFields = (object) => {
-    return () => {
-      let fields = {
-        "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
-      };
-      for (let fieldName in object.fields) {
-        let fieldType = object.fields[fieldName]["type"];
-        if (graphQLScalarTypes[fieldType]){
-          fields[fieldName] = {
-            type: graphQLScalarTypes[fieldType],
-            description: fieldName + " of type " + fieldType
-          };
-        } else {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLID),
-            description: fieldName + " of type [ID]"
-          };
-        }
-      }
-      return fields;
-    };
-  };
-
   for (var className in classList) {
     gqlObjects["Input" + className] = new graphql.GraphQLInputObjectType({
       name: "Input" + className,
       description: "Input object of type: " + className,
-      fields: getFields(inputClassList["Input" + className])
+      fields: getFieldsMutation(inputClassList["Input" + className])
     });
     mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
   }
@@ -310,17 +308,17 @@ function createMutationType(classList, inputClassList) {
  * Main for development
  */
 
-async function main() {
-  var schema = await generateSchema();
-  var app = express();
-  app.use("/graphql", graphqlHTTP({
-    schema: schema,
-    graphiql: true,
-  }));
-  app.listen(4000);
-  console.log("Running a GraphQL API server at localhost:4000/graphql");
-  return schema;
-}
+// async function main() {
+//   var schema = await generateSchema();
+//   var app = express();
+//   app.use("/graphql", graphqlHTTP({
+//     schema: schema,
+//     graphiql: true,
+//   }));
+//   app.listen(4000);
+//   console.log("Running a GraphQL API server at localhost:4000/graphql");
+//   return schema;
+// }
 
 /**
  * Generate schema
@@ -338,4 +336,4 @@ module.exports = {
   generateSchema: generateSchema
 };
 
-main();
+// main();
