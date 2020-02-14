@@ -14,11 +14,6 @@ var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
   "http://www.w3.org/2001/XMLSchema#decimal"];
 
 /**
- * Create classList creates all helper class lists later used to create queryType and mutationType
- * @param  {String} filename name of ontology file
- */
-
-/**
  * Remove namespace removes namespace prefixes
  * @param  {String} nameWithNamesapace 
  */
@@ -30,6 +25,11 @@ function removeNamespace(nameWithNamesapace) {
   nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
   return nameWithNamesapace;
 }
+
+/**
+ * Create classList creates all helper class lists later used to create queryType and mutationType
+ * @param  {String} filename name of ontology file
+ */
 
 async function createClassList(filename = "test.ttl") {
 
@@ -273,8 +273,9 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
 }
 
 /**
- * Create query type
- * @param  {} 
+ * Create mutation type
+ * @param  {classList}
+ * @param {inputClassList} 
  */
 
 function createMutationType(classList, inputClassList) {
@@ -287,7 +288,7 @@ function createMutationType(classList, inputClassList) {
         type: graphql.GraphQLBoolean,
         description: "Delete an object",
         args: {
-          "id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "An id of the object to be deleted" }
+          "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" }
         }
       },
     }
@@ -346,7 +347,7 @@ function createMutationType(classList, inputClassList) {
 }
 
 /**
- * Create query type
+ * Main
  * @param  {} 
  */
 
@@ -366,8 +367,8 @@ async function main() {
 }
 
 /**
- * Create query type
- * @param  {} 
+ * Generate schema
+ * @param  {file} file containing ontology
  */
 
 async function generateSchema(file) {
