@@ -29,12 +29,12 @@ and includes the following vocabulary elements:
 
 #### **RDF ontology**
 
-| Construct                     | RDF construct / functionality               |
+| RDF construct                 | Description                                 |
 | ----------------------------- | ------------------------------------------- |
 | `rdfs:Class`                  | A class                                     |
 | `rdfs:subClassOf`             | A subclass of another class                 |
 | `rdf:Property`                | A property                                  |                
-| `owl:FunctionalProperty`      | A functional property (accepts at most one value)   |                   
+| `owl:FunctionalProperty`      | A functional property (at most one value)   |                   
 | `rdfs:comment`                | A description of a vocabulary element       |
 | `schema:domainIncludes`       | An allowed domain type of a property        |
 | `schema:rangeIncludes`        | An allowed range type of a property         |
@@ -46,7 +46,7 @@ and includes the following vocabulary elements:
 #### **GraphQL schema**
 
 
-| Construct                     | GraphQL functionality / construct           |
+| RDF construct                 | GraphQL functionality / construct           |
 | ----------------------------- | ------------------------------------------- |
 | `rdfs:Class`                  | A type                                      |
 | `rdfs:subClassOf`             | Implicit type inheritance/inference         |
@@ -668,6 +668,13 @@ example:customerOf a rdf:Property ;
 #### **GraphQL**
 
 ```graphql
+type Agent {
+    ...
+    name: String
+    customerOf: [Organization]
+    ...
+}
+
 type Person {
     ...
     name: String
@@ -872,12 +879,13 @@ The input object includes the exact same fields as the associated object type, e
 
 ```graphql
 mutation Person {
-  input: {
-  _id: "http://example.com/john"
-  name: "John Smith"
-  age: "35"
-  isMarried: true
-  customerOf: ["http://example.com/org1", "http://example.com/org2"]
+    input: {
+      _id: "http://example.com/john"
+      name: "John Smith"
+      age: "35"
+      isMarried: true
+      customerOf: ["http://example.com/org1", "http://example.com/org2"]
+  }
 }
 ```
 
@@ -957,13 +965,155 @@ mutation DELETE (id: "http://example.com/john")
 
 
 
-### _CONTEXT
+### JSON-LD context
 
 
-All type and property URIs used in the ontology and the additional special fields included in the GraphQL schema are automatically mapped to a basic [JSON-LD context](https://json-ld.org/spec/latest/json-ld/#the-context) of the following structure:
+All type and property URIs used in the ontology and the additional special fields included in the GraphQL schema are automatically mapped to a basic JSON-LD context. 
+
+?> [JSON-LD context](https://json-ld.org/spec/latest/json-ld/#the-context) is the key mechanism involved in the JSON-LD standard, which to interpret plain JSON objects as RDF data, or conversely to encode RDF data in the JSON format. 
+
+For instance, the running example used in this section would be associated with the following context, which enables automated conversions of GraphQL responses to RDF:
+
+
+<!-- tabs:start -->
+
+#### **JSON-LD context**
 
 ```javascript
 {
+  "_id": "@id",
+  "_type": "@type",
+  "Agent": "http://example.com/Agent",
+  "Organization": "http://example.com/Organization",
+  "Person": "http://example.com/Person",
+  "name": "http://example.com/name",
+  "age": "http://example.com/age",
+  "revenue": "http://example.com/revenue",
+  "isMarried": "http://example.com/isMarried",
+  "employee": "http://example.com/employee",
+  "customerOf": "http://example.com/customerOf"
+}
+```
+
+#### **GraphQL response**
+
+```javascript
+{
+  "data": {
+    "Person": [
+      {
+        "_id": "http://example.com/john",
+        "_type": [
+          "Person",
+          "Agent"
+        ],
+        "name": "John Smith",
+        "age": 35,
+        "isMarried": true,
+        "customerOf": [
+          {
+            "_id": "http://example.com/org1" 
+          },
+          {
+            "_id": "http://example.com/org2"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### **JSON-LD object**
+See in [JSON-LD Playground](https://tinyurl.com/t4ntoq7).
+
+```javascript
+{
+  "@context": {
+    "_id": "@id",
+    "_type": "@type",
+    "Agent": "http://example.com/Agent",
+    "Organization": "http://example.com/Organization",
+    "Person": "http://example.com/Person",
+    "name": "http://example.com/name",
+    "age": "http://example.com/age",
+    "revenue": "http://example.com/revenue",
+    "isMarried": "http://example.com/isMarried",
+    "employee": "http://example.com/employee",
+    "customerOf": "http://example.com/customerOf"
+  },
+  "@id": "@graph",
+  "Person": [
+    {
+      "_id": "http://example.com/john",
+      "_type": [
+        "Person",
+        "Agent"
+      ],
+      "name": "John Smith",
+      "age": 35,
+      "isMarried": true,
+      "customerOf": [
+        {
+          "_id": "http://example.com/org1" 
+        },
+        {
+          "_id": "http://example.com/org2"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### **RDF data**
+See in [JSON-LD Playground](https://tinyurl.com/t4ntoq7).
+
+```ntriple
+<http://example.com/john> <http://example.com/age> "35"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/org1> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/org2> .
+<http://example.com/john> <http://example.com/isMarried> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://example.com/john> <http://example.com/name> "John Smith" .
+<http://example.com/john> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Agent> .
+<http://example.com/john> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Person> .
+```
+
+<!-- tabs:end -->
+
+
+This context is accessible via a dedicated `_CONTEXT` query/object in the Staple API schema:
+
+
+<!-- tabs:start -->
+
+#### **_CONTEXT query**
+
+
+```graphql
+{
+  _CONTEXT {
+    _id
+    _type
+    Agent
+    Organization
+    Person
+    name
+    age
+    revenue
+    isMarried
+    employee
+    customerOf
+  }
+}
+```
+
+#### **_CONTEXT query response**
+
+```javascript
+{
+  "data": {
+    "_CONTEXT": {
       "_id": "@id",
       "_type": "@type",
       "Agent": "http://example.com/Agent",
@@ -975,360 +1125,164 @@ All type and property URIs used in the ontology and the additional special field
       "isMarried": "http://example.com/isMarried",
       "employee": "http://example.com/employee",
       "customerOf": "http://example.com/customerOf"
-}
-```
-This context is served via a dedicated `_CONTEXT` query in the Staple API schema and can be used to interepret every Staple API query response and input objects as valid JSON-LD objects (see [data](./data) section)
-
-
-
-
-
-This query field returns a unique `_CONTEXT` object, which represents the expanded JSON-LD context that is assumed in the Staple API instance:
-
-This corresponds directly to the associated JSON-LD context:
-
-```javascript
-"@context": {
-    "_id": "@id",
-    "_value": "@value",
-    "_type": "@type",
-    "_reverse": "@reverse",
-    "Thing": "http://schema.org/Thing",
-    "Person": "http://schema.org/Person",
-    "Place": "http://schema.org/Place",
-    "Text": "http://schema.org/Text",
-    "name": "http://schema.org/name",
-    "birthPlace": "http://schema.org/birthPlace",
-    "parent": "http://schema.org/parent",
-    "children": "http://schema.org/children"
-}
-```
-
-
-```graphql
-{
-  _CONTEXT {
-    _id
-    _type
-    Person
-    name
-    birthPlace
-  }
-}
-```
-
-```javascript
-{
-  "data": {
-    "_CONTEXT": {
-      "_id": "@id",
-      "_type": "@type",
-      "Person": "http://schema.org/Person",
-      "name": "http://schema.org/name",
-      "birthPlace": "http://schema.org/birthPlace"
     }
   }
 }
 ```
 
+#### **JSON-LD context**
+
+```javascript
+{
+  "_id": "@id",
+  "_type": "@type",
+  "Agent": "http://example.com/Agent",
+  "Organization": "http://example.com/Organization",
+  "Person": "http://example.com/Person",
+  "name": "http://example.com/name",
+  "age": "http://example.com/age",
+  "revenue": "http://example.com/revenue",
+  "isMarried": "http://example.com/isMarried",
+  "employee": "http://example.com/employee",
+  "customerOf": "http://example.com/customerOf"
+}
+```
+
+<!-- tabs:end -->
 
 
 
 ## Inheritance / inference
 
-The type inference mechanism enables to query and validate objects by their implicit (indirect) types, i.e., those that are only inferred from the type hierarchy in the ontology but not explicitly asserted on the input. 
+Staple API supports basic type inheritance / inference based on the [standard semantics](https://www.w3.org/TR/rdf11-mt/) of the `rdfs:subClassOf` predicate, described by the following valid inference rules:
 
-For instance, a sample ontology in the [example above](./schema) states that `schema:Person rdfs:subClassOf schema:Thing`, i.e., that `Person` is a more specific class than `Thing`, or conversely that `Thing` is a broader class than `Person`. There are several logical consequences of that statement:
+?> `instance a A` <br>
+`A rdfs:subClassOf B` <br> 
+--- <br>
+`instance a B`
 
-1. type `Person` inherits all properties of type `Thing`, meaning that properties of `Thing` are also permitted on objects of type `Person` (but not neccesarily the other way around);
-2. every object that is of type `Person` is also of type `Thing` (but not neccesarily the other way around);
-3. every object that is of type `Person` is a valid filler for any property that requires its values to be of type `Thing` (but not the other way around).
+?> `A rdfs:subClassOf B` <br>
+`B rdfs:subClassOf C` <br> 
+--- <br>
+`A rdfs:subClassOf C`
 
-To find all (indirect / inferred) instances of a certain type you can use the `inferred: true` argument on the respective query. Compare for instance:
+These rules state that an instance of a class is also an instance of its superclass, and that the subclass hierarachy is transitive. Essentially, this inference mechanism enables to query objects by their implicit (indirect) types, i.e., those that are only inferred from the type hierarchy in the ontology but not explicitly asserted in the input. The following example shows the results of the inference on the query level, assuming the same sample ontology including the statement: `example:Person rdfs:subClassOf example:Agent`:
 
----
-Without inference:
+<!-- tabs:start -->
+
+#### **Person created**
 
 ```graphql
-{
-  Thing {
-    _id
+mutation Person {
+    input: {
+      _id: "http://example.com/john"
+      name: "John Smith"
   }
 }
 ```
 
+#### **Agent query 1**
+
+Query: 
+
 ```graphql
+{
+  Agent {
+    _id
+    _type 
+    name
+  }
+}
+```
+
+Response:
+
+```javascript
 {
   "data": {
-    "Thing": [
-    ]
+    "Agent": [
+      ]
   }
 }
 ```
 
+#### **Agent query 2**
 
----
-With inference:
+Query: 
 
 ```graphql
 {
-  Thing(inferred:true) {
-    _id
-  }
-}
-```
-
-```javascript
-{
-  "data": {
-    "Thing": [
-      {
-        "_id": "http://example.com/elisabeth"
-      },
-      {
-        "_id": "http://example.com/charles"
-      },
-      {
-        "_id": "http://example.com/william"
-      },
-      {
-        "_id": "http://example.com/uk"
-      }
-    ]
-  }
-}
-```
-
-
-## Data
-
-The Staple API is intended for managing structured data, i.e., linked data expressed within the [schema.org data model](https://schema.org/docs/datamodel.html). The shape and structure of data objects is sanctioned by the GrapHQL schema, which in turn, reflects the constraints of the ontology model.
-
-For instance, the following objects are valid json data samples compatible with the ontology and schema example described in the [ontology and schema](./schema) section:
-
-
-```javascript
-{
-  "_id": "http://example.com/elisabeth",
-  "_type": "Person",
-  "name": {
-      "_value": "Queen Elisabeth",
-      "_type": "Text"
-  },
-  "birthPlace": {
-    "_id": "http://example.com/uk"
-  },
-  "children": [
-    {
-      "_id": "http://example.com/charles"
-    }
-  ]
-}
-```
-
-```javascript
-{
-  "_id": "http://example.com/charles",
-  "_type": "Person",
-  "name": {
-      "_value": "Prince Charles",
-      "_type": "Text"
-  },
-  "birthPlace": {
-    "_id": "http://example.com/uk"
-  },
-  "children": [
-    {
-      "_id": "http://example.com/william"
-    }
-  ]
-}
-```
-
-```javascript  
-{
-  "_id": "http://example.com/william",
-  "_type": "Person",
-  "name": {
-      "_value": "Prince William",
-      "_type": "Text"
-  },
-  "birthPlace": {
-    "_id": "http://example.com/uk"
-  }
-}
-```
-
-```javascript
-{
-  "_id": "http://example.com/uk",
-  "_type": "Place",
-  "name": {
-      "_value": "Great Britain",
-      "_type": "Text"
-  }
-}
-```
-
-Every valid Staple API data object is a valid JSON-LD when extended with the context served by the API. For instance, the objects listed above should be interpreted as JSON-LD under the context:
-
-```javascript
-context = {
-    "_id": "@id",
-    "_value": "@value",
-    "_type": "@type",
-    "Thing": "http://schema.org/Thing",
-    "Person": "http://schema.org/Person",
-    "Place": "http://schema.org/Place",
-    "Text": "http://schema.org/Text",
-    "name": "http://schema.org/name",
-    "birthPlace": "http://schema.org/birthPlace",
-    "parent": "http://schema.org/parent",
-    "children": "http://schema.org/children"
-}
-```
-
-Thanks to the fixed JSON-LD context assumed and exposed by the API, each data sample, whether part of the input for mutations or a reponse to a query, can be interpreted as a fragment of a larger linked data graph and transformed (e.g., using [JSON-LD Playground](https://json-ld.org/playground/)) into a number of semantically equivallent formats, without loss of the meaning or inviting any semantic ambiguities. 
-
-For instance, the following are some self-contaiend semantic representations of the JSON data object:
-
-```javascript
-{
-  "_id": "http://example.com/elisabeth",
-  "_type": "Person",
-  "name": {
-      "_value": "Queen Elisabeth",
-      "_type": "Text"
-  },
-  "birthPlace": {
-    "_id": "http://example.com/uk"
-  },
-  "children": [
-    {
-      "_id": "http://example.com/charles"
-    }
-  ]
-}
-```
-
----
-Flatenned JSON-LD:
-
-```javascript
-{
-  "@context": context,
-  "_id": "http://example.com/elisabeth",
-  "_type": "Person",
-  "name": {
-      "_value": "Queen Elisabeth",
-      "_type": "Text"
-  },
-  "birthPlace": {
-    "_id": "http://example.com/uk"
-  },
-  "children": [
-    {
-      "_id": "http://example.com/charles"
-    }
-  ]
-}
-```
-
----
-Expanded JSON-LD:
-
-```javascript
-{
-  "@context": context,
-  "_id": "http://example.com/elisabeth",
-  "_type": "http://schema.org/Person",
-  "http://schema.org/name": {
-      "_value": "Queen Elisabeth",
-      "_type": "http://schema.org/Text"
-  },
-  "http://schema.org/birthPlace": {
-    "_id": "http://example.com/uk"
-  },
-  "http://schema.org/children": [
-    {
-      "_id": "http://example.com/charles"
-    }
-  ]
-}
-```
-
----
-N-Triples (RDF):
-
-```ntriple
-<http://example.com/elisabeth> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://schema.org/Person> .
-<http://example.com/elisabeth> <http://schema.org/name> "Queen Elisabeth"^^<http://schema.org/Text> .
-<http://example.com/elisabeth> <http://schema.org/birthPlace> <http://example.com/uk> .
-<http://example.com/elisabeth> <http://schema.org/children> <http://example.com/charles> .
-```
-
----
-Turtle (RDF):
-
-```turtle
-@prefix schema: <http://schema.org/> .
-@prefix example: <http://example.com/> .
-
-exmple:elisabeth a schema:Person ;
-    schema:name "Queen Elisabeth"^^schema:Text ;
-    schema:birthPlace example:uk ;
-    schema:children example:charles .
-```
-
-
-Nested JSON objects are mapped to JSON-LD and interpretted as semantic graphs in an analogical fashion, for instance:
-
-```javascript
-{
-  "@context": context,
-  "_id": "http://example.com/elisabeth",
-  "_type": "Person",
-  "name": {
-      "_value": "Queen Elisabeth",
-      "_type": "Text"
-  },
-  "birthPlace": {
-    "_id": "http://example.com/uk"
-  },
-  "children": [
-    {
-      "_id": "http://example.com/charles",
-      "name": {
-          "_value": "Prince Charles"
-      },
-      "birthPlace": {
-        "_id": "http://example.com/uk",
-        "_type": "Place",
-        "name": {
-          "_value": "Great Britain",
-          "_type": "Text"
+  Agent(
+    inferred: true
+    )  {
+          _id
+          _type 
+          name
         }
-      }
-    }
-  ]
 }
 ```
 
-translates into the following Turtle (RDF) data:
+Response:
 
-
-```turtle
-@prefix schema: <http://schema.org/> .
-@prefix example: <http://example.com/> .
-
-exmple:elisabeth a schema:Person ;
-    schema:name "Queen Elisabeth"^^schema:Text ;
-    schema:birthPlace example:uk ;
-    schema:children example:charles .
-
-example:charles schema:name "Prince Charles" ;
-    schema:birthPlace example:uk .
-
-example:uk a schema:Place ;
-    schema:name "Great Britain"^^schema:Text .
+```javascript
+{
+  "data": {
+    "Agent": [
+      {
+        "_id": "http://example.com/john",
+        "_type": [
+          "Person"
+        ],
+        "name": "John Smith"
+      }
+    ]
+  }
+}
 ```
+
+#### **Agent query 3**
+
+Query: 
+
+```graphql
+{
+  Agent(
+    inferred: true
+    )  {
+          _id
+          _type (inferred: true)
+          name
+        }
+}
+```
+
+Response:
+
+```javascript
+{
+  "data": {
+    "Agent": [
+      {
+        "_id": "http://example.com/john",
+        "_type": [
+          "Person",
+          "Agent"
+        ],
+        "name": "John Smith"
+      }
+    ]
+  }
+}
+```
+
+<!-- tabs:end -->
+
+
+## Data as knowledge graph
+
+The structure of data objects accepted in Staple API is sanctioned by the GraphQL schema, which in turn, reflects the constraints of the ontology model. While syntactically the objects used on the input/output of the API are plain JSONs, the actual data can be naturally virtualized as a single, connected, **semantic knowledge graph**. This is due to the use of unique identifers across the dataset and the JSON-LD mechanism which provides an unambiguous mapping from all JSONs inserted and served via the API to RDF / linked data. 
+
+The following example further extends the 
+
+
+## Back-end configuration

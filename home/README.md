@@ -5,7 +5,7 @@
 
 ## What is it good for?
 
-It is intended as a simple, yet flexible, **data abstraction middleware**, which you can set up within minutes to power your web app with the ability to manage its data  as fragments of a connected, semantic knowledge graph, using a standard GraphQL interface. 
+**Staple API** is intended as a simple, yet flexible, **data abstraction middleware**, which you can set up within minutes to power your web app with the ability to manage its data as fragments of a connected, semantic knowledge graph, using a standard GraphQL interface. 
 
 <br>
 
@@ -22,7 +22,9 @@ It is intended as a simple, yet flexible, **data abstraction middleware**, which
 
 :heavy_check_mark: JSON-LD context included to support immediate JSON-to/from-graph conversions.
 
-:heavy_check_mark: A connector to a MongoDB storage (other backends coming soon :exclamation:).
+:heavy_check_mark: Basic type inheritance / inference supported.
+
+:heavy_check_mark: A connector to a MongoDB storage (other back-ends coming soon!).
 
 :heavy_check_mark: An in-memory graph database for rapid testing and prototyping.
 
@@ -51,12 +53,11 @@ It is intended as a simple, yet flexible, **data abstraction middleware**, which
 
 ?> This software has been created by [EPISTEMIK](http://epistemik.co) and is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
 
-## Technologies used
+## Technology stack
 
 * [GraphQL](https://graphql.org/)
-* [Apollo Server](https://www.apollographql.com/)
-* [schema.org](http://schema.org)
 * [JSON-LD](https://json-ld.org)
+* [schema.org](http://schema.org)
 * [graphy.js](https://graphy.link/)
 * [MongoDB](https://www.mongodb.com/)
 * [NodeJS](https://nodejs.org)
