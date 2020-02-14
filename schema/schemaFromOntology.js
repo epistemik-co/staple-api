@@ -15,6 +15,13 @@ var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
   "http://www.w3.org/2001/XMLSchema#boolean",
   "http://www.w3.org/2001/XMLSchema#decimal"];
 
+var graphQLScalarTypes = {
+  "Boolean" : graphql.GraphQLBoolean,
+  "String" : graphql.GraphQLString,
+  "Float" : graphql.GraphQLFloat,
+  "Int" : graphql.GraphQLInt
+};
+
 /**
  * Remove namespace removes namespace prefixes
  * @param  {String} nameWithNamesapace 
@@ -183,26 +190,10 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
 
       for (let fieldName in object.fields) {
         let fieldType = object.fields[fieldName]["type"];
-        if (fieldType == "Int") {
+        if (graphQLScalarTypes[fieldType]){
           fields[fieldName] = {
-            type: graphql.GraphQLInt,
-            description: fieldName + " of type Int"
-          };
-        } else if (fieldType == "Float") {
-          fields[fieldName] = {
-            type: graphql.GraphQLFloat,
-            description: fieldName + " of type Float"
-          };
-        } else if (fieldType == "String") {
-          fields[fieldName] = {
-            type: graphql.GraphQLString,
-            description: fieldName + " of type String"
-
-          };
-        } else if (fieldType == "Boolean") {
-          fields[fieldName] = {
-            type: graphql.GraphQLBoolean,
-            description: fieldName + " of type Boolean"
+            type: graphQLScalarTypes[fieldType],
+            description: fieldName + " of type " + fieldType
           };
         } else {
           fields[fieldName] = {
@@ -223,25 +214,10 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
 
       for (let fieldName in object.fields) {
         let fieldType = object.fields[fieldName]["type"];
-        if (fieldType == "Int") {
+        if (graphQLScalarTypes[fieldType]){
           fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLInt),
-            description: fieldName + " of type [Int]"
-          };
-        } else if (fieldType == "Float") {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLFloat),
-            description: fieldName + " of type [Float]"
-          };
-        } else if (fieldType == "String") {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLString),
-            description: fieldName + " of type [String]"
-          };
-        } else if (fieldType == "Boolean") {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLBoolean),
-            description: fieldName + " of type [Boolean]"
+            type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
+            description: fieldName + " of type [" + fieldType + "]"
           };
         } else {
           fields[fieldName] = {
@@ -274,9 +250,10 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
 
 /**
  * Create mutation type
- * @param  {classList}
- * @param {inputClassList} 
+ * @param  {classList} classList is a helper object for accesssing output types
+ * @param {inputClassList} inputClassList is a helper object for accessing input types
  */
+
 
 function createMutationType(classList, inputClassList) {
   var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", description: "Put the item into the database. If already exists - overwrite it.", values: { "PUT": { value: 0 } } });
@@ -301,25 +278,10 @@ function createMutationType(classList, inputClassList) {
       };
       for (let fieldName in object.fields) {
         let fieldType = object.fields[fieldName]["type"];
-        if (fieldType == "Int") {
+        if (graphQLScalarTypes[fieldType]){
           fields[fieldName] = {
-            type: graphql.GraphQLInt,
-            description: fieldName + " of type Int"
-          };
-        } else if (fieldType == "Float") {
-          fields[fieldName] = {
-            type: graphql.GraphQLFloat,
-            description: fieldName + " of type Float"
-          };
-        } else if (fieldType == "String") {
-          fields[fieldName] = {
-            type: graphql.GraphQLString,
-            description: fieldName + " of type String"
-          };
-        } else if (fieldType == "Boolean") {
-          fields[fieldName] = {
-            type: graphql.GraphQLBoolean,
-            description: fieldName + " of type Boolean"
+            type: graphQLScalarTypes[fieldType],
+            description: fieldName + " of type " + fieldType
           };
         } else {
           fields[fieldName] = {
@@ -327,7 +289,6 @@ function createMutationType(classList, inputClassList) {
             description: fieldName + " of type [ID]"
           };
         }
-
       }
       return fields;
     };
@@ -349,21 +310,17 @@ function createMutationType(classList, inputClassList) {
  * Main for development
  */
 
-// async function main() {
-//   var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList();
-//   var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
-//   var mutationType = createMutationType(classList, inputClassList);
-//   var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
-//   var app = express();
-
-//   app.use("/graphql", graphqlHTTP({
-//     schema: schema,
-//     graphiql: true,
-//   }));
-//   app.listen(4000);
-//   console.log("Running a GraphQL API server at localhost:4000/graphql");
-//   return schema;
-// }
+async function main() {
+  var schema = await generateSchema();
+  var app = express();
+  app.use("/graphql", graphqlHTTP({
+    schema: schema,
+    graphiql: true,
+  }));
+  app.listen(4000);
+  console.log("Running a GraphQL API server at localhost:4000/graphql");
+  return schema;
+}
 
 /**
  * Generate schema
@@ -380,3 +337,5 @@ async function generateSchema(file) {
 module.exports = {
   generateSchema: generateSchema
 };
+
+main();
