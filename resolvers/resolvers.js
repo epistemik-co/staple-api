@@ -10,7 +10,7 @@ class rootResolver {
 
         this.rootResolver = {};
 
-        this.tree = createTree(schemaMapping);
+        this.tree = createTree(schemaMapping, schemaString);
 
         // -------------------------------------------------- Create Query resolvers
         

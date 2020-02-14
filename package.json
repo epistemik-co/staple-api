@@ -1,6 +1,6 @@
 {
   "name": "staple-api",
-  "version": "1.0.4",
+  "version": "1.0.4-0",
   "description": "Staple API - a structured data API",
   "main": "index.js",
   "dependencies": {

@@ -1,5 +1,4 @@
 const { buildSchemaFromTypeDefinitions } = require("graphql-tools");
-const schemaString = require("./schema");
 let schemaMapping = undefined;
 const logger = require(`../config/winston`);
 
@@ -125,7 +124,7 @@ const saveTreeToFile = (treeFromSchema, path) => {
 };
 
 // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
-const createTree = (schemaMappingArg) => {
+const createTree = (schemaMappingArg, schemaString) => {
     schemaMapping = schemaMappingArg;
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let treeFromSchema = {};
