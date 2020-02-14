@@ -1,4 +1,8 @@
-## Install Node.js
+## Prerequisites
+
+Staple API is build in Node.js and require Yarn to resolve between GraphQL packege dependencies. 
+
+### Install Node.js
 
 You need to ensure Node.js is installed. You can do that by executing the following command:
 
@@ -8,7 +12,7 @@ node -v
 
 If no version is shown, please consult the installation instructions at [https://nodejs.org/](https://nodejs.org/).
 
-## Install Yarn
+### Install Yarn
 
 You need to ensure Yarn is installed. You can do that by executing the following command:
 
@@ -18,12 +22,17 @@ yarn -v
 
 If no version is shown, please consult the installation instructions at [https://classic.yarnpkg.com/en/docs/install](https://classic.yarnpkg.com/en/docs/install).
 
+## Running a demo
 
-## Ontology
+First start a new node project with:
 
-<!-- The schema and resolvers of the GraphQL serivce inside Staple API are generated automatically based on the input [RDF ontology](/docs/?id=ontology-and-schema). The ontology should be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/) and provided in a file. For instance, we can use the following ontology saved in a file `ontology.ttl`: -->
+```bash
+yarn init
+```
 
-Create `ontology.ttl` file:
+### Ontology
+
+The schema and resolvers of the GraphQL serivce inside Staple API are generated automatically based on the input [RDF ontology](/docs/?id=ontology-and-schema). The ontology should be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/) and provided in a file. Create a sample `ontology.ttl` file in the project:
 
 ```turtle
 @prefix schema: <http://schema.org/> .
@@ -55,10 +64,9 @@ example:employee a rdf:Property ;
     schema:rangeIncludes example:Person .
 ```
 
+### Querying the API
 
-## Hello world
-
-Create `package.json` file:
+Replace the `package.json` file with:
 
 ```javascript
 {
@@ -102,9 +110,9 @@ node demo.js
 ```
 
 
-## Run as server
+### Run as server
 
-Create `package.json` file:
+Replace the `package.json` file with:
 
 ```javascript
 {
@@ -156,11 +164,9 @@ Run the demo:
 node demo.js
 ```
 
-## Run with MongoDB config
+### Run with MongoDB config
 
-[Install and run MongoDB](https://docs.mongodb.com/manual/installation/).
-
-Create `package.json` file:
+Replace the `package.json` file with:
 
 ```javascript
 {
@@ -176,6 +182,8 @@ Create `package.json` file:
   }
 }
 ```
+
+[Install and run MongoDB](https://docs.mongodb.com/manual/installation/) and create a database called `staple`.
 
 Create file `demo.js`:
 
