@@ -19,9 +19,7 @@ var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
  */
 
 function removeNamespace(nameWithNamesapace) {
-  nameWithNamesapace = nameWithNamesapace.split(["/"]);
-  nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
-  nameWithNamesapace = nameWithNamesapace.split(["#"]);
+  nameWithNamesapace = nameWithNamesapace.split(/([/|#])/);
   nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
   return nameWithNamesapace;
 }
@@ -381,3 +379,5 @@ async function generateSchema(file) {
 module.exports = {
   generateSchema: generateSchema
 };
+
+main();
