@@ -38,24 +38,22 @@ async function createClassList(filename = "test.ttl") {
   await database.readFromFile(filename);
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
   const subClasses = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
-  const superiorClasses = database.getAllObjs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
+  const superClasses = database.getAllObjs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
   const domainIncludes = database.getAllObjs("http://schema.org/domainIncludes");
   const rangeIncludes = database.getAllObjs("http://schema.org/rangeIncludes");
-  const dataTypes = database.getInstances("http://schema.org/DataType");
   const propertiesInstances = database.getInstances("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
   const propertiesDomainIncludes = database.getAllSubs("http://schema.org/domainIncludes");
   const propertiesRangeIncludes = database.getAllSubs("http://schema.org/rangeIncludes");
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
-  const inverseFunctionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#InverseFunctionalProperty");
 
   //list of all classes
 
-  let classesSet = [...new Set([...classes, ...subClasses, ...superiorClasses, ...domainIncludes, ...rangeIncludes, ...dataTypes, ...rangeIncludes])];
+  let classesSet = [...new Set([...classes, ...subClasses, ...superClasses, ...domainIncludes, ...rangeIncludes, ...rangeIncludes])];
   classesSet = classesSet.filter(item => item !== "http://www.w3.org/2000/01/rdf-schema#Class" && item !== "http://schema.org/Enumeration");
 
   //list of all properties
 
-  let properties = [...new Set([...propertiesInstances, ...propertiesDomainIncludes, ...propertiesRangeIncludes, ...functionalProperties, ...inverseFunctionalProperties])];
+  let properties = [...new Set([...propertiesInstances, ...propertiesDomainIncludes, ...propertiesRangeIncludes, ...functionalProperties])];
 
   //helper objects initialisation
 
@@ -112,10 +110,12 @@ async function createClassList(filename = "test.ttl") {
   for (var baseClass of classesSet) {
     var sup = database.getObjs(baseClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
     var inheritedProperties = {};
+    var inputInheritedProperties = {};
+    var filterInheritedProperties = {};
     for (var superiorClassName of sup) {
       inheritedProperties = classList[removeNamespace(superiorClassName)].fields;
-      inheritedProperties = inputClassList["Input" + removeNamespace(superiorClassName)].fields;
-      inheritedProperties = filterClassList["Filter" + removeNamespace(superiorClassName)].fields;
+      inputInheritedProperties = inputClassList["Input" + removeNamespace(superiorClassName)].fields;
+      filterInheritedProperties = filterClassList["Filter" + removeNamespace(superiorClassName)].fields;
 
       classList[removeNamespace(baseClass)].fields = {
         ...classList[removeNamespace(baseClass)].fields,
@@ -124,12 +124,12 @@ async function createClassList(filename = "test.ttl") {
 
       inputClassList["Input" + removeNamespace(baseClass)].fields = {
         ...inputClassList["Input" + removeNamespace(baseClass)].fields,
-        ...inheritedProperties
+        ...inputInheritedProperties
       };
 
       filterClassList["Filter" + removeNamespace(baseClass)].fields = {
         ...filterClassList["Filter" + removeNamespace(baseClass)].fields,
-        ...inheritedProperties
+        ...filterInheritedProperties
       };
     }
   }
@@ -341,7 +341,6 @@ function createMutationType(classList, inputClassList) {
     });
     mutationType.fields[c] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + c, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + c]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
   }
-
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;
 }
@@ -357,6 +356,7 @@ async function main() {
   var mutationType = createMutationType(classList, inputClassList);
   var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
   var app = express();
+
   app.use("/graphql", graphqlHTTP({
     schema: schema,
     graphiql: true,
@@ -381,5 +381,3 @@ async function generateSchema(file) {
 module.exports = {
   generateSchema: generateSchema
 };
-
-main();
