@@ -8,6 +8,8 @@ var graphql = require("graphql");
 
 var gqlObjects = {};
 
+//list of scalar types uris
+
 var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
   "http://www.w3.org/2001/XMLSchema#integer",
   "http://www.w3.org/2001/XMLSchema#boolean",
@@ -27,9 +29,14 @@ function removeNamespace(nameWithNamesapace) {
 /**
  * Create classList creates all helper class lists later used to create queryType and mutationType
  * @param  {String} filename name of ontology file
+ * @returns {classList} helper object for building output types and queries 
+ * @returns {inputClassList} helper object for building input types and mutations
+ * @returns {filterClassList} helper object for building filters
+ * @returns {classesURIs} list of classes ad uris
+ * @returns {propertiesURIs} list of properties as uris
  */
 
-async function createClassList(filename = "test.ttl") {
+async function createClassList(filename = "test.ttl" /*example file*/) {
 
   //load file to in-memory graphy.js database 
 
@@ -44,14 +51,14 @@ async function createClassList(filename = "test.ttl") {
   const propertiesRangeIncludes = database.getAllSubs("http://schema.org/rangeIncludes");
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
 
-  //list of all classes
+  //list of all classes as uris
 
-  let classesSet = [...new Set([...classes, ...subClasses, ...superClasses, ...domainIncludes, ...rangeIncludes, ...rangeIncludes])];
-  classesSet = classesSet.filter(item => item !== "http://www.w3.org/2000/01/rdf-schema#Class" && item !== "http://schema.org/Enumeration");
+  let classesURIs = [...new Set([...classes, ...subClasses, ...superClasses, ...domainIncludes, ...rangeIncludes, ...rangeIncludes])];
+  classesURIs = classesURIs.filter(item => item !== "http://www.w3.org/2000/01/rdf-schema#Class" && item !== "http://schema.org/Enumeration");
 
   //list of all properties
 
-  let properties = [...new Set([...propertiesInstances, ...propertiesDomainIncludes, ...propertiesRangeIncludes, ...functionalProperties])];
+  let propertiesURIs = [...new Set([...propertiesInstances, ...propertiesDomainIncludes, ...propertiesRangeIncludes, ...functionalProperties])];
 
   //helper objects initialisation
 
@@ -61,10 +68,10 @@ async function createClassList(filename = "test.ttl") {
 
   //filling the helper objects with hierarchy of classes and properties
 
-  for (var propertyIter in properties) {
-    var nameOfProperty = removeNamespace(properties[propertyIter]);
-    var domains = database.getObjs(properties[propertyIter], "http://schema.org/domainIncludes");
-    var ranges = database.getObjs(properties[propertyIter], "http://schema.org/rangeIncludes");
+  for (var propertyIter in propertiesURIs) {
+    var nameOfProperty = removeNamespace(propertiesURIs[propertyIter]);
+    var domains = database.getObjs(propertiesURIs[propertyIter], "http://schema.org/domainIncludes");
+    var ranges = database.getObjs(propertiesURIs[propertyIter], "http://schema.org/rangeIncludes");
     for (var domainIter in domains) {
       var domainName = removeNamespace(domains[domainIter]);
       if (!(domainName in classList
@@ -74,12 +81,8 @@ async function createClassList(filename = "test.ttl") {
         filterClassList[["Filter" + domainName]] = { "name": "Filter" + domainName, "fields": {} };
       }
 
-      try {
-        ranges = ranges.map(r => removeNamespace(r));
-        var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
-      } catch (error) {
-        console.log(ranges);
-      }
+      ranges = ranges.map(r => removeNamespace(r));
+      var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
 
       for (var r in ranges) {
         if (ranges[r] == "integer") {
@@ -100,39 +103,38 @@ async function createClassList(filename = "test.ttl") {
       inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges };
       filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges] };
     }
-
   }
 
   //inheritance
 
-  for (var baseClass of classesSet) {
-    var sup = database.getObjs(baseClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
+  for (var subClass of classesURIs) {
+    var superClass = database.getObjs(subClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
     var inheritedProperties = {};
     var inputInheritedProperties = {};
     var filterInheritedProperties = {};
-    for (var superiorClassName of sup) {
-      inheritedProperties = classList[removeNamespace(superiorClassName)].fields;
-      inputInheritedProperties = inputClassList["Input" + removeNamespace(superiorClassName)].fields;
-      filterInheritedProperties = filterClassList["Filter" + removeNamespace(superiorClassName)].fields;
+    for (var superClassName of superClass) {
+      inheritedProperties = classList[removeNamespace(superClassName)].fields;
+      inputInheritedProperties = inputClassList["Input" + removeNamespace(superClassName)].fields;
+      filterInheritedProperties = filterClassList["Filter" + removeNamespace(superClassName)].fields;
 
-      classList[removeNamespace(baseClass)].fields = {
-        ...classList[removeNamespace(baseClass)].fields,
+      classList[removeNamespace(subClass)].fields = {
+        ...classList[removeNamespace(subClass)].fields,
         ...inheritedProperties
       };
 
-      inputClassList["Input" + removeNamespace(baseClass)].fields = {
-        ...inputClassList["Input" + removeNamespace(baseClass)].fields,
+      inputClassList["Input" + removeNamespace(subClass)].fields = {
+        ...inputClassList["Input" + removeNamespace(subClass)].fields,
         ...inputInheritedProperties
       };
 
-      filterClassList["Filter" + removeNamespace(baseClass)].fields = {
-        ...filterClassList["Filter" + removeNamespace(baseClass)].fields,
+      filterClassList["Filter" + removeNamespace(subClass)].fields = {
+        ...filterClassList["Filter" + removeNamespace(subClass)].fields,
         ...filterInheritedProperties
       };
     }
   }
 
-  return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesSet: classesSet, properties: properties };
+  return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
 }
 
 /**
@@ -143,9 +145,9 @@ async function createClassList(filename = "test.ttl") {
  * @param {properties} 
  */
 
-function createQueryType(classList, filterClassList, classesSet, properties) {
-  properties = properties.map(e => removeNamespace(e));
-  classesSet = classesSet.filter(e => !scalarTypes.includes(e)).map(e => removeNamespace(e));
+function createQueryType(classList, filterClassList, classesURIs, propertiesURIs) {
+  propertiesURIs = propertiesURIs.map(e => removeNamespace(e));
+  classesURIs = classesURIs.filter(e => !scalarTypes.includes(e)).map(e => removeNamespace(e));
 
   var contextType = {
     name: "_CONTEXT", fields: {
@@ -154,12 +156,12 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
     }
   };
 
-  for (var prop of properties) {
-    contextType.fields[prop] = { type: graphql.GraphQLString };
+  for (var property of propertiesURIs) {
+    contextType.fields[property] = { type: graphql.GraphQLString };
   }
 
-  for (var className of classesSet) {
-    contextType.fields[className] = { type: graphql.GraphQLString };
+  for (var classURI of classesURIs) {
+    contextType.fields[classURI] = { type: graphql.GraphQLString };
   }
 
   contextType = new graphql.GraphQLObjectType(contextType);
@@ -252,18 +254,18 @@ function createQueryType(classList, filterClassList, classesSet, properties) {
     };
   };
 
-  for (var c in classList) {
-    gqlObjects[c] = graphql.GraphQLList(new graphql.GraphQLObjectType({
-      name: c,
-      description: c,
-      fields: getFields(classList[c])
+  for (var className in classList) {
+    gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
+      name: className,
+      description: className,
+      fields: getFields(classList[className])
     }));
-    gqlObjects["Filter" + c] = new graphql.GraphQLInputObjectType({
-      name: "Filter" + c,
-      description: "Filter on type: " + c,
-      fields: filterGetFields(filterClassList["Filter" + c])
+    gqlObjects["Filter" + className] = new graphql.GraphQLInputObjectType({
+      name: "Filter" + className,
+      description: "Filter on type: " + className,
+      fields: filterGetFields(filterClassList["Filter" + className])
     });
-    queryType.fields[c] = { type: gqlObjects[c], description: "Get objects of type: " + c, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + c] } } };
+    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] } } };
   }
 
   queryType = new graphql.GraphQLObjectType(queryType);
@@ -331,38 +333,37 @@ function createMutationType(classList, inputClassList) {
     };
   };
 
-  for (var c in classList) {
-    gqlObjects["Input" + c] = new graphql.GraphQLInputObjectType({
-      name: "Input" + c,
-      description: "Input object of type: " + c,
-      fields: getFields(inputClassList["Input" + c])
+  for (var className in classList) {
+    gqlObjects["Input" + className] = new graphql.GraphQLInputObjectType({
+      name: "Input" + className,
+      description: "Input object of type: " + className,
+      fields: getFields(inputClassList["Input" + className])
     });
-    mutationType.fields[c] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + c, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + c]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
+    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
   }
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;
 }
 
 /**
- * Main
- * @param  {} 
+ * Main for development
  */
 
-async function main() {
-  var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList();
-  var queryType = createQueryType(classList, filterClassList, classesSet, properties);
-  var mutationType = createMutationType(classList, inputClassList);
-  var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
-  var app = express();
+// async function main() {
+//   var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList();
+//   var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
+//   var mutationType = createMutationType(classList, inputClassList);
+//   var schema = new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
+//   var app = express();
 
-  app.use("/graphql", graphqlHTTP({
-    schema: schema,
-    graphiql: true,
-  }));
-  app.listen(4000);
-  console.log("Running a GraphQL API server at localhost:4000/graphql");
-  return schema;
-}
+//   app.use("/graphql", graphqlHTTP({
+//     schema: schema,
+//     graphiql: true,
+//   }));
+//   app.listen(4000);
+//   console.log("Running a GraphQL API server at localhost:4000/graphql");
+//   return schema;
+// }
 
 /**
  * Generate schema
@@ -370,8 +371,8 @@ async function main() {
  */
 
 async function generateSchema(file) {
-  var { classList, inputClassList, filterClassList, classesSet, properties } = await createClassList(file);
-  var queryType = createQueryType(classList, filterClassList, classesSet, properties);
+  var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(file);
+  var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
   var mutationType = createMutationType(classList, inputClassList);
   return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
 }
@@ -379,5 +380,3 @@ async function generateSchema(file) {
 module.exports = {
   generateSchema: generateSchema
 };
-
-main();
