@@ -1,18 +1,12 @@
-/* eslint-disable no-unused-vars */
 const DatabaseInterface = require("./database/Database");
 const database = new DatabaseInterface(); 
 var graphql = require("graphql");
+// var express = require("express");
+// var graphqlHTTP = require("express-graphql");
 
 //map of GraphQLObjectTypes and GraphQLInputObjectTypes
 
 var gqlObjects = {};
-
-//list of scalar types uris
-
-var scalarTypes = ["http://www.w3.org/2001/XMLSchema#string",
-  "http://www.w3.org/2001/XMLSchema#integer",
-  "http://www.w3.org/2001/XMLSchema#boolean",
-  "http://www.w3.org/2001/XMLSchema#decimal"];
 
 var graphQLScalarTypes = {
   "Boolean" : graphql.GraphQLBoolean,
@@ -46,7 +40,7 @@ function removeNamespace(nameWithNamesapace) {
  * @returns {propertiesURIs} list of properties as uris
  */
 
-async function createClassList(filename = "test.ttl" /*example file*/) {
+async function createClassList(filename = "schema/test.ttl" /*example file*/) {
 
   //load file to in-memory graphy.js database 
 
@@ -199,24 +193,23 @@ function filterGetFields(object){
 }
 
 function createQueryType(classList, filterClassList, classesURIs, propertiesURIs) {
-  propertiesURIs = propertiesURIs.map(e => removeNamespace(e));
-  classesURIs = classesURIs.filter(e => !scalarTypes.includes(e)).map(e => removeNamespace(e));
 
 //context query
 
   var contextType = {
     name: "_CONTEXT", fields: {
-      "_id": { type: graphql.GraphQLString, description: "The unique identifier of the object" },
-      "_type": { type: graphql.GraphQLString, description: "Types of the object" }
-    }
+      "_id": { type: graphql.GraphQLString, description: "@id" },
+      "_type": { type: graphql.GraphQLString, description: "@type" }
+    },
+    description : "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
   };
 
   for (var property of propertiesURIs) {
-    contextType.fields[property] = { type: graphql.GraphQLString };
+    contextType.fields[removeNamespace(property)] = { type: graphql.GraphQLString, description: property };
   }
 
   for (var classURI of classesURIs) {
-    contextType.fields[classURI] = { type: graphql.GraphQLString };
+    contextType.fields[removeNamespace(classURI)] = { type: graphql.GraphQLString, description: classURI };
   }
 
   contextType = new graphql.GraphQLObjectType(contextType);
