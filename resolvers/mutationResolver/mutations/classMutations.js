@@ -1,5 +1,5 @@
 const validators = require("./validateFunctions");
-const logger = require(`../../../config/winston`);
+const logger = require("../../../config/winston");
 // const util = require("util");
 
 // function classMutations(database, mutation, field, schemaMapping, objectsFromSchemaObjectTree) {
@@ -27,7 +27,7 @@ const updateTypes = (req, schemaMapping, field) => {
     req.input["_type"] = objectName;
     req.input["_inferred"] = [];
     if(schemaMapping["@graphMap"][uri]){
-        let listOfSubTypes = schemaMapping["@graphMap"][uri]["http://www.w3.org/2000/01/rdf-schema#subClassOf"]
+        let listOfSubTypes = schemaMapping["@graphMap"][uri]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
         for(let type of listOfSubTypes){
             let typeName = schemaMapping["@revContext"][type["@id"]];
             req.input["_inferred"].push(typeName);

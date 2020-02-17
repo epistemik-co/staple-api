@@ -6,7 +6,7 @@ const { format } = require("winston");
 var options = {
     file: {
         level: "error",
-        filename: `../logs/app.log`,
+        filename: "../logs/app.log",
         handleExceptions: true,
         json: true,
         maxsize: 5242880, // 5MB
@@ -14,7 +14,7 @@ var options = {
         colorize: false,
     },
     console: {
-        level: "error",
+        level: "info",
         handleExceptions: true,
         json: true,
         colorize: true,

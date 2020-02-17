@@ -2,7 +2,7 @@
 const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
 // const databaseUtilities = require("../../database utilities/dataManagementUtilities/dataManagementUtilities"); 
-const logger = require(`../../../../config/winston`);
+const logger = require("../../../../config/winston");
 const databaseUtilities = require("./Utilities");
 const jsonld = require("jsonld");
 
@@ -106,7 +106,7 @@ class MemoryDatabase {
         return newIds;
     }
 
-    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
+    async loadChildObjectsByUris(database, sub, selection /*, tree, parentName*/) {
         // search selectionSet for core objects load them
         let fieldName = selection.name.value;
         // let fieldData = tree[fieldName];
@@ -161,8 +161,12 @@ class MemoryDatabase {
         return;
     }
 
-    async removeObject(database, objectID) {
-        return this.deleteID(objectID);
+
+    async removeObject(database, objectIDs) {
+        for (var id of objectIDs){
+            this.deleteID(id);
+        }
+        return true;
     }
     // // filters need to be implemented
     // preparefilters(database, selection, tree, parentName) {

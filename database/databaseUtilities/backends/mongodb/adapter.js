@@ -1,5 +1,5 @@
 const MongoClient = require("mongodb").MongoClient;
-const logger = require(`../../../../config/winston`);
+const logger = require("../../../../config/winston");
 
 /* eslint-disable require-atomic-updates */
 const jsonld = require("jsonld");
@@ -120,20 +120,21 @@ class MongodbAdapter {
         }
     }
 
-    async removeObject(database, objectID) {
-        let query = { "_id": objectID };
+    async removeObject(database, objectIDs) {
 
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
+        let query = { "_id": { $in: objectIDs }};
         try {
             const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
 
             logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
 
-            let res = await collection.deleteOne(query);
+            let res = await collection.deleteMany(query);
+
             return res.result.n;
             
         } catch (err) {

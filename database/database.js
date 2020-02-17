@@ -3,7 +3,7 @@ const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
 const databaseUtilities = require("./databaseUtilities/dataManagementUtilities/dataManagementUtilities");
 const dataRetrievalAlgorithm = require("./databaseUtilities/dataManagementUtilities/dataRetrievalAlgorithm");
-const logger = require(`../config/winston`); 
+const logger = require("../config/winston"); 
 // const util = require("util");
 const BackendSelector = require("./databaseUtilities/adapter/BackendSelector");
 
@@ -77,6 +77,13 @@ class Database {
         logger.info("removeObject was called"); 
         if (this.adapter) {
            return await this.adapter.removeObject(this, objectID);
+        } 
+    }
+
+    async removeObjects(objectIDs){
+        logger.info("removeObject was called"); 
+        if (this.adapter) {
+           return await this.adapter.removeObject(this, objectIDs);
         } 
     }
 

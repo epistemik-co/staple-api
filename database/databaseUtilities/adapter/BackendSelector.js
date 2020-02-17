@@ -1,4 +1,4 @@
-const logger = require(`../../../config/winston`);
+const logger = require("../../../config/winston");
 
 class BackendSelector {
     // this.backend contains object with methods implemented for specyfic backend
@@ -15,11 +15,11 @@ class BackendSelector {
         }
 
         if (configObject.type === "mongodb") {
+            logger.info("You are using in mongodb");
             adapterType = require("../backends/mongodb/adapter");
             this.backend = new adapterType(configObject);
         }
         // else if(configObject.type === "mysql"){ ... }
-
 
         logger.info("DBAdapterSelector ready");
     }
