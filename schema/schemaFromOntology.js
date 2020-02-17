@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
 const DatabaseInterface = require("./database/Database");
-const database = new DatabaseInterface();
-var express = require("express");
-var graphqlHTTP = require("express-graphql");
+const database = new DatabaseInterface(); 
 var graphql = require("graphql");
 
 //map of GraphQLObjectTypes and GraphQLInputObjectTypes
@@ -62,7 +60,6 @@ async function createClassList(filename = "test.ttl" /*example file*/) {
   const propertiesDomainIncludes = database.getAllSubs("http://schema.org/domainIncludes");
   const propertiesRangeIncludes = database.getAllSubs("http://schema.org/rangeIncludes");
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
-  // const comments = database.getAllObjs("http://www.w3.org/2000/01/rdf-schema#comment");
 
   //list of all classes as uris
 

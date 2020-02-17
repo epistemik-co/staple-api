@@ -2,8 +2,7 @@
 const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
 // const databaseUtilities = require("../../database utilities/dataManagementUtilities/dataManagementUtilities"); 
-const appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../../config/winston`);
 const databaseUtilities = require("./Utilities");
 const jsonld = require("jsonld");
 

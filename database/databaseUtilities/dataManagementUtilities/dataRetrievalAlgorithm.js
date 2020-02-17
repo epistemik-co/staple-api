@@ -1,5 +1,4 @@
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../config/winston`);
 const util = require("util");
 
 async function loadQueryData(database, queryInfo, uri, page, inferred, tree) {

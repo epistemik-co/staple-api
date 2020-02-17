@@ -3,8 +3,7 @@ const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
 const databaseUtilities = require("./databaseUtilities/dataManagementUtilities/dataManagementUtilities");
 const dataRetrievalAlgorithm = require("./databaseUtilities/dataManagementUtilities/dataRetrievalAlgorithm");
-const appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../config/winston`); 
 // const util = require("util");
 const BackendSelector = require("./databaseUtilities/adapter/BackendSelector");
 

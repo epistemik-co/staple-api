@@ -1,7 +1,6 @@
 const read_graphy = require("graphy").content.nq.read;
 const factory = require("@graphy/core.data.factory");
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../config/winston`);
 
 function createReverseContext(schemaMapping) {
     schemaMapping["@revContext"] = {};

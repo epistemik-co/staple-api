@@ -1,6 +1,5 @@
 const MongoClient = require("mongodb").MongoClient;
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require(`../../../../config/winston`);
 
 /* eslint-disable require-atomic-updates */
 const jsonld = require("jsonld");
@@ -15,7 +14,7 @@ class MongodbAdapter {
 
         let query = this.preparefilters(database, selectionSet, tree);
         if (this.client === undefined) {
-            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
         try {
@@ -66,7 +65,7 @@ class MongodbAdapter {
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
         logger.log("info", "loadChildObjectsByUris was called");
         if (this.client === undefined) {
-            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
         try {
@@ -105,7 +104,7 @@ class MongodbAdapter {
     async pushObjectToBackend(database, input) {
 
         if (this.client === undefined) {
-            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
         try {
@@ -125,7 +124,7 @@ class MongodbAdapter {
         let query = { "_id": objectID };
 
         if (this.client === undefined) {
-            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true }).catch(err => { logger.error(err); });
+            this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
         try {

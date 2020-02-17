@@ -1,8 +1,6 @@
 const { buildSchemaFromTypeDefinitions } = require("graphql-tools");
-const schemaString = require("./schema");
 let schemaMapping = undefined;
-var appRoot = require("app-root-path");
-const logger = require(`${appRoot}/config/winston`);
+const logger = require("../config/winston");
 
 
 const getUris = (object, name, listOfUnions) => {
@@ -112,21 +110,21 @@ const handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUn
     newNode["data"] = newNodeData;
 };
 
-const saveTreeToFile = (treeFromSchema, path) => {
-    var jsonContent = JSON.stringify(treeFromSchema);
-    const fs = require("fs");
-    fs.writeFile(path, jsonContent, "utf8", function (err) {
-        if (err) {
-            logger.error("An error occured while writing JSON Object to File.");
-            return logger.error(err);
-        }
+// const saveTreeToFile = (treeFromSchema, path) => {
+//     var jsonContent = JSON.stringify(treeFromSchema);
+//     const fs = require("fs");
+//     fs.writeFile(path, jsonContent, "utf8", function (err) {
+//         if (err) {
+//             logger.error("An error occured while writing JSON Object to File.");
+//             return logger.error(err);
+//         }
 
-        logger.info("JSON file has been saved.");
-    });
-};
+//         logger.info("JSON file has been saved.");
+//     });
+// };
 
 // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE
-const createTree = (schemaMappingArg) => {
+const createTree = (schemaMappingArg, schemaString) => {
     schemaMapping = schemaMappingArg;
     const schema = buildSchemaFromTypeDefinitions(schemaString);
     let treeFromSchema = {};
@@ -195,7 +193,7 @@ const createTree = (schemaMappingArg) => {
         treeFromSchema[schema.getTypeMap()[schemaTypeName]["name"]] = newNode;
     }
 
-    saveTreeToFile(treeFromSchema, "../output.json"); 
+    // saveTreeToFile(treeFromSchema, "../output.json"); 
     return treeFromSchema;
 };
 

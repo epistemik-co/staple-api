@@ -1,15 +1,17 @@
 {
   "name": "staple-api",
-  "version": "1.0.0",
-  "description": "Staple API - a structured data API",
+  "version": "1.0.6",
+  "description": "Staple API - GraphQL API for semantic knowledge graphs.",
+  "keywords": [
+    "GraphQL",
+    "linked data",
+    "Knowledge graphs",
+    "Web API",
+    "JSON-LD" 
+  ],
   "main": "index.js",
   "dependencies": {
-    "apollo-server-express": "^2.6.8",
-    "app-root-path": "^2.2.1",
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "express-graphql": "^0.8.0",
-    "graphql": "^14.3.1",
+    "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.4",
     "graphy": "^3.2.2",
@@ -32,10 +34,10 @@
     "type": "git",
     "url": "git+https://github.com/epistemik-co/staple-api.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Epistemik",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/epistemik-co/staple-api/issues"
   },
-  "homepage": "https://github.com/epistemik-co/staple-api#readme"
+  "homepage": "https://staple-api.org/"
 }

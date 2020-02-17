@@ -11,7 +11,7 @@ class Database{
     
 
     async create(data){
-        console.log("add");
+        // console.log("add");
     }
 
 
@@ -36,7 +36,7 @@ class Database{
                 y_tree2.add(y_quad)
             })
             .on('eof', () => {
-                console.log('Loading complete.');
+                // console.log('Loading complete.');
             })
         await this.streamPromise(stream)
     }
@@ -57,12 +57,12 @@ class Database{
 
 
     async update(){
-        console.log("update");
+        // console.log("update");
     }
 
 
     async delete(){
-        console.log("delete");
+        // console.log("delete");
     }
 
 
@@ -106,7 +106,7 @@ class Database{
     getSingleLiteral(sub, pred){
         const temp = this.y_tree.match(factory.namedNode( sub ) ,factory.namedNode( pred ) , null);
         
-        console.log("Asked for subject: " + sub + " predicat: " + pred  );
+        // console.log("Asked for subject: " + sub + " predicat: " + pred  );
         let data = [];
         var itr = temp.quads();
         var x = itr.next();

@@ -1,13 +1,12 @@
 
-var appRoot = require("app-root-path");
 var winston = require("winston");
 const { format } = require("winston"); 
 
 // define the custom settings for each transport (file, console)
 var options = {
     file: {
-        level: "info",
-        filename: `${appRoot}/logs/app.log`,
+        level: "error",
+        filename: `../logs/app.log`,
         handleExceptions: true,
         json: true,
         maxsize: 5242880, // 5MB
@@ -15,7 +14,7 @@ var options = {
         colorize: false,
     },
     console: {
-        level: "info",
+        level: "error",
         handleExceptions: true,
         json: true,
         colorize: true,
