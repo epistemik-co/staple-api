@@ -7,9 +7,7 @@ const schemaString = [
         "name": "National Bank",
         "revenue": 12.5,
         "employee": [
-            {
-                "_id": "http://example.com/john"
-            }
+            "http://example.com/john"
         ]
     },
     {
@@ -19,10 +17,8 @@ const schemaString = [
         ],
         "name": "Mobile Network Provider",
         "revenue": 10,
-        "employee": [
-            {
-                "_id": "http://example.com/mark"
-            }
+        "employee": [ 
+            "http://example.com/mark"
         ]
     },
     {
@@ -34,12 +30,8 @@ const schemaString = [
         "age": 35,
         "isMarried": true,
         "customerOf": [
-            {
-                "_id": "http://example.com/bank"
-            },
-            {
-                "_id": "http://example.com/mobile"
-            }
+            "http://example.com/bank",
+            "http://example.com/mobile"
         ]
     },
     {
@@ -51,9 +43,7 @@ const schemaString = [
         "age": 40,
         "isMarried": false,
         "customerOf": [
-            {
-                "_id": "http://example.com/bank"
-            }
+            "http://example.com/bank"
         ]
     }
 ];

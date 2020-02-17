@@ -1,20 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const uuidv1 = require("uuid/v1");
-const jsonld = require("jsonld");
 const { ApolloServer } = require("apollo-server-express");
-const { makeExecutableSchema } = require("graphql-tools");
 const logger = require("./config/winston");
 const staple = require("staple-api");
-const graphql = require('graphql')
-const request = require('request')
-// const DatabaseInterface = require("./database/database");
-// const Resolver = require("./resolvers/resolvers");
-// const createschema = require("./schema/gen-schema-staple/index");
 
-async function main (){
-    
-}
 const app = express();
 
 const Warnings = []; // Warnings can be added as object to this array. Array is clear after each query.
@@ -48,7 +38,12 @@ async function init(app, index) {
     let stapleApi = await staple("./ontology.ttl");
     let schema = stapleApi.schema;
     let database = stapleApi.database;
-    // await loadExampleData(database);
+    let exampleObjects = require("./database/exampleObjects");
+
+    for (let obj of exampleObjects) {
+        await database.pushObjectToBackend(obj)
+    }    
+
     let server = new ApolloServer({
         schema,
         formatResponse: response => {
@@ -71,34 +66,11 @@ async function init(app, index) {
         },
     });
 
-    const path = "/graphql" + index;
-    await insertExampleData("http://localhost:4000" + path)
+    const path = "/graphql/" + index;
     server.applyMiddleware({ app, path });
 
 }
 
-async function loadExampleData(database){
-    let exampleObjects = require("./database/exampleObjects");
-    for (let obj of exampleObjects) {
-        let schMapping = require("./schema/schema-mapping");
-        obj["@context"] = schMapping["@context"];
-        const rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
-        await database.insertRDF(rdf, obj._id);
-    }
-}
- 
-async function insertExampleData(endpoint){
-    let exampleObjects = require("./database/exampleObjects");
-    for (let obj of exampleObjects){
-        let payload = {"query": "mutation " + obj._type[0] + "($input): Input" + obj._type[0], "variables": {"input": obj} }
-        const res = awaitrequest.post({
-            url: endpoint,
-            // payload is the payload above
-            data: payload,
-          });
-          console.log(res.statusCode)
-    }
-}
 // async function customInit(app, index, req) {
 //     // console.log(req.body.value)
 //     let newEndpointData = await createschema(req.body.value);
@@ -148,52 +120,29 @@ async function insertExampleData(endpoint){
 //     return newEndpointData.context;
 // }
 
-
 app.get("/api/dynamic", function (req, res) {
     let id = uuidv1();
     init(app, id);
     res.send(id);
-    logger.warn(`Endpoint created ! http://localhost:4000/graphql${id}`);
+    logger.warn(`Endpoint created ! http://localhost:4000/graphql/${id}`);
 });
     
 
-// app.post("/api/customInit", async function (req, res) {
-//     let id = uuidv1();
-//     let context = await customInit(app, id, req);
+app.post("/api/customInit", async function (req, res) {
+    let id = uuidv1();
+    console.log(req.data)
+    let context = await customInit(app, id, req);
 
-//     if (context["Error"]) {
-//         res.status(500).send(context["Error"]);
-//         logger.warn(`ERROR! Endpoint was not created ! ${context["Error"]} \n${req.body.value}`);
-//     }
-//     else {
-//         res.send({ "id": id, "context": context });
-//         logger.warn(`Endpoint created ! http://localhost:4000/graphql${id}`);
-//     }
+    if (context["Error"]) {
+        res.status(500).send(context["Error"]);
+        logger.warn(`ERROR! Endpoint was not created ! ${context["Error"]} \n${req.body.value}`);
+    }
+    else {
+        res.send({ "id": id, "context": context });
+        logger.warn(`Endpoint created ! http://localhost:4000/graphql/${id}`);
+    }
 
-// });
-
-// It will be used to pre create objects
-// async function setDB() {
-//     let exampleObjects = require("./database/exampleObjects");
-//     let stapleApi = await staple("./ontology.ttl");
-//     let schema = stapleApi.schema;
-//     let database = stapleApi.database;
-//     for (let obj of exampleObjects) {
-//         let schMapping = require("./schema/schema-mapping");
-//         obj["@context"] = schMapping["@context"];
-//         const rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
-//         console.log(rdf)
-//         data
-//         await database.insertRDFForPreloadedData(rdf, obj._id);
-//     }
-//     database.updateInference();
-// }
-
-// async function insertDB(){
-    
-// }
-
-// setDB();
+});
 
 module.exports = {
     app,

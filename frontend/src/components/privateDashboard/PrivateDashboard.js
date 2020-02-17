@@ -180,13 +180,12 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
-              <Playground endpoint={"http://"+this.state.source+":4000/graphql" + this.state.id} className="playground" id="playground" />
+              <Playground endpoint={"http://"+this.state.source+":4000/graphql/" + this.state.id} className="playground" id="playground" />
             </Provider>
           </div>
           <div className="doc-link">
             <p>
-              Full documentation available here : <a href="http://staple-api.org">http://staple-api.org</a>
-              <span>Questions? Contact: staple-api@epistemik.co</span>
+              Full documentation available at: <a href="http://staple-api.org">http://staple-api.org</a>
             </p>
           </div>
         </div>
