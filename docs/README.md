@@ -885,7 +885,7 @@ mutation {
       name: "John Smith"
       age: "35"
       isMarried: true
-      customerOf: ["http://example.com/org1", "http://example.com/org2"]
+      customerOf: ["http://example.com/bank", "http://example.com/mobile"]
     }
   }
 }
@@ -928,10 +928,10 @@ mutation {
         "isMarried": true,
         "customerOf": [
           {
-            "_id": "http://example.com/org1" 
+            "_id": "http://example.com/bank" 
           },
           {
-            "_id": "http://example.com/org2"
+            "_id": "http://example.com/mobile"
           }
         ]
       }
@@ -1016,10 +1016,10 @@ For instance, the running example used in this section would be associated with 
         "isMarried": true,
         "customerOf": [
           {
-            "_id": "http://example.com/org1" 
+            "_id": "http://example.com/bank" 
           },
           {
-            "_id": "http://example.com/org2"
+            "_id": "http://example.com/mobile"
           }
         ]
       }
@@ -1059,10 +1059,10 @@ See in [JSON-LD Playground](https://tinyurl.com/t4ntoq7).
       "isMarried": true,
       "customerOf": [
         {
-          "_id": "http://example.com/org1" 
+          "_id": "http://example.com/bank" 
         },
         {
-          "_id": "http://example.com/org2"
+          "_id": "http://example.com/mobile"
         }
       ]
     }
@@ -1075,8 +1075,8 @@ See in [JSON-LD Playground](https://tinyurl.com/t4ntoq7).
 
 ```ntriple
 <http://example.com/john> <http://example.com/age> "35"^^<http://www.w3.org/2001/XMLSchema#integer> .
-<http://example.com/john> <http://example.com/customerOf> <http://example.com/org1> .
-<http://example.com/john> <http://example.com/customerOf> <http://example.com/org2> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/bank> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/mobile> .
 <http://example.com/john> <http://example.com/isMarried> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
 <http://example.com/john> <http://example.com/name> "John Smith" .
 <http://example.com/john> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Agent> .
@@ -1295,10 +1295,10 @@ Consider several objects representing people and organizations inserted via the 
 ```graphql
 mutation {
   Person(input: {
-    _id: "http://example.com/john",
-    name: "John Smith",
+    _id: "http://example.com/john"
+    name: "John Smith"
     customerOf: [
-      "http://example.com/bank",
+      "http://example.com/bank"
       "http://example.com/mobile"
     ]
   })
@@ -1308,8 +1308,8 @@ mutation {
 ```graphql
 mutation {
   Person(input: {
-    _id: "http://example.com/mark",
-    name: "Mark Brown",
+    _id: "http://example.com/mark"
+    name: "Mark Brown"
     customerOf: [
       "http://example.com/bank"
     ]
@@ -1320,8 +1320,8 @@ mutation {
 ```graphql
 mutation {
   Organization(input: {
-    _id: "http://example.com/bank",
-    name: "National Bank",
+    _id: "http://example.com/bank"
+    name: "National Bank"
     employee: [
       "http://example.com/john" 
     ]
@@ -1332,8 +1332,8 @@ mutation {
 ```graphql
 mutation {
   Organization(input: {
-    _id: "http://example.com/mobile",
-    name: "Mobile Network Provider",
+    _id: "http://example.com/mobile"
+    name: "Mobile Network Provider"
     employee: [
       "http://example.com/mark" 
     ]
@@ -1434,9 +1434,42 @@ This in turn can be visualsed as:
 
 ## Back-end configuration
 
+Staple API currently support two back-end storage connectors (more to be added soon) (see [Getting started](/tutorial/?id=running-a-demo) for working examples):
+
+1. [graphy.js](http://graphy.link)
+2. [MongoDB](https://www.mongodb.com/)
+
+**graphy.js** is a lightweight in memory quad store (graph database for RDF). It is enabled by default and no additional configuration is required to initiate it. This way it is good for reapid testing and prototyping. Note that all data inserted to this storafe during the runtime is lost on closing the service. 
+
+**MongoDB** is a popular JSON document store available as a stand-alone server or a cloud service ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas). In order to use Staple API on top of MongoDB the following credentials need to be passed when initiating the service: 
+
+```javascript
+import staple-api
+
+...
+
+let credentials = {
+    type: "mongodb",
+    url: "mongodb://127.0.0.1:27017", 
+    dbName: "dbName",
+    collectionName: "collectionName",
+};
+
+async function StapleDemo() {
+    let stapleApi = await staple("./ontology.ttl", credentials);
+}
+
+...
+```
+where:
+* `type: "mongodb"` is a constant attribute for this connector
+* `127.0.0.1:27017` is the `IP:port` of the MongoDB endpoint
+* `dbName` is the name of the designated MongoDB database
+* `collectionName` is the name of the designated MongoDB collection
+
 ## References
 
-For further background see the references below:
+For more background reading and documentation see the references below.
 
 #### Knowledge graphs
 * [WTF is a Knowledge Graph?](https://hackernoon.com/wtf-is-a-knowledge-graph-a16603a1a25f), Jo Stichbury
@@ -1444,6 +1477,10 @@ For further background see the references below:
 * [What is a knowledge graph?](https://www.ontotext.com/knowledgehub/fundamentals/what-is-a-knowledge-graph/), Ontotext
 * [AI & Graph Technology: What Are Knowledge Graphs](https://neo4j.com/blog/ai-graph-technology-knowledge-graphs/), Neo4j
 * [What is a knowledge graph?](https://www.poolparty.biz/what-is-a-knowledge-graph), Semantic Web Company
+
+#### JSON-LD
+
+* [JSON-LD 1.0 W3C Recommendation](https://www.w3.org/TR/2014/REC-json-ld-20140116/)
 
 #### GraphQL + JSON-LD
 * [What Can the Semantic Web Do for GraphQL?](https://medium.com/@sklarman/what-the-semantic-web-can-do-for-graphql-8cfb39971714), Szymon Klarman

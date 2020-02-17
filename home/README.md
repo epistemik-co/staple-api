@@ -51,6 +51,10 @@ A **knowledge graph** is an abstraction of data that views it as a collection of
 
 ?> The GitHub repository is available at: [https://github.com/epistemik-co/staple-api](https://github.com/epistemik-co/staple-api).
 
+## NPM
+
+?> The API is available as an NPM package from: [https://github.com/epistemik-co/staple-api](https://www.npmjs.com/package/staple-api).
+
 ## License
 
 ?> This software has been created by [EPISTEMIK](http://epistemik.co) and is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
