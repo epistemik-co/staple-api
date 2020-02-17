@@ -61,6 +61,7 @@ async function createClassList(filename = "test.ttl" /*example file*/) {
   const propertiesDomainIncludes = database.getAllSubs("http://schema.org/domainIncludes");
   const propertiesRangeIncludes = database.getAllSubs("http://schema.org/rangeIncludes");
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
+  // const comments = database.getAllObjs("http://www.w3.org/2000/01/rdf-schema#comment");
 
   //list of all classes as uris
 
@@ -83,6 +84,7 @@ async function createClassList(filename = "test.ttl" /*example file*/) {
     var nameOfProperty = removeNamespace(propertiesURIs[propertyIter]);
     var domains = database.getObjs(propertiesURIs[propertyIter], "http://schema.org/domainIncludes");
     var ranges = database.getObjs(propertiesURIs[propertyIter], "http://schema.org/rangeIncludes");
+    var comments = database.getObjs(propertiesURIs[propertyIter], "http://www.w3.org/2000/01/rdf-schema#comment");
     for (var domainIter in domains) {
       var domainName = removeNamespace(domains[domainIter]);
       if (!(domainName in classList
@@ -101,9 +103,11 @@ async function createClassList(filename = "test.ttl" /*example file*/) {
           inputRanges[r] = graphQLScalarTypes[ranges[r]];
         }
       }
-      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges };
-      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges };
-      filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges] };
+      var classComment = database.getObjs(domains[domainIter], "http://www.w3.org/2000/01/rdf-schema#comment");
+      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments};
+      classList[[domainName]]["description"] = classComment;
+      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges,"description": comments };
+      filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
     }
   }
 
@@ -159,12 +163,12 @@ function getFieldsQuery(object){
       if (graphQLScalarTypes[fieldType]){
         fields[fieldName] = {
           type: graphQLScalarTypes[fieldType],
-          description: fieldName + " of type " + fieldType
+          description: String(object.fields[fieldName]["description"])
         };
       } else {
         fields[fieldName] = {
           type: gqlObjects[fieldType],
-          description: fieldName + " of type " + fieldType
+          description: String(object.fields[fieldName]["description"])
         };
       }
     }
@@ -232,7 +236,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   for (var className in classList) {
     gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
       name: className,
-      description: className,
+      description: String(classList[className].description),
       fields: getFieldsQuery(classList[className])
     }));
     gqlObjects["Filter" + className] = new graphql.GraphQLInputObjectType({
