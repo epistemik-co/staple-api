@@ -1,8 +1,6 @@
 const DatabaseInterface = require("./database/Database");
 const database = new DatabaseInterface(); 
 var graphql = require("graphql");
-// var express = require("express");
-// var graphqlHTTP = require("express-graphql");
 
 //map of GraphQLObjectTypes and GraphQLInputObjectTypes
 
@@ -300,22 +298,6 @@ function createMutationType(classList, inputClassList) {
 }
 
 /**
- * Main for development
- */
-
-// async function main() {
-//   var schema = await generateSchema();
-//   var app = express();
-//   app.use("/graphql", graphqlHTTP({
-//     schema: schema,
-//     graphiql: true,
-//   }));
-//   app.listen(4000);
-//   console.log("Running a GraphQL API server at localhost:4000/graphql");
-//   return schema;
-// }
-
-/**
  * Generate schema
  * @param  {file} file containing ontology
  */
@@ -330,5 +312,3 @@ async function generateSchema(file) {
 module.exports = {
   generateSchema: generateSchema
 };
-
-// main();
