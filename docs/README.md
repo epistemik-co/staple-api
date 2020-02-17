@@ -72,7 +72,7 @@ Currently the ontologies accepted by Staple API must be defined in the [RDF Turt
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix example: <http://example.com#> .
+@prefix example: <http://example.com/> .
 
 # classes (-> GraphQL types )
 
@@ -132,7 +132,7 @@ Prefix declarations, placed in the beginning of the ontology, define mappings fr
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix example: <http://example.com#> .
+@prefix example: <http://example.com/> .
 ```
 
 
@@ -1280,9 +1280,144 @@ Response:
 
 ## Data as knowledge graph
 
-The structure of data objects accepted in Staple API is sanctioned by the GraphQL schema, which in turn, reflects the constraints of the ontology model. While syntactically the objects used on the input/output of the API are plain JSONs, the actual data can be naturally virtualized as a single, connected, **semantic knowledge graph**. This is due to the use of unique identifers across the dataset and the JSON-LD mechanism which provides an unambiguous mapping from all JSONs inserted and served via the API to RDF / linked data. 
+The structure of data objects managed via Staple API is sanctioned by the GraphQL schema, which in turn, reflects the constraints of the ontology model. While syntactically these objects are plain JSONs, the actual data they convey can be naturally viewed as fragments of a single, connected, **semantic knowledge graph**. This is due to the use of identifers (URIs) unique across the entire dataset and the JSON-LD mechanism, which provides an unambiguous mapping from JSON to RDF. 
 
-The following example further extends the 
+Consider several objects representing people and organizations inserted via the following Staple API mutations (we assume the ontology and JSON-LD context of the running example used across this documentation):
+
+```graphql
+mutation Person(input: {
+    "_id": "http://example.com/john",
+    "name": "John Smith",
+    "customerOf": [
+      {
+        "_id": "http://example.com/bank" 
+      },
+      {
+        "_id": "http://example.com/mobile"
+      }
+    ]
+  })
+
+mutation Person(input: {
+    "_id": "http://example.com/mark",
+    "name": "Mark Brown",
+    "customerOf": [
+      {
+        "_id": "http://example.com/bank" 
+      }
+    ]
+  })
+
+mutation Organization(input: {
+    "_id": "http://example.com/bank",
+    "name": "National Bank",
+    "employee": [
+      {
+        "_id": "http://example.com/john" 
+      }
+    ]
+  })
+
+mutation Organization(input: {
+    "_id": "http://example.com/mobile",
+    "name": "Mobile Network Provider",
+    "employee": [
+      {
+        "_id": "http://example.com/mark" 
+      }
+    ]
+  })
+```
+
+Various fragments of this data can be then retrieved in multiple ways using different queries, for instance:
+
+```graphql
+{
+  Organization {
+    _id
+    _type
+    name
+    employee {
+      _id
+      _type
+      name
+      customerOf {
+        _id
+      }
+    }
+  }
+}
+```
+
+The response to this query should look as follows:
+```graphql
+{
+  "data": {
+    "Organization": [
+      {
+        "_id": "http://example.com/bank",
+        "_type": [
+          "Organization"
+        ],
+        "name": "National Bank",
+        "employee": [
+          {
+            "_id": "http://example.com/john",
+            "name": "John Smith",
+            "customerOf": [
+              {
+                "_id": "http://example.com/bank" 
+              },
+              {
+                "_id": "http://example.com/mobile"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "_id": "http://example.com/mobile",
+        "_type": [
+          "Organization"
+        ],
+        "name": "Mobile Network Provider",
+        "employee": [
+          {
+            "_id": "http://example.com/mark",
+            "name": "Mark Brown",
+            "customerOf": [
+              {
+                "_id": "http://example.com/bank" 
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+When coupled with [the assumed JSON-LD context](https://tinyurl.com/uovk27s), which disambiguates the data and maps it to a graph structure, the response above is equivalent with the following RDF dataset:
+
+```ntriple
+<http://example.com/bank> <http://example.com/employee> <http://example.com/john> .
+<http://example.com/bank> <http://example.com/name> "National Bank" .
+<http://example.com/bank> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/bank> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/mobile> .
+<http://example.com/john> <http://example.com/name> "John Smith" .
+<http://example.com/mark> <http://example.com/customerOf> <http://example.com/bank> .
+<http://example.com/mark> <http://example.com/name> "Mark Brown" .
+<http://example.com/mobile> <http://example.com/employee> <http://example.com/mark> .
+<http://example.com/mobile> <http://example.com/name> "Mobile Network Provider" .
+<http://example.com/mobile> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+```
+This in turn can be visualsed as:
+<p align="center">
+  <img src="kg-example.png">
+</p>
+
 
 
 ## Back-end configuration
