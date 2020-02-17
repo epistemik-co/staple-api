@@ -1286,13 +1286,7 @@ Response:
 
 ## Data as knowledge graph
 
-A **knowledge graph** is an abstraction of data that views it as a collection of entities (represented as _graph nodes_) connected with relationships (represented as _graph edges_) whose meaning and structure is described via a consistent set of semantic rules and constraints (ontology/schema). For more background see, e.g.:
-
-* [WTF is a Knowledge Graph?](https://hackernoon.com/wtf-is-a-knowledge-graph-a16603a1a25f), Jo Stichbury
-* [Knowledge graphs beyond the hype](https://www.zdnet.com/article/knowledge-graphs-beyond-the-hype-getting-knowledge-in-and-out-of-graphs-and-databases/), George Anadiotis
-* [What is a knowledge graph?](https://www.ontotext.com/knowledgehub/fundamentals/what-is-a-knowledge-graph/), Ontotext
-* [AI & Graph Technology: What Are Knowledge Graphs](https://neo4j.com/blog/ai-graph-technology-knowledge-graphs/), Neo4j
-* [What is a knowledge graph?](https://www.poolparty.biz/what-is-a-knowledge-graph), Semantic Web Company
+A **knowledge graph** is an abstraction of data that views it as a collection of entities (represented as _graph nodes_) connected with relationships (represented as _graph edges_) whose meaning and structure is described via a consistent set of semantic rules and constraints (ontology/schema). For more background see [the reference section](/docs/?id=references).
 
 In Staple API, the structure of client-facing data objects is sanctioned by the GraphQL schema, which in turn, reflects the semantic constraints of the ontology model. While syntactically these objects are plain JSONs, the actual data they convey can be naturally viewed as fragments of a single knowledge graph. This is due to the use of identifers (URIs) unique across the entire dataset and the JSON-LD mechanism, which provides an unambiguous mapping from JSON to RDF. 
 
@@ -1439,3 +1433,18 @@ This in turn can be visualsed as:
 
 
 ## Back-end configuration
+
+## References
+
+For further background see the references below:
+
+#### Knowledge graphs
+* [WTF is a Knowledge Graph?](https://hackernoon.com/wtf-is-a-knowledge-graph-a16603a1a25f), Jo Stichbury
+* [Knowledge graphs beyond the hype](https://www.zdnet.com/article/knowledge-graphs-beyond-the-hype-getting-knowledge-in-and-out-of-graphs-and-databases/), George Anadiotis
+* [What is a knowledge graph?](https://www.ontotext.com/knowledgehub/fundamentals/what-is-a-knowledge-graph/), Ontotext
+* [AI & Graph Technology: What Are Knowledge Graphs](https://neo4j.com/blog/ai-graph-technology-knowledge-graphs/), Neo4j
+* [What is a knowledge graph?](https://www.poolparty.biz/what-is-a-knowledge-graph), Semantic Web Company
+
+#### GraphQL + JSON-LD
+* [What Can the Semantic Web Do for GraphQL?](https://medium.com/@sklarman/what-the-semantic-web-can-do-for-graphql-8cfb39971714), Szymon Klarman
+* [Linked Open Statistical Data, Served Simply](https://medium.com/@sklarman/linked-open-statistical-data-served-simply-ead245bf715), Szymon Klarman
