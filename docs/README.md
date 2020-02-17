@@ -1441,7 +1441,7 @@ Staple API currently support two back-end storage connectors (more to be added s
 
 **graphy.js** is a lightweight in memory quad store (graph database for RDF). It is enabled by default and no additional configuration is required to initiate it. This way it is good for reapid testing and prototyping. Note that all data inserted to this storafe during the runtime is lost on closing the service. 
 
-**MongoDB** is a popular JSON document store available as a stand-alone server or a cloud service ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas). In order to use Staple API on top of MongoDB the following credentials need to be passed when initiating the service: 
+**MongoDB** is a popular JSON document store available as a stand-alone server or a cloud service ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas)). In order to use Staple API on top of MongoDB the following credentials need to be passed when initiating the service: 
 
 ```javascript
 import staple-api
@@ -1473,14 +1473,15 @@ For more background reading and documentation see the references below.
 
 #### Knowledge graphs
 * [WTF is a Knowledge Graph?](https://hackernoon.com/wtf-is-a-knowledge-graph-a16603a1a25f), Jo Stichbury
-* [Knowledge graphs beyond the hype](https://www.zdnet.com/article/knowledge-graphs-beyond-the-hype-getting-knowledge-in-and-out-of-graphs-and-databases/), George Anadiotis
 * [What is a knowledge graph?](https://www.ontotext.com/knowledgehub/fundamentals/what-is-a-knowledge-graph/), Ontotext
 * [AI & Graph Technology: What Are Knowledge Graphs](https://neo4j.com/blog/ai-graph-technology-knowledge-graphs/), Neo4j
 * [What is a knowledge graph?](https://www.poolparty.biz/what-is-a-knowledge-graph), Semantic Web Company
+* [Knowledge graphs beyond the hype: Getting knowledge in and out of graphs and databases](https://www.zdnet.com/article/knowledge-graphs-beyond-the-hype-getting-knowledge-in-and-out-of-graphs-and-databases/), George Anadiotis
+* [Building a knolwedge graph](https://6point6.co.uk/insights/building-a-knowledge-graph/), Daniel Alexander Smith
 
 #### JSON-LD
 
-* [JSON-LD 1.0 W3C Recommendation](https://www.w3.org/TR/2014/REC-json-ld-20140116/)
+* [JSON-LD 1.0 specification](https://www.w3.org/TR/2014/REC-json-ld-20140116/)
 
 #### GraphQL + JSON-LD
 * [What Can the Semantic Web Do for GraphQL?](https://medium.com/@sklarman/what-the-semantic-web-can-do-for-graphql-8cfb39971714), Szymon Klarman
