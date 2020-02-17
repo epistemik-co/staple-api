@@ -305,7 +305,7 @@ input Person_FILTER {
 
 type Mutation {
   DELETE(
-    _id: ID
+    _id: [ID]
   ): Boolean
 
   Agent(
@@ -530,7 +530,7 @@ type Mutation {
   """Delete an object"""
   DELETE(
     """An id of the object to be deleted"""
-    _id: ID
+    _id: [ID]
   ): Boolean
 
   """Perform mutation over an object of type: Agent"""
@@ -878,13 +878,15 @@ The input object includes the exact same fields as the associated object type, e
 #### **mutation**
 
 ```graphql
-mutation Person {
+mutation {
+  Person {
     input: {
       _id: "http://example.com/john"
       name: "John Smith"
       age: "35"
       isMarried: true
       customerOf: ["http://example.com/org1", "http://example.com/org2"]
+    }
   }
 }
 ```
@@ -948,7 +950,7 @@ Finally, GraphQL exposes also a unique `DELETE` mutation which deletes an object
 type Mutation {
   
   DELETE(
-    _id: ID
+    _id: [ID]
   ): Boolean
 
 }
@@ -957,7 +959,9 @@ type Mutation {
 For instance:
 
 ```graphql
-mutation DELETE (id: "http://example.com/john")
+mutation {
+  DELETE (id: ["http://example.com/john"])
+}
 ```
 
 !> All mutations return `true` whenever they succeed and `false` otherwise. 
@@ -1173,10 +1177,12 @@ These rules state that an instance of a class is also an instance of its supercl
 #### **Person created**
 
 ```graphql
-mutation Person {
+mutation {
+  Person {
     input: {
       _id: "http://example.com/john"
       name: "John Smith"
+    }
   }
 }
 ```
@@ -1293,48 +1299,52 @@ In Staple API, the structure of client-facing data objects is sanctioned by the 
 Consider several objects representing people and organizations inserted via the following Staple API mutations (we assume the ontology and JSON-LD context of the running example used across this documentation):
 
 ```graphql
-mutation Person(input: {
-    "_id": "http://example.com/john",
-    "name": "John Smith",
-    "customerOf": [
-      {
-        "_id": "http://example.com/bank" 
-      },
-      {
-        "_id": "http://example.com/mobile"
-      }
+mutation {
+  Person(input: {
+    _id: "http://example.com/john",
+    name: "John Smith",
+    customerOf: [
+      "http://example.com/bank",
+      "http://example.com/mobile"
     ]
   })
+}
+```
 
-mutation Person(input: {
-    "_id": "http://example.com/mark",
-    "name": "Mark Brown",
-    "customerOf": [
-      {
-        "_id": "http://example.com/bank" 
-      }
+```graphql
+mutation {
+  Person(input: {
+    _id: "http://example.com/mark",
+    name: "Mark Brown",
+    customerOf: [
+      "http://example.com/bank"
     ]
   })
+}
+```
 
-mutation Organization(input: {
-    "_id": "http://example.com/bank",
-    "name": "National Bank",
-    "employee": [
-      {
-        "_id": "http://example.com/john" 
-      }
+```graphql
+mutation {
+  Organization(input: {
+    _id: "http://example.com/bank",
+    name: "National Bank",
+    employee: [
+      "http://example.com/john" 
     ]
   })
-
-mutation Organization(input: {
-    "_id": "http://example.com/mobile",
-    "name": "Mobile Network Provider",
-    "employee": [
-      {
-        "_id": "http://example.com/mark" 
-      }
+}
+```
+  
+```graphql
+mutation {
+  Organization(input: {
+    _id: "http://example.com/mobile",
+    name: "Mobile Network Provider",
+    employee: [
+      "http://example.com/mark" 
     ]
   })
+}
 ```
 
 Various fragments of this data can be then retrieved in multiple ways using different queries, for instance:
