@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const DatabaseInterface = require("./database/Database");
 const database = new DatabaseInterface();
 var express = require("express");
