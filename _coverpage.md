@@ -7,6 +7,7 @@
 > :heavy_exclamation_mark: This site is under construction 
 :heavy_exclamation_mark:
 
-[Documentation](/home/) 
+[Docs](/home/) 
 [Playground](http://playground.staple-api.org)
 [GitHub](https://github.com/epistemik-co/staple-api) 
+[NPM](https://www.npmjs.com/package/staple-api)
