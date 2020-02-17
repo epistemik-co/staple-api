@@ -1,6 +1,6 @@
 ## Introduction
 
-**Staple API** is a lightweight GraphQL-based API enabling easy management of **semantic knowledge graphs**, virtualized as linked data and structured by an RDF ontology. The two driving principles behind the design of the API are:
+**Staple API** is a lightweight GraphQL-based API enabling easy management of **knowledge graphs**, virtualized as linked data and structured by an RDF ontology. The two driving principles behind the design of the API are:
 1. The core GraphQL service with its schema and resolvers is **induced fully automatically from a simple RDF ontology** and is coupled with a selected backend (currently only MongoDB or an in-memory graph databse). This makes configuring and starting the API possible in mere minutes. 
 2. All CRUD operations are done entirely via **the standard GraphQL interface and based exlusively on JSON** objects. This makes data management simple and intuitive for majority of developers. The semantic knowledge graph is an abstraction of the data and is virtulized as linked data via the optional JSON-LD JSON-to-graph mapping mechanism. 
 
@@ -1280,7 +1280,15 @@ Response:
 
 ## Data as knowledge graph
 
-The structure of data objects managed via Staple API is sanctioned by the GraphQL schema, which in turn, reflects the constraints of the ontology model. While syntactically these objects are plain JSONs, the actual data they convey can be naturally viewed as fragments of a single, connected, **semantic knowledge graph**. This is due to the use of identifers (URIs) unique across the entire dataset and the JSON-LD mechanism, which provides an unambiguous mapping from JSON to RDF. 
+A **knowledge graph** is an abstraction of data that views it as a collection of entities (represented as _graph nodes_) connected with relationships (represented as _graph edges_) whose meaning and structure is described via a consistent set of semantic rules and constraints (ontology/schema). For more background see, e.g.:
+
+* [WTF is a Knowledge Graph?](https://hackernoon.com/wtf-is-a-knowledge-graph-a16603a1a25f), Jo Stichbury
+* [Knowledge graphs beyond the hype](https://www.zdnet.com/article/knowledge-graphs-beyond-the-hype-getting-knowledge-in-and-out-of-graphs-and-databases/), George Anadiotis
+* [What is a knowledge graph?](https://www.ontotext.com/knowledgehub/fundamentals/what-is-a-knowledge-graph/), Ontotext
+* [AI & Graph Technology: What Are Knowledge Graphs](https://neo4j.com/blog/ai-graph-technology-knowledge-graphs/), Neo4j
+* [What is a knowledge graph?](https://www.poolparty.biz/what-is-a-knowledge-graph), Semantic Web Company
+
+In Staple API, the structure of client-facing data objects is sanctioned by the GraphQL schema, which in turn, reflects the semantic constraints of the ontology model. While syntactically these objects are plain JSONs, the actual data they convey can be naturally viewed as fragments of a single knowledge graph. This is due to the use of identifers (URIs) unique across the entire dataset and the JSON-LD mechanism, which provides an unambiguous mapping from JSON to RDF. 
 
 Consider several objects representing people and organizations inserted via the following Staple API mutations (we assume the ontology and JSON-LD context of the running example used across this documentation):
 
