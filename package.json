@@ -1,7 +1,7 @@
 {
   "name": "staple-api",
-  "version": "1.0.6",
-  "description": "Staple API - GraphQL API for semantic knowledge graphs.",
+  "version": "1.0.7",
+  "description": "Staple API - GraphQL API for Knowledge Graphs.",
   "keywords": [
     "GraphQL",
     "linked data",
