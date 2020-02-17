@@ -267,14 +267,14 @@ class Database {
                     y_quad.graph = factory.namedNode(null);
 
                     // add inverses 
-                    let inverse = this.schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
-                    inverse = inverse[0]
-                    if (inverse !== undefined) {
-                        inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
-                            let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
-                            tree.add(quad);
-                        })
-                    }
+                    // let inverse = this.schemaMapping['@graph'].filter(x => x["@id"] === y_quad.predicate.value)
+                    // inverse = inverse[0]
+                    // if (inverse !== undefined) {
+                    //     inverse['http://schema.org/inverseOf'].forEach(inversePredicate => {
+                    //         let quad = factory.quad(y_quad.object, factory.namedNode(inversePredicate), y_quad.subject, y_quad.graph);
+                    //         tree.add(quad);
+                    //     })
+                    // }
 
                     tree.add(y_quad);
                 }
@@ -284,7 +284,7 @@ class Database {
                 resolve('done')
             }
 
-            read_graphy(rdf, { data, eof, })
+            // read_graphy(rdf, { data, eof, })
         });
     }
 

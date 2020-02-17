@@ -1,4 +1,4 @@
-const schemaString = `@prefix schema: <http://schema.org/> .
+@prefix schema: <http://schema.org/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -38,7 +38,3 @@ example:customerOf a rdf:Property ;
     rdfs:comment "An organization this agent is a customer of" ;
     schema:domainIncludes example:Agent ;
     schema:rangeIncludes example:Organization .
-
-`
-
-module.exports = schemaString;
