@@ -36,7 +36,6 @@ setInterval(function () {
 
 async function init(app, index) {
     let stapleApi = await staple({file: "./ontology.ttl"});
-    console.log(stapleApi.schemaMapping['@context2'])
     let schema = stapleApi.schema;
     let database = stapleApi.database;
     let exampleObjects = require("./database/exampleObjects");
@@ -79,7 +78,7 @@ async function customInit(app, index, req) {
     if (newEndpointData["Error"]) {
         return newEndpointData;
     }
-
+    console.log(newEndpointData.schema)
     
     let server = new ApolloServer({
         schema,
