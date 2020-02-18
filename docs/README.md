@@ -1443,7 +1443,6 @@ async function StapleDemo() {
 }
 
 StapleDemo()
-...
 ```
 
 ### Ontology parameter

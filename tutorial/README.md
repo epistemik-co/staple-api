@@ -73,7 +73,7 @@ Replace the `package.json` file with:
   "name": "staple-api-demo",
   "main": "demo.js",
   "dependencies": {
-    "staple-api": "^1.0.8"
+    "staple-api": "^1.0.14"
   },
   "resolutions": {
     "graphql": "^14.6.0"
@@ -125,7 +125,7 @@ Replace the `package.json` file with:
   "dependencies": {
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
-    "staple-api": "^1.0.8"
+    "staple-api": "^1.0.14"
   },
   "resolutions": {
     "graphql": "^14.6.0"
@@ -181,7 +181,7 @@ Replace the `package.json` file with:
   "dependencies": {
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
-    "staple-api": "^1.0.8"
+    "staple-api": "^1.0.14"
   },
   "resolutions": {
     "graphql": "^14.6.0"
