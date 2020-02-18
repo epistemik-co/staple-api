@@ -190,18 +190,21 @@ async function process(filename = "test.ttl") {
 
     var context = {
         "_id": "@id",
-        "_value": "@value",
-        "_type": "@type",
-        "_reverse": "@reverse"
+        "_type": "@type"
+    };
+
+    var context2 = {
+        "_id": "@id",
+        "_type": "@type"
     };
 
 
     var graph = [];
-
     for (var c in schema_spec.classes) {
         if (schema_spec.classes[c]["name"] != "integer" && schema_spec.classes[c]["name"] != "decimal" && schema_spec.classes[c]["name"] != "boolean" && schema_spec.classes[c]["name"] != "string") {
             if (schema_spec.classes[c].type == "Object") {
                 context[schema_spec.classes[c].name] = c;
+                context2[schema_spec.classes[c].name] = c;
                 graph.push({
                     "@id": c,
                     "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
@@ -214,6 +217,7 @@ async function process(filename = "test.ttl") {
 
             } else {
                 context[schema_spec.classes[c].name] = c;
+                context2[schema_spec.classes[c].name] = c;
                 graph.push({
                     "@id": c,
                     "@type": "http://schema.org/DataType",
@@ -229,6 +233,11 @@ async function process(filename = "test.ttl") {
     }
     for (var p in schema_spec.properties) {
         context[schema_spec.properties[p].name] = p;
+        if (schema_spec.properties[p].range != "integer" && schema_spec.properties[p].range != "string" && schema_spec.properties[p].range != "decimal" && schema_spec.properties[p].range != "boolean"){
+            context2[schema_spec.properties[p].name] = {"@id": p, "@type": "@id"};
+        }else{
+            context2[schema_spec.properties[p].name] = p;
+        }
         graph.push({
             "@id": p,
             "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
@@ -237,10 +246,10 @@ async function process(filename = "test.ttl") {
 
     const jsonld = {
         "@context": context,
+        "@context2": context2,
         "@graph": graph
     };
 
-    return jsonld;
 
     // var jsonldContent = JSON.stringify(jsonld, null, 2);
     // fs.writeFile("context.jsonld", jsonldContent, "utf8", function (err) {
@@ -250,6 +259,7 @@ async function process(filename = "test.ttl") {
     //     }
     //     console.log("context.jsonld file has been saved.");
     // });
+        return jsonld;
 }
 
 module.exports = {
