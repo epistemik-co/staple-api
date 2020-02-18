@@ -27,7 +27,7 @@ app.listen({ port: 4000 }, () =>
 // show memory usage every 5 seconds
 setInterval(function () {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
-    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    // console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     if (used > 100) {
         console.log("need to clear!");
     }
@@ -35,7 +35,8 @@ setInterval(function () {
 }, 5000);
 
 async function init(app, index) {
-    let stapleApi = await staple("./ontology.ttl");
+    let stapleApi = await staple({file: "./ontology.ttl"});
+    console.log(stapleApi.schemaMapping['@context2'])
     let schema = stapleApi.schema;
     let database = stapleApi.database;
     let exampleObjects = require("./database/exampleObjects");
@@ -71,54 +72,42 @@ async function init(app, index) {
 
 }
 
-// async function customInit(app, index, req) {
-//     // console.log(req.body.value)
-//     let newEndpointData = await createschema(req.body.value);
-//     // console.log(newEndpointData)
-//     console.log(newEndpointData.schema)
-//     // console.log(newEndpointData.context)
+async function customInit(app, index, req) {
+    let newEndpointData = await staple({string: String(req.body.value)});
+    let schema = newEndpointData.schema;
 
-//     if (newEndpointData["Error"]) {
-//         return newEndpointData;
-//     }
+    if (newEndpointData["Error"]) {
+        return newEndpointData;
+    }
 
-//     // const database2 = new DatabaseInterface(newEndpointData.context);
-//     // const rootResolver = new Resolver(database2, Warnings, newEndpointData.context, newEndpointData.schema).rootResolver; // Generate Resolvers for graphql
-//     // let schema = makeExecutableSchema({
-//     //     typeDefs: newEndpointData.schema,
-//     //     resolvers: rootResolver,
-//     // });
-//     let exampleObjects = require("./database/exampleObjects");
-//     let stapleApi = await staple("./ontology.ttl");
-//     let schema = stapleApi.schema;
-//     let database = stapleApi.database;
-//     let server = new ApolloServer({
-//         schema,
-//         formatResponse: response => {
-//             if (response.errors !== undefined) {
-//                 response.data = false;
-//             }
-//             else {
-//                 if (response.data !== null && Warnings.length > 0) {
-//                     response["extensions"] = {};
-//                     response["extensions"]["Warning"] = [...Warnings];
-//                     Warnings.length = 0;
-//                 }
-//             }
-//             return response;
-//         },
-//         context: () => {
-//             return {
-//                 myID: index,
-//             };
-//         },
-//     });
+    
+    let server = new ApolloServer({
+        schema,
+        formatResponse: response => {
+            if (response.errors !== undefined) {
+                response.data = false;
+            }
+            else {
+                if (response.data !== null && Warnings.length > 0) {
+                    response["extensions"] = {};
+                    response["extensions"]["Warning"] = [...Warnings];
+                    Warnings.length = 0;
+                }
+            }
+            return response;
+        },
+        context: () => {
+            return {
+                myID: index,
+            };
+        },
+    });
 
-//     const path = "/graphql" + index;
-//     server.applyMiddleware({ app, path });
-//     // console.log(newEndpointData.context)
-//     return newEndpointData.context;
-// }
+    const path = "/graphql/" + index;
+    server.applyMiddleware({ app, path });
+    // console.log(newEndpointData.context)
+    return newEndpointData.schemaMapping["@context"];
+}
 
 app.get("/api/dynamic", function (req, res) {
     let id = uuidv1();
@@ -130,9 +119,7 @@ app.get("/api/dynamic", function (req, res) {
 
 app.post("/api/customInit", async function (req, res) {
     let id = uuidv1();
-    console.log(req.data)
     let context = await customInit(app, id, req);
-
     if (context["Error"]) {
         res.status(500).send(context["Error"]);
         logger.warn(`ERROR! Endpoint was not created ! ${context["Error"]} \n${req.body.value}`);
