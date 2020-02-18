@@ -1,5 +1,5 @@
 const DatabaseInterface = require("./database/Database");
-const database = new DatabaseInterface();
+let database = new DatabaseInterface();
 var fs = require("fs");
 
 function processTypes(classes, data, enums, schema_spec) {
@@ -149,7 +149,7 @@ function union(set1, set2) {
 
 
 async function process(ontology) {
-
+    database = new DatabaseInterface();
     if (ontology.string){
         await database.readFromString(ontology.string);
     }else{

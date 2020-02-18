@@ -1,5 +1,5 @@
 const DatabaseInterface = require("./database/Database");
-const database = new DatabaseInterface(); 
+let database = new DatabaseInterface(); 
 const logger = require("../config/winston");
 var graphql = require("graphql");
 
@@ -40,7 +40,7 @@ function removeNamespace(nameWithNamesapace) {
  */
 
 async function createClassList(ontology /*example file*/) {
-
+  database = new DatabaseInterface();
   //load ontology to in-memory graphy.js database 
   if (ontology.string){
     await database.readFromString(ontology.string);
