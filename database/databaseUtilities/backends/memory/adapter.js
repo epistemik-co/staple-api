@@ -150,7 +150,7 @@ class MemoryDatabase {
     async pushObjectToBackend(database, input) {
         let objectID = input["_id"];
         this.deleteID(objectID);
-        input["@context"] = database.schemaMapping["@context2"];
+        input["@context"] = database.schemaMapping["@context"];
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         await this.insertRDF(rdf);
 
