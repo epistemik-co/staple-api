@@ -1584,7 +1584,7 @@ let ontology = {
 async function StapleDemo() {
     let stapleApi = await staple(ontology);  
 
-    graphql(stapleApi.schema, '{ _CONTEXT { _id _type } }').then((response) => {
+    graphql(stapleApi.schema, '{ _CONTEXT { _id _type Person employee } }').then((response) => {
         console.log(response);
       });
 }
@@ -1626,7 +1626,7 @@ Additionally, JSON-LD context used in the service, which enables mapping of Grap
 ```javascript
 const { graphql } = require("graphql");
 const staple = require("staple-api");
-const jsonld
+const jsonld = require("jsonld")
 
 let ontology = {
   file: "./ontology.ttl"
@@ -1635,21 +1635,26 @@ let ontology = {
 async function StapleDemo() {
     let stapleApi = await staple(ontology);  
     let context = stapleApi.context
-
     let data = {}
 
-    graphql(stapleApi.schema, 'mutation { Person(input: _id: "http://example.com/john" name: "John Smith") }')
-    graphql(stapleApi.schema, '{ Person { _id name } }').then((response) => {
+    await graphql(stapleApi.schema, 'mutation { Person(input: { _id: "http://example.com/john" name: "John Smith" } ) }').then((response) => {
+      });
+
+    await graphql(stapleApi.schema, '{ Person { _id name } }').then((response) => {
         data = response.data
       });
 
-    data["@context"] = context
-    data["@id"] = "@graph"
+      data["@context"] = context
+      data["@id"] = "@graph"
 
-    let rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
-
-    console.log(rdf)
+      let rdf = await jsonld.toRDF(data, { format: "application/n-quads" });
+      console.log("JSON-LD:")
+      console.log(JSON.stringify(data))
+      console.log("\nRDF:")
+      console.log(rdf)
 }
+
+StapleDemo()
 ```
 
 

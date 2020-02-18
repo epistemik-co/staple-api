@@ -95,7 +95,7 @@ let ontology = {
 async function StapleDemo() {
     let stapleApi = await staple(ontology);  
 
-    graphql(stapleApi.schema, '{ _CONTEXT { _id _type } }').then((response) => {
+    graphql(stapleApi.schema, '{ _CONTEXT { _id _type Person employee } }').then((response) => {
         console.log(response);
       });
 }
