@@ -24,7 +24,7 @@ var graphQLScalarTypes = {
  */
 
 function removeNamespace(nameWithNamesapace) {
-  nameWithNamesapace = nameWithNamesapace.split(/([/|#])/);
+  nameWithNamesapace = String(nameWithNamesapace).split(/([/|#])/);
   nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
   return nameWithNamesapace;
 }
