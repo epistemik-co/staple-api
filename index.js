@@ -7,7 +7,7 @@ const { printSchema } = require("graphql");
 
 async function init(ontology, configObject){
     let schemaObj = {};
-    let schema = await schemaFromOntology.generateSchema(ontology)
+    let schema = await schemaFromOntology.generateSchema(ontology);
     schemaObj.schemaSDL =  printSchema(schema);
     schemaObj.schemaMapping = await jsonldFromOntology.process(ontology);
 
