@@ -32,7 +32,7 @@ yarn init
 
 ### Ontology
 
-The schema and resolvers of the GraphQL serivce inside Staple API are generated automatically based on the input [RDF ontology](/docs/?id=ontology-and-schema). The ontology should be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/) and provided in a file. Create a sample `ontology.ttl` file in the project:
+The schema and resolvers of the GraphQL serivce inside Staple API are generated automatically based on the input [RDF ontology](/docs/?id=ontology-and-schema). The ontology should be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/) and provided in a file path or as a string. Create a sample `ontology.ttl` file in the project:
 
 ```turtle
 @prefix schema: <http://schema.org/> .
@@ -88,10 +88,14 @@ Create `demo.js` file:
 const { graphql } = require("graphql");
 const staple = require("staple-api");
 
-async function StapleDemo() {
-    let stapleApi = await staple("./ontology.ttl");  
+let ontology = {
+  file: "./ontology.ttl"
+  }
 
-    graphql(stapleApi.schema, '{ _CONTEXT { _id _type } }', stapleApi.root).then((response) => {
+async function StapleDemo(ontology) {
+    let stapleApi = await staple();  
+
+    graphql(stapleApi.schema, '{ _CONTEXT { _id _type } }').then((response) => {
         console.log(response);
       });
 }
@@ -136,15 +140,17 @@ var express = require('express');
 var graphqlHTTP = require('express-graphql');
 const staple = require("staple-api");
 
+let ontology = {
+  file: "./ontology.ttl"
+  }
 
 async function StapleDemo() {
-    let stapleApi = await staple("./ontology.ttl");
+    let stapleApi = await staple(ontology);
 
     var app = express();
     app.use('/graphql', graphqlHTTP({
         schema: stapleApi.schema,
-        rootValue: stapleApi.root,
-        graphiql: true,
+        graphiql: true
     }));
     
     app.listen(4000);
@@ -192,7 +198,11 @@ var express = require('express');
 var graphqlHTTP = require('express-graphql');
 const staple = require("staple-api");
 
-let credentials = {
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+let config = {
     type: "mongodb",
     url: "mongodb://127.0.0.1:27017", 
     dbName: "staple",
@@ -200,13 +210,12 @@ let credentials = {
 };
 
 async function StapleDemo() {
-    let stapleApi = await staple("./ontology.ttl", credentials);
+    let stapleApi = await staple(ontology, config);
 
     var app = express();
     app.use('/graphql', graphqlHTTP({
         schema: stapleApi.schema,
-        rootValue: stapleApi.root,
-        graphiql: true,
+        graphiql: true
     }));
     
     app.listen(4000);

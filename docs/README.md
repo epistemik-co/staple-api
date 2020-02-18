@@ -1431,24 +1431,119 @@ This in turn can be visualsed as:
 </p>
 
 
+## Using the library
 
-## Back-end configuration
-
-Staple API currently support two back-end storage connectors (more to be added soon) (see [Getting started](/tutorial/?id=running-a-demo) for working examples):
-
-1. [graphy.js](http://graphy.link)
-2. [MongoDB](https://www.mongodb.com/)
-
-**graphy.js** is a lightweight in memory quad store (graph database for RDF). It is enabled by default and no additional configuration is required to initiate it. This way it is good for reapid testing and prototyping. Note that all data inserted to this storafe during the runtime is lost on closing the service. 
-
-**MongoDB** is a popular JSON document store available as a stand-alone server or a cloud service ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas)). In order to use Staple API on top of MongoDB the following credentials need to be passed when initiating the service: 
+Staple API can be imported as an [npm package](https://www.npmjs.com/package/staple-api) and initiated as follows (see [Getting started](/tutorial/?id=running-a-demo) for working examples), with two parameters: `ontology` and `config` described below:
 
 ```javascript
 import staple-api
 
-...
+async function StapleDemo() {
+    let stapleApi = await staple(ontology, config);
+}
 
-let credentials = {
+StapleDemo()
+...
+```
+
+### Ontology parameter
+
+The `ontology` parameter points to the source RDF ontology and it can be specified in two ways:
+
+1. via the local path to the ontology file,
+2. or via a string with the ontology.
+
+<!-- tabs:start -->
+
+#### **Ontology file path**
+
+```javascript
+let ontology = {
+  file: "./ontology.ttl"
+  }
+```
+
+#### **Ontology string**
+
+
+```javascript
+let ontology = {
+  string: `
+    @prefix schema: <http://schema.org/> .
+    @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+    @prefix example: <http://example.com#> .
+
+    # classes (-> GraphQL types )
+
+    example:Organization a rdfs:Class ;
+        rdfs:comment "An organization such as a school, NGO, corporation, club, etc." .
+
+    example:Person a rdfs:Class ;
+        rdfs:comment "A person" .
+
+    # properties ( -> GraphQL fields )
+
+    example:name a rdf:Property, owl:FunctionalProperty ;
+        rdfs:comment "Name" ;
+        schema:domainIncludes example:Person ;
+        schema:domainIncludes example:Organization ;
+        schema:rangeIncludes xsd:string .
+
+    example:employee a rdf:Property ;
+        rdfs:comment "An employee of an organization" ;
+        schema:domainIncludes example:Organization ;
+        schema:rangeIncludes example:Person .
+  `
+  }
+```
+
+<!-- tabs:end -->
+
+### Back-end configuration
+
+Currently two back-end storage connectors are supported (more to be added soon) (see [Getting started](/tutorial/?id=running-a-demo) for working examples):
+
+1. [graphy.js](http://graphy.link)
+2. [MongoDB](https://www.mongodb.com/)
+
+**graphy.js** is a lightweight in memory quad store (graph database for RDF). It is enabled by default and no additional configuration is required to initiate it. It is well-suitted for rapid testing and prototyping. Note that all data inserted to this storage during the runtime is lost on closing the service. 
+
+
+**MongoDB** is a popular JSON document store available as a stand-alone server or a cloud service ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas)). In order to use Staple API on top of MongoDB a corresponding configuration needs to be passed when initiating the service.
+
+
+<!-- tabs:start -->
+
+#### **graphy.js**
+
+
+```javascript
+import staple-api
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+async function StapleDemo() {
+    let stapleApi = await staple(ontology);
+}
+
+StapleDemo()
+```
+
+#### **MongoDB**
+
+```javascript
+import staple-api
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+let config = {
     type: "mongodb",
     url: "mongodb://127.0.0.1:27017", 
     dbName: "dbName",
@@ -1456,16 +1551,108 @@ let credentials = {
 };
 
 async function StapleDemo() {
-    let stapleApi = await staple("./ontology.ttl", credentials);
+    let stapleApi = await staple(ontology, config);
 }
 
-...
+StapleDemo()
 ```
 where:
 * `type: "mongodb"` is a constant attribute for this connector
 * `127.0.0.1:27017` is the `IP:port` of the MongoDB endpoint
 * `dbName` is the name of the designated MongoDB database
 * `collectionName` is the name of the designated MongoDB collection
+
+<!-- tabs:end -->
+
+### GraphQL service
+
+The main property accessible in the constructed Staple API object is `schema`, which represents a built GraphQL schema, which can be used directly to create, e.g., a GraphQL service or a server:
+
+
+
+<!-- tabs:start -->
+
+#### **GraphQL service**
+
+```javascript
+const { graphql } = require("graphql");
+const staple = require("staple-api");
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+async function StapleDemo(ontology) {
+    let stapleApi = await staple();  
+
+    graphql(stapleApi.schema, '{ _CONTEXT { _id _type } }').then((response) => {
+        console.log(response);
+      });
+}
+
+StapleDemo()
+```
+
+#### **GraphQL server**
+
+```javascript
+var express = require('express');
+var graphqlHTTP = require('express-graphql');
+const staple = require("staple-api");
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+async function StapleDemo() {
+    let stapleApi = await staple(ontology);
+
+    var app = express();
+    app.use('/graphql', graphqlHTTP({
+        schema: stapleApi.schema,
+        graphiql: true
+    }));
+    
+    app.listen(4000);
+    console.log('Running a GraphQL API server at localhost:4000/graphql');
+}
+
+StapleDemo()
+```
+
+<!-- tabs:end -->
+
+Additionally, JSON-LD context used in the service, which enables mapping of GraphQL responses to RDF, is acessible via the property `context`:
+
+```javascript
+const { graphql } = require("graphql");
+const staple = require("staple-api");
+const jsonld
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+async function StapleDemo(ontology) {
+    let stapleApi = await staple();  
+    let context = stapleApi.context
+
+    let data = {}
+
+    graphql(stapleApi.schema, 'mutation { Person(input: _id: "http://example.com/john" name: "John Smith") }')
+    graphql(stapleApi.schema, '{ Person { _id name } }').then((response) => {
+        data = response.data
+      });
+
+    data["@context"] = context
+    data["@id"] = "@graph"
+
+    let rdf = await jsonld.toRDF(obj, { format: "application/n-quads" });
+
+    console.log(rdf)
+}
+```
+
 
 ## References
 
