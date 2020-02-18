@@ -1,20 +1,20 @@
 ## What is it?
 
-**Staple API** is a lightweight GraphQL-based API for an easy management of **knowledge graphs**, modeled and virtualized as linked data and structured by an RDF ontology. 
+**Staple API** is a lightweight GraphQL-based API for an easy management of **knowledge graphs** across different back-ends and virtualized as linked data via JSON-LD.
+
+
+## What is for?
 
 A **knowledge graph** is an abstraction of data that views it as a collection of entities (represented as _graph nodes_) connected with relationships (represented as _graph edges_) whose meaning and structure is described via a consistent set of semantic rules and constraints. 
 
-
-## What is it good for?
-
-Modern knowledge graph-based applications very often need to replicate their data across different databases in order to support diverse functionalities, e.g.: 
+Modern knowledge graph-based applications often need to manage their data across different back-ends in order to support diverse functionalities, e.g.: 
 1. a document store for simple management of all data objects
 2. a graph database for analytical insights into complex relationships between them
 3. a search engine for efficient search and retrieval purposes
 
-While data in such architectures constitutes pieces of the same knowledge graph it is difficult to manage it as such, leading to increasing problems with its uniform structuring and synchronisation across the storages. 
+While data in such architectures constitutes pieces of the same knowledge graph it is difficult to manage it as such. This leads to increasing problems with its uniform structuring, querying and synchronisation across the storages. 
 
-**Staple API** is a flexible **data abstraction middleware**, which separates data storage back-ends from your application to allow uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface, irrespective of the actual storage type. 
+**Staple API** is a flexible **data abstraction middleware**, which allows for decoupling data storage back-ends from your application to facilitate uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface and described in a single ontology. 
 
 <br>
 
