@@ -40,7 +40,6 @@ function removeNamespace(nameWithNamesapace) {
  */
 
 async function createClassList(ontology /*example file*/) {
-  database = new DatabaseInterface();
   //load ontology to in-memory graphy.js database 
   if (ontology.string){
     await database.readFromString(ontology.string);
@@ -309,6 +308,7 @@ function createMutationType(classList, inputClassList) {
  */
 
 async function generateSchema(ontology) {
+  database = new DatabaseInterface();
   var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(ontology);
   var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
   var mutationType = createMutationType(classList, inputClassList);
