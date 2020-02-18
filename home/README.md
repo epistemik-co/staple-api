@@ -1,6 +1,6 @@
 ## What is it?
 
-**Staple API** is a lightweight GraphQL-based API for an easy management of **knowledge graphs** across different back-ends and virtualized as linked data via JSON-LD.
+**Staple API** is a lightweight GraphQL-based API for a uniform management of **knowledge graphs**, virtualized as linked data via JSON-LD, on top of different data storage back-ends.
 
 
 ## What is for?
