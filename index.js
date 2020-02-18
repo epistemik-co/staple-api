@@ -27,7 +27,7 @@ app.listen({ port: 4000 }, () =>
 // show memory usage every 5 seconds
 setInterval(function () {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
-    // console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     if (used > 100) {
         console.log("need to clear!");
     }
@@ -77,9 +77,7 @@ async function customInit(app, index, req) {
 
     if (newEndpointData["Error"]) {
         return newEndpointData;
-    }
-    console.log(newEndpointData.schema)
-    
+    }    
     let server = new ApolloServer({
         schema,
         formatResponse: response => {
