@@ -6,11 +6,7 @@ const objects = [
         ],
         "name": "National Bank",
         "revenue": 12.5,
-        "employee": [
-            {
-                "_id": "http://example.com/john"
-            }
-        ]
+        "employee":  "http://example.com/john"
     },
     {
         "_id": "http://example.com/mobile",
@@ -19,11 +15,7 @@ const objects = [
         ],
         "name": "Mobile Network Provider",
         "revenue": 10,
-        "employee": [
-            {
-                "_id": "http://example.com/mark"
-            }
-        ]
+        "employee": "http://example.com/mark"
     },
     {
         "_id": "http://example.com/john",
@@ -34,12 +26,8 @@ const objects = [
         "age": 35,
         "isMarried": true,
         "customerOf": [
-            {
-                "_id": "http://example.com/bank"
-            },
-            {
-                "_id": "http://example.com/mobile"
-            }
+            "http://example.com/bank",
+            "http://example.com/mobile"
         ]
     },
     {
@@ -50,11 +38,7 @@ const objects = [
         "name": "Mark Brown",
         "age": 40,
         "isMarried": false,
-        "customerOf": [
-            {
-                "_id": "http://example.com/bank"
-            }
-        ]
+        "customerOf": "http://example.com/bank"
     }
 ]
   
