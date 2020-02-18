@@ -3,6 +3,7 @@ const read_graphy_ttl = require('graphy').content.ttl.read
 const dataset_tree = require('graphy').util.dataset.tree
 const factory = require('@graphy/core.data.factory')
 const fs = require('fs')
+const { Readable } = require('stream')
 
 class Database{
 	constructor() {
@@ -25,6 +26,20 @@ class Database{
                 this.y_tree =  y_tree2 
             },
         })
+    }
+
+
+    async readFromString(ontologyString){
+        const readable = Readable.from(ontologyString);
+        let y_tree2 = this.y_tree
+        var stream = readable.pipe(read_graphy_ttl())
+            .on('data', (y_quad) => {
+                y_tree2.add(y_quad)
+            })
+            .on('eof', () => {
+                // console.log('Loading complete.');
+            })
+        await this.streamPromise(stream)
     }
 
 

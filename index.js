@@ -5,12 +5,11 @@ const schemaFromOntology = require("./schema/schemaFromOntology");
 const jsonldFromOntology = require("./schema/jsonldFromOntology");
 const { printSchema } = require("graphql");
 
-async function init(ontologyLocation, configObject){
+async function init(ontology, configObject){
     let schemaObj = {};
-
-    let schema = await schemaFromOntology.generateSchema(ontologyLocation);
+    let schema = await schemaFromOntology.generateSchema(ontology)
     schemaObj.schemaSDL =  printSchema(schema);
-    schemaObj.schemaMapping = await jsonldFromOntology.process(ontologyLocation);
+    schemaObj.schemaMapping = await jsonldFromOntology.process(ontology);
 
     schemaObj.database = new DatabaseInterface(schemaObj.schemaMapping, configObject);
 
@@ -25,6 +24,5 @@ async function init(ontologyLocation, configObject){
     return schemaObj;
 }
 
-// init("./schema/test.ttl");
 
 module.exports = init;

@@ -155,9 +155,13 @@ function union(set1, set2) {
 }
 
 
-async function process(filename = "test.ttl") {
-    await database.readFromFile(filename);
+async function process(ontology) {
 
+    if (ontology.string){
+        await database.readFromString(ontology.string);
+    }else{
+        await database.readFromFile(ontology.file);
+    }
     let schema_spec = {
         "classes": {},
         "properties": {}

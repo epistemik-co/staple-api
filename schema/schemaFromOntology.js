@@ -1,5 +1,6 @@
 const DatabaseInterface = require("./database/Database");
 const database = new DatabaseInterface(); 
+const logger = require("../config/winston");
 var graphql = require("graphql");
 // var express = require("express");
 // var graphqlHTTP = require("express-graphql");
@@ -40,11 +41,16 @@ function removeNamespace(nameWithNamesapace) {
  * @returns {propertiesURIs} list of properties as uris
  */
 
-async function createClassList(filename = "schema/test.ttl" /*example file*/) {
+async function createClassList(ontology /*example file*/) {
 
-  //load file to in-memory graphy.js database 
-
-  await database.readFromFile(filename);
+  //load ontology to in-memory graphy.js database 
+  if (ontology.string){
+    await database.readFromString(ontology.string);
+    logger.info("Schema generated from string");
+  }else if (ontology.file){
+    await database.readFromFile(ontology.file);
+    logger.info("Schema generated from file");
+  }
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
   const subClasses = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
   const superClasses = database.getAllObjs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
@@ -320,8 +326,8 @@ function createMutationType(classList, inputClassList) {
  * @param  {file} file containing ontology
  */
 
-async function generateSchema(file) {
-  var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(file);
+async function generateSchema(ontology) {
+  var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(ontology);
   var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
   var mutationType = createMutationType(classList, inputClassList);
   return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });

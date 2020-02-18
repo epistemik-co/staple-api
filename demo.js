@@ -9,12 +9,57 @@ const staple = require("./index");
  
 async function Demo() {
     let demo = {};
-    let stapleApi = await staple("./schema/test.ttl", {
+    let stapleApi = await staple({file: "./schema/test.ttl"}, {
         type: "mongodb",
         url: "mongodb://127.0.0.1:27017", 
         dbName: "staple",
         collectionName: "quads3",
-    });//, require(appRoot + "/config/database.js"));
+    });
+    // let stapleApi = await staple({string: `@prefix schema: <http://schema.org/> .
+    // @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+    // @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    // @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    // @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+    // @prefix example: <http://example.com/> .
+    // # classes (-> GraphQL types )
+    // example:Agent a rdfs:Class ;
+    //     rdfs:comment "An agent (individual or legal)" .
+    // example:Organization a rdfs:Class ;
+    //     rdfs:comment "An organization such as a school, NGO, corporation, club, etc." ;
+    //     rdfs:subClassOf example:Agent .
+    // example:Person a rdfs:Class ;
+    //     rdfs:comment "A person" ;
+    //     rdfs:subClassOf example:Agent .
+    // # properties ( -> GraphQL fields )
+    // example:name a rdf:Property, owl:FunctionalProperty ;
+    //     rdfs:comment "Name of the agent" ;
+    //     schema:domainIncludes example:Agent ;
+    //     schema:rangeIncludes xsd:string .
+    // example:age a rdf:Property, owl:FunctionalProperty ;
+    //     rdfs:comment "Age of the person" ;
+    //     schema:domainIncludes example:Person ;
+    //     schema:rangeIncludes xsd:integer .
+    // example:isMarried a rdf:Property, owl:FunctionalProperty ;
+    //     rdfs:comment "This person is married" ;
+    //     schema:domainIncludes example:Person ;
+    //     schema:rangeIncludes xsd:boolean .
+    // example:revenue a rdf:Property, owl:FunctionalProperty ;
+    //     rdfs:comment "The annual revenue of the organization" ;
+    //     schema:domainIncludes example:Organization ;
+    //     schema:rangeIncludes xsd:decimal .
+    // example:employee a rdf:Property ;
+    //     rdfs:comment "An employee of an organization" ;
+    //     schema:domainIncludes example:Organization ;
+    //     schema:rangeIncludes example:Person .
+    // example:customerOf a rdf:Property ;
+    //     rdfs:comment "An organization this agent is a customer of" ;
+    //     schema:domainIncludes example:Agent ;
+    //     schema:rangeIncludes example:Organization .`}, {
+    //     type: "mongodb",
+    //     url: "mongodb://127.0.0.1:27017", 
+    //     dbName: "staple",
+    //     collectionName: "quads3",
+    // });//, require(appRoot + "/config/database.js"));
     demo.database = stapleApi.database;
     let schema = stapleApi.schema;
     demo.server = new ApolloServer({
