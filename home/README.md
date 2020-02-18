@@ -14,7 +14,7 @@ Modern knowledge graph-based applications often need to manage their data across
 
 While data in such storages constitutes pieces of the same knowledge graph, it is often difficult to manage it as such, due to discrepancies between their native data models. This leads to increasing problems with the semantic alignment of data, its uniform structuring, querying and synchronisation across the back-ends. 
 
-**Staple API** is a flexible **data abstraction middleware**, which allows for decoupling data storage back-ends from the application to facilitate uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface and a common ontology model. 
+**Staple API** is a flexible **semantic abstraction middleware**, which allows for decoupling data storage back-ends from the application to facilitate uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface and a common ontology model. 
 
 <br>
 
