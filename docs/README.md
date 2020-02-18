@@ -1666,9 +1666,14 @@ For more background reading and documentation see the references below.
 * [Knowledge graphs beyond the hype: Getting knowledge in and out of graphs and databases](https://www.zdnet.com/article/knowledge-graphs-beyond-the-hype-getting-knowledge-in-and-out-of-graphs-and-databases/), George Anadiotis
 * [Building a knolwedge graph](https://6point6.co.uk/insights/building-a-knowledge-graph/), Daniel Alexander Smith
 
+#### GraphQL
+
+* [GraphQL.js tutorial](https://graphql.org/graphql-js/)
+
 #### JSON-LD
 
 * [JSON-LD 1.0 specification](https://www.w3.org/TR/2014/REC-json-ld-20140116/)
+* [JSON-LD playground](https://json-ld.org/playground/)
 
 #### GraphQL + JSON-LD
 * [What Can the Semantic Web Do for GraphQL?](https://medium.com/@sklarman/what-the-semantic-web-can-do-for-graphql-8cfb39971714), Szymon Klarman
