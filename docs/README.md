@@ -1582,8 +1582,8 @@ let ontology = {
   file: "./ontology.ttl"
   }
 
-async function StapleDemo(ontology) {
-    let stapleApi = await staple();  
+async function StapleDemo() {
+    let stapleApi = await staple(ontology);  
 
     graphql(stapleApi.schema, '{ _CONTEXT { _id _type } }').then((response) => {
         console.log(response);
@@ -1633,8 +1633,8 @@ let ontology = {
   file: "./ontology.ttl"
   }
 
-async function StapleDemo(ontology) {
-    let stapleApi = await staple();  
+async function StapleDemo() {
+    let stapleApi = await staple(ontology);  
     let context = stapleApi.context
 
     let data = {}
