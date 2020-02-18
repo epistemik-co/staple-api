@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const DatabaseInterface = require("./database/Database");
 const database = new DatabaseInterface();
 var fs = require("fs");
@@ -26,14 +25,10 @@ function processTypes(classes, data, enums, schema_spec) {
 
     }
     for (var d in data) {
-        // eslint-disable-next-line no-redeclare
-        // eslint-disable-next-line no-unused-vars
-        // eslint-disable-next-line no-redeclare
         var [_, schema_spec] = getIndirectSublassesOfClass(schema_spec, data[d], true);
     }
 
     for (var className in schema_spec.classes) {
-        // eslint-disable-next-line no-redeclare
         var [_, schema_spec] = getIndirectSublassesOfClass(schema_spec, className, false);
     }
 
@@ -55,10 +50,8 @@ function getIndirectSublassesOfClass(schema_spec, ofClass, datatype) {
                 if (!allSubs.includes(sub)) {
                     allSubs.push(sub);
                 }
-                // eslint-disable-next-line no-undef
                 [moresubs, schema_spec] = getIndirectSublassesOfClass(schema_spec, sub, datatype);
 
-                // eslint-disable-next-line no-undef
                 moresubs.forEach(function (subsub) {
                     if (!allSubs.includes(subsub)) {
                         allSubs.push(subsub);
@@ -155,9 +148,13 @@ function union(set1, set2) {
 }
 
 
-async function process(filename = "test.ttl") {
-    await database.readFromFile(filename);
+async function process(ontology) {
 
+    if (ontology.string){
+        await database.readFromString(ontology.string);
+    }else{
+        await database.readFromFile(ontology.file);
+    }
     let schema_spec = {
         "classes": {},
         "properties": {}
@@ -190,18 +187,21 @@ async function process(filename = "test.ttl") {
 
     var context = {
         "_id": "@id",
-        "_value": "@value",
-        "_type": "@type",
-        "_reverse": "@reverse"
+        "_type": "@type"
+    };
+
+    var context2 = {
+        "_id": "@id",
+        "_type": "@type"
     };
 
 
     var graph = [];
-
     for (var c in schema_spec.classes) {
         if (schema_spec.classes[c]["name"] != "integer" && schema_spec.classes[c]["name"] != "decimal" && schema_spec.classes[c]["name"] != "boolean" && schema_spec.classes[c]["name"] != "string") {
             if (schema_spec.classes[c].type == "Object") {
                 context[schema_spec.classes[c].name] = c;
+                context2[schema_spec.classes[c].name] = c;
                 graph.push({
                     "@id": c,
                     "@type": "http://www.w3.org/2000/01/rdf-schema#Class",
@@ -214,6 +214,7 @@ async function process(filename = "test.ttl") {
 
             } else {
                 context[schema_spec.classes[c].name] = c;
+                context2[schema_spec.classes[c].name] = c;
                 graph.push({
                     "@id": c,
                     "@type": "http://schema.org/DataType",
@@ -229,6 +230,11 @@ async function process(filename = "test.ttl") {
     }
     for (var p in schema_spec.properties) {
         context[schema_spec.properties[p].name] = p;
+        if (schema_spec.properties[p].range != "integer" && schema_spec.properties[p].range != "string" && schema_spec.properties[p].range != "decimal" && schema_spec.properties[p].range != "boolean"){
+            context2[schema_spec.properties[p].name] = {"@id": p, "@type": "@id"};
+        }else{
+            context2[schema_spec.properties[p].name] = p;
+        }
         graph.push({
             "@id": p,
             "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
@@ -237,19 +243,11 @@ async function process(filename = "test.ttl") {
 
     const jsonld = {
         "@context": context,
+        "@context2": context2,
         "@graph": graph
     };
 
-    return jsonld;
-
-    // var jsonldContent = JSON.stringify(jsonld, null, 2);
-    // fs.writeFile("context.jsonld", jsonldContent, "utf8", function (err) {
-    //     if (err) {
-    //         console.log("An error occured while writing JSON Object to File.");
-    //         return console.log(err);
-    //     }
-    //     console.log("context.jsonld file has been saved.");
-    // });
+        return jsonld;
 }
 
 module.exports = {
