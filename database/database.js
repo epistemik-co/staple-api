@@ -257,7 +257,7 @@ class Database {
     }
 
     drop() {
-        this.database.clear();
+        this.database = dataset_tree();
     }
 
     countObjects() {
