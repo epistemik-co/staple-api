@@ -8,13 +8,13 @@
 A **knowledge graph** is an abstraction of data that views it as a collection of entities (represented as _graph nodes_) connected with relationships (represented as _graph edges_) whose meaning and structure is described via a consistent set of semantic rules and constraints. 
 
 Modern knowledge graph-based applications often need to manage their data across different back-ends in order to support diverse functionalities, e.g.: 
-1. a document store for simple management of all data objects
+1. a document store for basic management of all data objects
 2. a graph database for analytical insights into complex relationships between them
 3. a search engine for efficient search and retrieval purposes
 
-While data in such architectures constitutes pieces of the same knowledge graph it is difficult to manage it as such. This leads to increasing problems with its uniform structuring, querying and synchronisation across the storages. 
+While data in such storages constitutes pieces of the same knowledge graph, it is often difficult to manage it as such, due to discrepancies between their native data models. This leads to increasing problems with the semantic alignment of data, its uniform structuring, querying and synchronisation across the back-ends. 
 
-**Staple API** is a flexible **data abstraction middleware**, which allows for decoupling data storage back-ends from your application to facilitate uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface and described in a single ontology. 
+**Staple API** is a flexible **data abstraction middleware**, which allows for decoupling data storage back-ends from the application to facilitate uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface and a common ontology model. 
 
 <br>
 
