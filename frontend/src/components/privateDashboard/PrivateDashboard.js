@@ -77,7 +77,7 @@ class PrivateDashboard extends Component {
         this.setState({
 
           id: res.data.id,
-          context: JSON.stringify(res.data.context['@context'], null, 2),
+          context: JSON.stringify(res.data.context, null, 2),
           error: "",
           compiledMessage: "Compiled successfully!",
           playgroundVersion: uuidv1()
