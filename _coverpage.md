@@ -4,9 +4,6 @@
 
 > A GraphQL API for easy management of <br> knowledge graphs
 
-> :heavy_exclamation_mark: This site is under construction 
-:heavy_exclamation_mark:
-
 [Docs](/home/) 
 [Playground](http://playground.staple-api.org)
 [GitHub](https://github.com/epistemik-co/staple-api) 
