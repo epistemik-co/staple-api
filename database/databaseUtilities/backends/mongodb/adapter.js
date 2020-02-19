@@ -47,7 +47,7 @@ class MongodbAdapter {
     
 
             result = result.map(x => {
-                x["@context"] = database.schemaMapping["@context"];
+                x["@context"] = database.schemaMapping["@context2"];
                 return x;
             });
 
@@ -85,7 +85,7 @@ class MongodbAdapter {
             let result = await collection.find(query).toArray();
 
             result = result.map(x => {
-                x["@context"] = database.schemaMapping["@context"];
+                x["@context"] = database.schemaMapping["@context2"];
                 return x;
             });
 

@@ -121,7 +121,7 @@ class MemoryDatabase {
             const temp = this.database.match(subject, null, null);
             var itr = temp.quads();
             var x = itr.next();
-            while (!x.done) {
+            while (!x.done) { 
                 database.database.add(x.value);
                 x = itr.next();
             }
@@ -150,14 +150,9 @@ class MemoryDatabase {
     async pushObjectToBackend(database, input) {
         let objectID = input["_id"];
         this.deleteID(objectID);
-        input["@context"] = database.schemaMapping["@context"];
+        input["@context"] = database.schemaMapping["@context2"];
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         await this.insertRDF(rdf);
-
-        // console.log("\n\n\n");
-        // console.log("DATABASE SHOULD CONTAIN DATA NOW");
-        // console.log(this.getAllQuads());
-        // console.log("\n\n\n");
         return;
     }
 
@@ -270,15 +265,6 @@ class MemoryDatabase {
         var temp = this.database.match(id, null, null);
         var itr = temp.quads();
         var x = itr.next();
-        while (!x.done) {
-            this.database.delete(x.value);
-            removed = true;
-            x = itr.next();
-        }
-
-        temp = this.database.match(null, null, id);
-        itr = temp.quads();
-        x = itr.next();
         while (!x.done) {
             this.database.delete(x.value);
             removed = true;
