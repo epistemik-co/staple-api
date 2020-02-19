@@ -47,10 +47,10 @@ async function init(app, index) {
     process.env.GRAPHQL_BASIC_ENDPOINT = "http://localhost:4000" + path;
     let server = new ApolloServer({
         schema,
-        playground: {
-            endpoint: path,
-            tabs: require("./tabs")
-        },
+        // playground: {
+        //     endpoint: path,
+        //     tabs: require("./tabs")
+        // },
         formatResponse: response => {
             if (response.errors !== undefined) {
                 response.data = false;
@@ -113,8 +113,23 @@ async function customInit(app, index, req) {
 
 app.get("/api/dynamic", function (req, res) {
     let id = uuidv1();
+    const tabs = [{endpoint: "http://localhost:4000/graphql/${id}", query: `{
+        Organization {
+          _id
+          _type
+          name
+          employee {
+            _id
+            _type
+            name
+            customerOf {
+              _id
+            }
+          }
+        }
+      }`}]
     init(app, id);
-    res.send(id);
+    res.send({id:id, tabs: tabs});
     logger.warn(`Endpoint created ! http://localhost:4000/graphql/${id}`);
 });
     

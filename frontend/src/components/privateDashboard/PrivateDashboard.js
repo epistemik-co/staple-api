@@ -12,24 +12,7 @@ class PrivateDashboard extends Component {
 
   state = {
     id: "",
-    tabs: [{
-      endpoint: "",
-      query: `{
-        Organization {
-          _id
-          _type
-          name
-          employee {
-            _id
-            _type
-            name
-            customerOf {
-              _id
-            }
-          }
-        }
-      }`
-    }],
+    tabs: [{endpoint: "", query: ""}],
     showObjects: true,
     personal: false,
     ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2).slice(1, -1),
@@ -43,8 +26,7 @@ class PrivateDashboard extends Component {
   componentDidMount = () => {
     this.setPlaygroundHeight(null);
     window.addEventListener("resize", this.setPlaygroundHeight);
-
-    // this.getId();
+    this.getId();
     this.correctHeight();
   }
 
@@ -67,7 +49,8 @@ class PrivateDashboard extends Component {
     let res = await axios.get("http://"+this.state.source+":4000/api/dynamic");
     if (res.status === 200) {
       this.setState({
-        id: res.data,
+        id: res.data.id,
+        tabs: res.data.tabs
       })
     }
   }
@@ -107,7 +90,6 @@ class PrivateDashboard extends Component {
       }
 
       this.setState({
-        tabs: "",
         id: "",
         context: "",
         error: error.response.data,
@@ -197,8 +179,8 @@ class PrivateDashboard extends Component {
 
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
-            <Provider store={store} >
-              <Playground  tabs={this.state.tabs} endpoint={"http://"+this.state.source+":4000/graphql/" + this.state.id} className="playground" id="playground" settings={{'prettier.useTabs': true}}/>
+            <Provider store={store}>
+              <Playground  tabs={this.state.tabs}  endpoint={"http://"+this.state.source+":4000/graphql/" + this.state.id} className="playground" id="playground" settings={{'prettier.useTabs': true}}/>
             </Provider>
           </div>
           <div className="doc-link">
@@ -218,4 +200,3 @@ class PrivateDashboard extends Component {
 
 
 export default PrivateDashboard;
-
