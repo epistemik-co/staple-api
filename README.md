@@ -1,4 +1,4 @@
-![logo](https://raw.githubusercontent.com/epistemik-co/staple-api/gh-pages/favicon-transparent.png)
+![logo](https://raw.githubusercontent.com/epistemik-co/staple-api/gh-pages/staple-api-black-text.png)
 
 **Staple API** is a lightweight GraphQL-based API for a uniform management of **knowledge graphs**, virtualized as linked data via JSON-LD, on top of different data storage back-ends.
 
