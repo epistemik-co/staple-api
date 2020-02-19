@@ -2,7 +2,7 @@
 
 <p align="center"> 
     <a href="/"> 
-        <img src="favicon-transparent.png" style="max-width:80%"> 
+        <img src="staple-api-white-text.svg" style="max-width:80%"> 
     </a> 
 </p>
   

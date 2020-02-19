@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="favicon-transparent.png" style="max-width:100%">
+  <img src="staple-api-black-text.svg" style="max-width:100%">
 </p>
 
 > A GraphQL API for easy management of <br> knowledge graphs
