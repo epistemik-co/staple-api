@@ -12,12 +12,24 @@ class PrivateDashboard extends Component {
 
   state = {
     id: "",
-    tabs: [
-      {
-        endpoint: "string",
-        query: "string" 
-      }
-    ],
+    tabs: [{
+      endpoint: "",
+      query: `{
+        Organization {
+          _id
+          _type
+          name
+          employee {
+            _id
+            _type
+            name
+            customerOf {
+              _id
+            }
+          }
+        }
+      }`
+    }],
     showObjects: true,
     personal: false,
     ontology: JSON.stringify(require('../../schema/raw-schema'), null, 2).slice(1, -1),
@@ -56,7 +68,6 @@ class PrivateDashboard extends Component {
     if (res.status === 200) {
       this.setState({
         id: res.data,
-        
       })
     }
   }
@@ -81,7 +92,7 @@ class PrivateDashboard extends Component {
         console.log(res.data)
 
         this.setState({
-
+          tabs: "",
           id: res.data.id,
           context: JSON.stringify(res.data.context, null, 2),
           error: "",
@@ -96,6 +107,7 @@ class PrivateDashboard extends Component {
       }
 
       this.setState({
+        tabs: "",
         id: "",
         context: "",
         error: error.response.data,
