@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Provider } from "react-redux";
-import { Playground, store } from "graphql-playground-react";
+import { Playground, store } from "graphql-playground-react/";
 import './PrivateDashboard.scss';
 import schemaString from '../../schema/objects'
 import SplitPane from 'react-split-pane'
@@ -20,7 +20,7 @@ class PrivateDashboard extends Component {
     error: "",
     compiledMessage: "",
     playgroundVersion: 1,
-    source: "playground.staple-api.org" /*"localhost"*/
+    source: /*"playground.staple-api.org"*/ "localhost"
   }
 
   componentDidMount = () => {
@@ -180,7 +180,7 @@ class PrivateDashboard extends Component {
         <div className="box-grid">
           <div className="bottom-box" key={this.state.playgroundVersion} >
             <Provider store={store}>
-              <Playground endpoint={"http://"+this.state.source+":4000/graphql/" + this.state.id} className="playground" id="playground" />
+              <Playground endpoint={"http://"+this.state.source+":4000/graphql/" + this.state.id} className="playground" id="playground"/>
             </Provider>
           </div>
           <div className="doc-link">

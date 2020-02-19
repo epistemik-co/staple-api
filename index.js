@@ -27,7 +27,7 @@ app.listen({ port: 4000 }, () =>
 // show memory usage every 5 seconds
 setInterval(function () {
     const used = process.memoryUsage().heapUsed / 1024 / 1024;
-    console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+    // console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     if (used > 100) {
         console.log("need to clear!");
     }
@@ -43,9 +43,14 @@ async function init(app, index) {
     for (let obj of exampleObjects) {
         await database.pushObjectToBackend(obj)
     }    
-
+    const path = "/graphql/" + index;
+    process.env.GRAPHQL_BASIC_ENDPOINT = "http://localhost:4000" + path;
     let server = new ApolloServer({
         schema,
+        playground: {
+            endpoint: path,
+            tabs: require("./tabs")
+        },
         formatResponse: response => {
             if (response.errors !== undefined) {
                 response.data = false;
@@ -63,10 +68,10 @@ async function init(app, index) {
             return {
                 myID: index,
             };
-        },
+        }
+
     });
 
-    const path = "/graphql/" + index;
     server.applyMiddleware({ app, path });
 
 }
