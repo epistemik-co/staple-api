@@ -1,10 +1,6 @@
 ## Prerequisites
 
-Staple API is build in Node.js and require Yarn to resolve between GraphQL packege dependencies. 
-
-### Install Node.js
-
-You need to ensure Node.js is installed. You can do that by executing the following command:
+Staple API is built in Node.js. You can ensure it is installed by executing the following command:
 
 ```bash
 node -v
@@ -12,25 +8,10 @@ node -v
 
 If no version is shown, please consult the installation instructions at [https://nodejs.org/](https://nodejs.org/).
 
-### Install Yarn
-
-You need to ensure Yarn is installed. You can do that by executing the following command:
-
+Further, you need to install `staple-api` with:
 ```bash
-yarn -v
+npm i staple-api
 ```
-
-If no version is shown, please consult the installation instructions at [https://classic.yarnpkg.com/en/docs/install](https://classic.yarnpkg.com/en/docs/install).
-
-## Running a demo
-
-First start a new node project with:
-
-```bash
-yarn init
-```
-
-### Ontology
 
 The schema and resolvers of the GraphQL serivce inside Staple API are generated automatically based on the input [RDF ontology](/docs/?id=ontology-and-schema). The ontology should be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/) and provided in a file path or as a string. Create a sample `ontology.ttl` file in the project:
 
@@ -64,28 +45,11 @@ example:employee a rdf:Property ;
     schema:rangeIncludes example:Person .
 ```
 
-### Query the API
-
-Replace the `package.json` file with:
-
-```javascript
-{
-  "name": "staple-api-demo",
-  "main": "demo.js",
-  "dependencies": {
-    "staple-api": "^1.0.15"
-  },
-  "resolutions": {
-    "graphql": "^14.6.0"
-  }
-}
-```
-
+## Query the API
 
 Create `demo.js` file:
 
 ```javascript
-const { graphql } = require("graphql");
 const staple = require("staple-api");
 
 let ontology = {
@@ -95,17 +59,12 @@ let ontology = {
 async function StapleDemo() {
     let stapleApi = await staple(ontology);  
 
-    graphql(stapleApi.schema, '{ _CONTEXT { _id _type Person employee } }').then((response) => {
-        console.log(response);
-      });
+    stapleApi.graphql('{ _CONTEXT { _id _type } }').then((response) => {
+        console.log(JSON.stringify(response))
+        });
 }
 
 StapleDemo()
-```
-
-Install packages:
-```bash
-yarn
 ```
 
 Run the demo:
@@ -114,23 +73,13 @@ node demo.js
 ```
 
 
-### Run as server
+## Run as server
 
-Replace the `package.json` file with:
+Install:
 
-```javascript
-{
-  "name": "staple-api-demo",
-  "main": "demo.js",
-  "dependencies": {
-    "express": "^4.17.1",
-    "express-graphql": "^0.9.0",
-    "staple-api": "^1.0.15"
-  },
-  "resolutions": {
-    "graphql": "^14.6.0"
-  }
-}
+```bash
+npm i express
+npm i express-graphql
 ```
 
 Create file `demo.js`:
@@ -160,37 +109,21 @@ async function StapleDemo() {
 StapleDemo()
 ```
 
-Install packages:
-```bash
-yarn
-```
-
 Run the demo:
 ```bash
 node demo.js
 ```
 
-### Run with MongoDB
+## Run with MongoDB
 
 [Install and run MongoDB](https://docs.mongodb.com/manual/installation/) locally as a standalone on the default port `27017`. Create a database `staple` and with a new collection `staple`.
 
-Replace the `package.json` file with:
+Install:
 
-```javascript
-{
-  "name": "staple-api-demo",
-  "main": "demo.js",
-  "dependencies": {
-    "express": "^4.17.1",
-    "express-graphql": "^0.9.0",
-    "staple-api": "^1.0.15"
-  },
-  "resolutions": {
-    "graphql": "^14.6.0"
-  }
-}
+```bash
+npm i express
+npm i express-graphql
 ```
-
 
 Create file `demo.js`:
 
@@ -225,11 +158,6 @@ async function StapleDemo() {
 }
 
 StapleDemo()
-```
-
-Install packages:
-```bash
-yarn
 ```
 
 Run the demo:

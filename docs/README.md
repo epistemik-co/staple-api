@@ -1574,7 +1574,6 @@ The main property accessible in the constructed Staple API object is `schema`, w
 #### **GraphQL service**
 
 ```javascript
-const { graphql } = require("graphql");
 const staple = require("staple-api");
 
 let ontology = {
@@ -1584,8 +1583,8 @@ let ontology = {
 async function StapleDemo() {
     let stapleApi = await staple(ontology);  
 
-    graphql(stapleApi.schema, '{ _CONTEXT { _id _type Person employee } }').then((response) => {
-        console.log(response);
+    stapleApi.graphql('{ _CONTEXT { _id _type Person employee } }').then((response) => {
+        console.log(JSON.stringify(response));
       });
 }
 
@@ -1624,7 +1623,6 @@ StapleDemo()
 Additionally, JSON-LD context used in the service, which enables mapping of GraphQL responses to RDF, is acessible via the property `context`:
 
 ```javascript
-const { graphql } = require("graphql");
 const staple = require("staple-api");
 const jsonld = require("jsonld")
 
@@ -1637,10 +1635,10 @@ async function StapleDemo() {
     let context = stapleApi.context
     let data = {}
 
-    await graphql(stapleApi.schema, 'mutation { Person(input: { _id: "http://example.com/john" name: "John Smith" } ) }').then((response) => {
+    await stapleApi.graphql('mutation { Person(input: { _id: "http://example.com/john" name: "John Smith" } ) }').then((response) => {
       });
 
-    await graphql(stapleApi.schema, '{ Person { _id name } }').then((response) => {
+    await stapleApi.graphql('{ Person { _id name } }').then((response) => {
         data = response.data
       });
 
