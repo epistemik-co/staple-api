@@ -1431,7 +1431,7 @@ This in turn can be visualsed as:
 </p>
 
 
-## Using the library
+## Using the API
 
 Staple API can be imported as an [npm package](https://www.npmjs.com/package/staple-api) and initiated as follows (see [Getting started](/tutorial/?id=running-a-demo) for working examples), with two parameters: `ontology` and `config` described below:
 
