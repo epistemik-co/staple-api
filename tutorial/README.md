@@ -64,7 +64,7 @@ example:employee a rdf:Property ;
     schema:rangeIncludes example:Person .
 ```
 
-### Querying the API
+### Query the API
 
 Replace the `package.json` file with:
 
@@ -73,7 +73,7 @@ Replace the `package.json` file with:
   "name": "staple-api-demo",
   "main": "demo.js",
   "dependencies": {
-    "staple-api": "^1.0.14"
+    "staple-api": "^1.0.15"
   },
   "resolutions": {
     "graphql": "^14.6.0"
@@ -125,7 +125,7 @@ Replace the `package.json` file with:
   "dependencies": {
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
-    "staple-api": "^1.0.14"
+    "staple-api": "^1.0.15"
   },
   "resolutions": {
     "graphql": "^14.6.0"
@@ -170,7 +170,9 @@ Run the demo:
 node demo.js
 ```
 
-### Run with MongoDB config
+### Run with MongoDB
+
+[Install and run MongoDB](https://docs.mongodb.com/manual/installation/) locally as a standalone on the default port `27017`. Create a database `staple` and with a new collection `staple`.
 
 Replace the `package.json` file with:
 
@@ -181,7 +183,7 @@ Replace the `package.json` file with:
   "dependencies": {
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
-    "staple-api": "^1.0.14"
+    "staple-api": "^1.0.15"
   },
   "resolutions": {
     "graphql": "^14.6.0"
@@ -189,7 +191,6 @@ Replace the `package.json` file with:
 }
 ```
 
-[Install and run MongoDB](https://docs.mongodb.com/manual/installation/) and create a database called `staple`.
 
 Create file `demo.js`:
 
@@ -206,7 +207,7 @@ let config = {
     type: "mongodb",
     url: "mongodb://127.0.0.1:27017", 
     dbName: "staple",
-    collectionName: "demoCollection",
+    collectionName: "staple",
 };
 
 async function StapleDemo() {
