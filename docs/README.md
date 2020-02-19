@@ -264,30 +264,30 @@ type Query {
  
   Agent(
     page: Int
-    filter: Agent_FILTER
+    filter: FilterAgent
     inferred: Boolean = false
   ): [Agent]
 
   Organization(
     page: Int
-    filter: Organization_FILTER
+    filter: FilterOrganization
     inferred: Boolean = false
   ): [Organization]
 
   Person(
     page: Int
-    filter: Person_FILTER
+    filter: FilterPerson
     inferred: Boolean = false
   ): [Person]
 }
 
-input Agent_FILTER {
+input FilterAgent {
   _id: [ID]
   name: [String]
   customerOf: [ID]
 }
 
-input Organization_FILTER {
+input FilterOrganization {
   _id: [ID]
   name: [String]
   employee: [ID]
@@ -295,7 +295,7 @@ input Organization_FILTER {
   customerOf: [ID]
 }
 
-input Person_FILTER {
+input FilterPerson {
   _id: [ID]
   name: [String]
   age: [Int]
@@ -310,27 +310,27 @@ type Mutation {
 
   Agent(
     type: MutationType = PUT
-    input: Agent_INPUT!
+    input: InputAgent!
   ): Boolean
 
   Organization(
     type: MutationType = PUT
-    input: Organization_INPUT!
+    input: InputOrganization!
   ): Boolean
 
   Person(
     type: MutationType = PUT
-    input: Person_INPUT!
+    input: InputPerson!
   ): Boolean
 }
 
-input Agent_INPUT {
+input InputAgent {
     _id: ID!
     name: String
   customerOf: [ID]
 }
 
-input Organization_INPUT {
+input InputOrganization {
   _id: ID!
   name: String
   employee: [ID]
@@ -338,7 +338,7 @@ input Organization_INPUT {
   customerOf: [ID]
 }
 
-input Person_INPUT {
+input InputPerson {
   _id: ID!
   name: String
   age: Int
@@ -455,7 +455,7 @@ type Query {
     """
     page: Int
     """Filters the selected results based on specified field values"""
-    filter: Agent_FILTER
+    filter: FilterAgent
     """Include indirect instances of this type"""
     inferred: Boolean = false
   ): [Agent]
@@ -468,7 +468,7 @@ type Query {
     """
     page: Int
     """Filters the selected results based on specified field values"""
-    filter: Organization_FILTER
+    filter: FilterOrganization
     """Include indirect instances of this type"""
     inferred: Boolean = false
   ): [Organization]
@@ -481,14 +481,14 @@ type Query {
     """
     page: Int
     """Filters the selected results based on specified field values"""
-    filter: Person_FILTER
+    filter: FilterPerson
     """Include indirect instances of this type"""
     inferred: Boolean = false
   ): [Person]
 }
 
 """Filter on type: Agent"""
-input Agent_FILTER {
+input FilterAgent {
   """Possible identifiers"""
   _id: [ID]
   """Possible values on field: name"""
@@ -498,7 +498,7 @@ input Agent_FILTER {
 }
 
 """Filter on type: Organization"""
-input Organization_FILTER {
+input FilterOrganization {
   """Possible identifiers"""
   _id: [ID]
   """Possible values on field: name"""
@@ -512,7 +512,7 @@ input Organization_FILTER {
 }
 
 """Filter on type: Person"""
-input Person_FILTER {
+input FilterPerson {
   """Possible identifiers"""
   _id: [ID]
   """Possible values on field: name"""
@@ -538,7 +538,7 @@ type Mutation {
     """The type of the mutation to be applied"""
     type: MutationType = PUT
     """The input object of the mutation"""
-    input: Agent_INPUT!
+    input: InputAgent!
   ): Boolean
 
   """Perform mutation over an object of type: Organization"""
@@ -546,7 +546,7 @@ type Mutation {
     """The type of the mutation to be applied"""
     type: MutationType = PUT
     """The input object of the mutation"""
-    input: Organization_INPUT!
+    input: InputOrganization!
   ): Boolean
 
   """Perform mutation over an object of type: Person"""
@@ -554,12 +554,12 @@ type Mutation {
     """The type of the mutation to be applied"""
     type: MutationType = PUT
     """The input object of the mutation"""
-    input: Person_INPUT!
+    input: InputPerson!
   ): Boolean
 }
 
 """Input object of type: Agent"""
-input Agent_INPUT {
+input InputAgent {
   """The unique identifier of the object"""
   _id: ID!
   """Name of the agent"""
@@ -569,7 +569,7 @@ input Agent_INPUT {
 }
 
 """Input object of type: Organization"""
-input Organization_INPUT {
+input InputOrganization {
   """The unique identifier of the object"""
   _id: ID!
   """Name of the agent"""
@@ -583,7 +583,7 @@ input Organization_INPUT {
 }
 
 """Input object of type Person"""
-input Person_INPUT {
+input InputPerson {
   """The unique identifier of the object"""
   _id: ID!
   """Name of the agent"""
@@ -626,7 +626,7 @@ type Person {
 }
 ```
 
-Each object type is further associated with a unique query (e.g., `Person`), a query filter (e.g., `Person_FILTER`), a mutation (e.g., `Person`), an input type (e.g., `Person_INPUT`) - all described separately below. 
+Each object type is further associated with a unique query (e.g., `Person`), a query filter (e.g., Filter`Person`), a mutation (e.g., `Person`), an input type (e.g., Input`Person`) - all described separately below. 
 
 ### Fields
 
@@ -690,7 +690,7 @@ type Person {
 ### Queries and mutations
 
 
-Each object type is associated with a unique query (e.g., `Person`), a query filter (e.g., `Person_FILTER`), a mutation (e.g., `Person`), an input type (e.g., `Person_INPUT`). All of them are based on the same structural templates applied across all the types:
+Each object type is associated with a unique query (e.g., `Person`), a query filter (e.g., Filter`Person`), a mutation (e.g., `Person`), an input type (e.g., Input`Person`). All of them are based on the same structural templates applied across all the types:
 
 
 <!-- tabs:start -->
@@ -716,7 +716,7 @@ type Query {
   
   Type(
     page: Int
-    filter: Type_FILTER
+    filter: FilterType
     inferred: Boolean = false
   ): [Type]
   
@@ -726,7 +726,7 @@ type Query {
 #### **filter**
 
 ```graphql
-input Type_FILTER {
+input FilterType {
   _id: [ID]
   field1: [Type1]
   field2: [Type2]
@@ -742,7 +742,7 @@ type Mutation {
 
   Type(
     type: MutationType = PUT
-    input: Type_INPUT!
+    input: InputType!
   ): Boolean
 
 }
@@ -751,7 +751,7 @@ type Mutation {
 #### **input**
 
 ```graphql
-input Type_INPUT {
+input InputType {
   _id: ID!
   field1: Type1
   field2: [Type2]
@@ -789,17 +789,17 @@ type Query {
   
   Person(
     page: Int
-    filter: Person_FILTER
+    filter: FilterPerson
     inferred: Boolean = false
   ): [Person]
   
 }
 ```
 
-#### **input Person_FILTER**
+#### **input FilterPerson**
 
 ```graphql
-input Person_FILTER {
+input FilterPerson {
   _id: [ID]
   name: [String]
   age: [Int]
@@ -816,16 +816,16 @@ type Mutation {
 
   Person(
     type: MutationType = PUT
-    input: Person_INPUT!
+    input: InputPerson!
   ): Boolean
 
 }
 ```
 
-#### **input Person_INPUT**
+#### **input InputPerson**
 
 ```graphql
-input Person_INPUT {
+input InputPerson {
   _id: ID!
   name: String
   age: Int
@@ -841,7 +841,7 @@ input Person_INPUT {
 
 An object query returns instances of the type with the same name (e.g., query `Person` returns instances of type `Person`). It supports three arguments:
 - `page: Int`: specifies the number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned. 
-- `filter: Type_FILTER`: filters the results based on lists of acceptable values specified for each field
+- `filter: FilterType`: filters the results based on lists of acceptable values specified for each field
 - `inferred: Boolean = false`: specifies whether the indirect instances of this type should also be included in the results
 
 For instance, the following query returns the first page of instances of type `Person`, whose names are "John Smith" and who are customers of either `http://example.com/org1` or `http://example.com/org2`:
@@ -868,7 +868,7 @@ For instance, the following query returns the first page of instances of type `P
 
 An object mutation enables creation and updates of instances of the type with the same name (e.g., mutation `Person` creates/updates instances of type `Person`). It supports two arguments:
 - `type: MutationType = PUT`: defines the type of mutation to be performed. THe default and currently the only acceptable mutation type is PUT, which either creates a new object with a given identifer or overwrites an existing one. 
-- `input: Type_INPUT!`: specifies the object of a given type to be inserted into the database. 
+- `input: InputType!`: specifies the object of a given type to be inserted into the database. 
 
 The input object includes the exact same fields as the associated object type, except for `_type` which is inserted automatically using the associated type as the default value. For instance, the following mutation generates an instance of `Person` with the specified attributes, which can be retrived back with the approporiate `Person` query:
 
