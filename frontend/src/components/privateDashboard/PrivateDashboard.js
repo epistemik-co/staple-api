@@ -37,7 +37,7 @@ class PrivateDashboard extends Component {
     error: "",
     compiledMessage: "",
     playgroundVersion: 1,
-    source: /*"playground.staple-api.org"*/ "localhost"
+    source: "playground.staple-api.org"/* "localhost"*/
   }
 
   componentDidMount = () => {
