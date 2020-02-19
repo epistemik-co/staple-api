@@ -3,7 +3,7 @@ const DatabaseInterface = require("./database/database");
 const Resolver = require("./resolvers/resolvers");
 const schemaFromOntology = require("./schema/schemaFromOntology");
 const jsonldFromOntology = require("./schema/jsonldFromOntology");
-const { printSchema } = require("graphql");
+const { printSchema, graphql } = require("graphql");
 
 async function init(ontology, configObject){
     let schemaObj = {};
@@ -20,6 +20,8 @@ async function init(ontology, configObject){
         typeDefs: schemaObj.schemaSDL,
         resolvers: schemaObj.rootResolver,
     });
+
+    schemaObj.graphqlQuery = async (query) => graphql(schemaObj.schema, query)
 
     return schemaObj;
 }
