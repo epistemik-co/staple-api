@@ -59,7 +59,7 @@ let ontology = {
 async function StapleDemo() {
     let stapleApi = await staple(ontology);  
 
-    stapleApi.graphql('{ _CONTEXT { _id _type } }').then((response) => {
+    stapleApi.graphql('{ _CONTEXT { _id _type Person employee } }').then((response) => {
         console.log(JSON.stringify(response))
         });
 }
@@ -75,7 +75,7 @@ node demo.js
 
 ## Run as server
 
-Install:
+Install packages:
 
 ```bash
 npm i express
@@ -118,7 +118,7 @@ node demo.js
 
 [Install and run MongoDB](https://docs.mongodb.com/manual/installation/) locally as a standalone on the default port `27017`. Create a database `staple` and with a new collection `staple`.
 
-Install:
+Install packages:
 
 ```bash
 npm i express
