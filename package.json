@@ -1,13 +1,16 @@
 {
   "name": "staple-api",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Staple API - GraphQL API for Knowledge Graphs",
   "keywords": [
-    "GraphQL",
+    "graphql",
     "linked data",
+    "rdf",
     "knowledge graph",
-    "API",
-    "JSON-LD" 
+    "api",
+    "json-ld",
+    "jsonld",
+    "mongodb"
   ],
   "main": "index.js",
   "dependencies": {
