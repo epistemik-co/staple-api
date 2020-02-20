@@ -1,6 +1,30 @@
 ## Playground
 
-Try our [live playground](http://playground.staple-api.org) first! You can also [run it on Repl](/tutorial/?id=playground-on-repl).
+Try querying our [live playground](http://playground.staple-api.org) first, for instance with:  
+
+```
+{
+  Person {
+    _id
+    _type
+    name
+    age
+    isMarried
+    customerOf {
+      _id
+      _type
+      name
+      revenue
+      employee {
+        _id
+      }
+    }
+  }
+}
+```
+
+
+You can also start the dafault [playground on Repl](/tutorial/?id=playground-on-repl).
 
 
 ## Running locally
