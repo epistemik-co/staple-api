@@ -54,7 +54,7 @@ const typeResolver = (database, schemaMapping) => {
     return async (parent, args) => {
         let types = await database.getObjectsValueArray((parent), ("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"));
         if (args.inferred) {
-            types = await database.getObjectsValueArray((parent), database.stampleDataType);
+            types = await database.getObjectsValueArray((parent), database.stapleDataType);
         }
         
         types = types.map(x => {

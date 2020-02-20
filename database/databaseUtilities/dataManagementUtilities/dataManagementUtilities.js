@@ -25,7 +25,7 @@ function updateInference(database) {
     let itr = temp.quads();
     let itrData = itr.next();
     while (!itrData.done) {
-        if (itrData.value.predicate.value === database.stampleDataType ) {
+        if (itrData.value.predicate.value === database.stapleDataType ) {
             database.database.delete(itrData.value);
         }
         itrData = itr.next();
@@ -43,7 +43,7 @@ function updateInference(database) {
             if (data !== undefined) {
                 let uris = data["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
                 for (let x in uris) {
-                    database.create(itrData.value.subject.value, database.stampleDataType, uris[x]["@id"]);
+                    database.create(itrData.value.subject.value, database.stapleDataType, uris[x]["@id"]);
                 }
             }
 

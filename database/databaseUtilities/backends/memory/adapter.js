@@ -12,7 +12,7 @@ class MemoryDatabase {
         this.schemaMapping = schemaMapping;
 
         this.database = dataset_tree();
-        this.stampleDataType = "http://staple-api.org/datamodel/type";
+        this.stapleDataType = "http://staple-api.org/datamodel/type";
 
         this.flatJsons = [];
         this.dbCallCounter = 0;
@@ -188,7 +188,7 @@ class MemoryDatabase {
         let i = 0;
 
         if (inferred) {
-            predicate = factory.namedNode(this.stampleDataType);
+            predicate = factory.namedNode(this.stapleDataType);
         }
         else {
             predicate = factory.namedNode(predicate);

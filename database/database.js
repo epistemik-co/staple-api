@@ -16,7 +16,7 @@ class Database {
         this.selectAdapter(configObject);
 
         this.database = dataset_tree();
-        this.stampleDataType = "http://staple-api.org/datamodel/type";
+        this.stapleDataType = "http://staple-api.org/datamodel/type";
 
         this.flatJsons = [];
         this.dbCallCounter = 0;
@@ -225,7 +225,7 @@ class Database {
         type = factory.namedNode(type);
 
         if (inferred) {
-            predicate = factory.namedNode(this.stampleDataType);
+            predicate = factory.namedNode(this.stapleDataType);
         }
         else {
             predicate = factory.namedNode(predicate);
