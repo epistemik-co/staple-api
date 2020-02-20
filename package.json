@@ -14,9 +14,11 @@
   ],
   "main": "index.js",
   "dependencies": {
+    "apollo-server-express": "^2.10.1",
+    "express": "^4.17.1",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
-    "graphql-tools": "^4.0.4",
+    "graphql-tools": "^4.0.7",
     "graphy": "^3.2.2",
     "jsonld": "^1.6.2",
     "mongodb": "^3.3.0-beta2",
