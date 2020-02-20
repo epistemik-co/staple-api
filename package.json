@@ -7,17 +7,22 @@
     "linked data",
     "knowledge graph",
     "API",
-    "JSON-LD" 
+    "JSON-LD"
   ],
   "main": "index.js",
   "dependencies": {
+    "apollo-server-express": "^2.10.1",
+    "express": "^4.17.1",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.4",
     "graphy": "^3.2.2",
+    "https": "^1.0.0",
     "jsonld": "^1.6.2",
     "mongodb": "^3.3.0-beta2",
     "morgan": "^1.9.1",
+    "node-fetch": "^2.6.0",
+    "sparql-http-client": "^1.2.0",
     "uuid": "^3.3.2",
     "winston": "^3.2.1"
   },

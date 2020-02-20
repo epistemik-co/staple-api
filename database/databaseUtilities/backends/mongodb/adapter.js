@@ -23,7 +23,7 @@ class MongodbAdapter {
             let _type = undefined;
 
             if (query === undefined) {
-                _type = database.schemaMapping["@revContext"][type];
+                _type = database.schemaMapping["@revContext"][type]; //URI FOR TYPE 
                 query = {};
             }
 

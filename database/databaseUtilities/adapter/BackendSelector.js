@@ -15,13 +15,13 @@ class BackendSelector {
         }
 
         if (configObject.type === "mongodb") {
-            logger.info("You are using in mongodb");
+            logger.info("You are using mongodb");
             adapterType = require("../backends/mongodb/adapter");
             this.backend = new adapterType(configObject);
         }
 
         if (configObject.type === "sparql") {
-            logger.info("You are using in mongodb");
+            logger.info("You are using sparql");
             adapterType = require("../backends/sparql/adapter");
             this.backend = new adapterType(configObject);
         }
