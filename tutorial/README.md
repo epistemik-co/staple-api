@@ -29,7 +29,7 @@ You can also start the dafault [playground on Repl](/tutorial/?id=playground-on-
 
 ## Running locally
 
-Staple API is built in Node.js. You can ensure it is installed by executing the following command:
+Staple API is built in Node.js. You can ensure Node.js is installed by executing the following command:
 
 ```bash
 node -v
