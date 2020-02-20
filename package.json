@@ -15,7 +15,6 @@
   "main": "index.js",
   "dependencies": {
     "graphql": "^14.6.0",
-    "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.7",
     "graphy": "^3.2.2",
     "jsonld": "^1.6.2",
