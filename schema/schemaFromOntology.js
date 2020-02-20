@@ -1,4 +1,4 @@
-const DatabaseInterface = require("./database/Database");
+const DatabaseInterface = require("./database/database");
 let database = new DatabaseInterface(); 
 const logger = require("../config/winston");
 var graphql = require("graphql");
