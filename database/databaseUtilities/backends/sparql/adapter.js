@@ -21,15 +21,18 @@ class SparqlAdapter {
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
         const filters= this.preparefilters(database, selectionSet, tree)
-        console.log("FILTER FOR")
         const headers = {
             "Content-Type" : "application/sparql-query",
-            "Accept" : "application/ld+json"
+            "Accept" : "application/n-triples"
         }
 
         let _type = type
         let query = "";
-
+        //TODO: handle graphname
+        // let graphName = this.configFile.graphName
+        // if (graphName !== undefined){
+        
+        // }
         if (inferred) {
             let typeForQuery = '?x <http://staple-api.org/datamodel/type> <' + _type + '> . ?x ?y ?z .'
             query = `construct {?x ?y ?z} where {${typeForQuery}}`; 
@@ -43,16 +46,15 @@ class SparqlAdapter {
             }
         }
 
-        console.log(query)
+        // console.log(query)
 
         const url = this.configFile.url + "?query=" + query
         // logger.debug(`loadCoreQueryDataFromDB: url: ${url}`);
-        const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.json());
-        // logger.debug(`loadCoreQueryDataFromDB: fetch response: ${JSON.stringify(response)}`);
+        const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
+        // logger.debug(`loadCoreQueryDataFromDB: fetch response: ${response}`);
 
-        const rdf = await jsonld.toRDF(response, { format: "application/n-quads" });
         // logger.debug("Graphy database rdf insert start");
-        await database.insertRDF(rdf);
+        await database.insertRDF(response);
         // logger.debug("Graphy database rdf insert end");
 
     }
@@ -70,7 +72,7 @@ class SparqlAdapter {
 
         const headers = {
             "Content-Type" : "application/sparql-query",
-            "Accept" : "application/ld+json"
+            "Accept" : "application/n-triples"
         }
 
         let query = "";
@@ -79,13 +81,11 @@ class SparqlAdapter {
         query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
         const url = this.configFile.url + "?query=" + query
         logger.debug(`url for fetch: ${url}`);
-        const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.json());
-        // logger.debug(`fetch response: ${JSON.stringify(response)}`);
+        const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
+        // logger.debug(`fetch response: ${response}`);
 
-        const rdf = await jsonld.toRDF(response, { format: "application/n-quads" });
-        // logger.debug(`RDF: ${rdf}`)
         logger.debug("Graphy database rdf insert start");
-        await database.insertRDF(rdf);
+        await database.insertRDF(response);
         logger.debug("Graphy database rdf insert end");
 
     }
@@ -99,7 +99,6 @@ class SparqlAdapter {
     async pushObjectToBackend(database, input) {
         const headers = {
             "Content-Type" : "application/sparql-update",
-            "Accept" : "application/ld+json"
         }
 
         logger.info("pushObjectToBackend in sparql was called")
@@ -123,7 +122,6 @@ class SparqlAdapter {
     async removeObject(database, objectIDs) {
         const headers = {
             "Content-Type" : "application/sparql-update",
-            "Accept" : "application/ld+json"
         }
 
         logger.info("removeObject in sparql was called")
@@ -138,6 +136,12 @@ class SparqlAdapter {
         const response = await fetch(url, {method: 'POST', headers: headers, body: deleteQuery}).then(res => res.text());
         logger.debug(`fetch response: ${JSON.stringify(response)}`);
     }
+
+    /**
+     * is Uri
+     * @param  {str} string to check if matches URI regex
+     * @returns boolean
+     */
 
     isURI(str) {
         var urlRegex = /\w+:(\/?\/?)[^\s]+/gm;
@@ -154,7 +158,6 @@ class SparqlAdapter {
      */
 
     preparefilters(database, selection, tree) {
-        // console.log(util.inspect(selection,false,null,true)) 
         logger.debug(JSON.stringify(selection))
         let query = {};
         let fieldName = selection.name.value;
@@ -166,17 +169,16 @@ class SparqlAdapter {
         if (fieldData === undefined) {
             return {};
         }
-        //to think about 
+
         let filters = [];
-        // let whereFilters = [];
 
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
                 for (let filterField of argument.value.fields) {
                     if (fieldData.data[filterField.name.value] !== undefined) {
-                        logger.debug("ADD TO THE FILTER QUERY");
-                        logger.debug(JSON.stringify(fieldData.data[filterField.name.value]));
-                        logger.debug(`prepareFilters: ${fieldData.data[filterField.name.value].uri}`)
+                        // logger.debug("ADD TO THE FILTER QUERY");
+                        // logger.debug(JSON.stringify(fieldData.data[filterField.name.value]));
+                        // logger.debug(`prepareFilters: ${fieldData.data[filterField.name.value].uri}`)
                         let uri = fieldData.data[filterField.name.value].uri;
                         let value = filterField.value;
                         let filterString= "";
