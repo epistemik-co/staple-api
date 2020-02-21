@@ -20,7 +20,7 @@ class SparqlAdapter {
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
-        const {bodyFilters, whereFilters}= this.preparefilters(database, selectionSet, tree)
+        const filters= this.preparefilters(database, selectionSet, tree)
         console.log("FILTER FOR")
         const headers = {
             "Content-Type" : "application/sparql-query",
@@ -36,7 +36,11 @@ class SparqlAdapter {
         }
         else {
             let typeForQuery = '?x a <' + _type + '> . ?x ?y ?z .'
-            query = `construct {?x ?y ?z} where { ${whereFilters.join(" ")}. ${typeForQuery} ${bodyFilters.join("\n")}}`;
+            if (filters){
+                query = `construct {?x ?y ?z} where { ${filters.join(" ")} ${typeForQuery}}`;
+            }else{
+                query = `construct {?x ?y ?z} where { ${typeForQuery}}`;
+            }
         }
 
         console.log(query)
@@ -162,17 +166,13 @@ class SparqlAdapter {
         if (fieldData === undefined) {
             return {};
         }
-
-        let bodyFilters = [];
-        let whereFilters = [];
+        //to think about 
+        let filters = [];
+        // let whereFilters = [];
 
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
                 for (let filterField of argument.value.fields) {
-                    // logger.debug("OBJECT");
-                    // logger.debug(filterField);
-                    // logger.debug("\n\n");
-                    //
                     if (fieldData.data[filterField.name.value] !== undefined) {
                         logger.debug("ADD TO THE FILTER QUERY");
                         logger.debug(JSON.stringify(fieldData.data[filterField.name.value]));
@@ -189,14 +189,14 @@ class SparqlAdapter {
                                 value = `"${value}"`
                             }
                             filterString = `values ?x {${value}}`
-                            whereFilters.push(filterString)
+                            filters.push(filterString)
                         }else{
                             if (value.kind === "ListValue") {
                                 value = value.values.map(x => (this.isURI(x.value.toString()) ?
                                     `<${x.value.toString()}>`: `"${x.value.toString()}"`));
                                 value = value.join(", ")
                                 filterString = `?x <${uri}> ?p . filter (?p in (${value})) .` 
-                                bodyFilters.push(filterString)
+                                filters.push(filterString)
                             }
                             else {
                                 value = [value.value.toString()];
@@ -206,7 +206,7 @@ class SparqlAdapter {
                                     value = `"${value}"`
                                 }
                                 filterString  = `?x <${uri}> ${value} .`
-                                bodyFilters.push(filterString)
+                                filters.push(filterString)
                             }
                         }
 
@@ -237,10 +237,10 @@ class SparqlAdapter {
         }
 
         // logger.debug(`prepareFilters: filters ${JSON.stringify(filters)}`)
-        if (Object.keys(bodyFilters).length === 0 && Object.keys(whereFilters).length === 0 ) {
+        if (Object.keys(filters).length === 0) {
             return undefined;
         }
-        return {bodyFilters: bodyFilters, whereFilters: whereFilters};
+        return filters;
     }
 }
 
