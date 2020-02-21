@@ -197,8 +197,10 @@ class SparqlAdapter {
                                 value = value.join(", ")
                                 filterString = `?x <${uri}> ?p . filter (?p in (${value})) .` 
                                 filters.push(filterString)
-                            }
-                            else {
+                            } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue" ) {
+                                filterString = `?x <${uri}> ?p . filter (?p in (${value.value.toString()})) .` 
+                                filters.push(filterString)
+                            } else {
                                 value = [value.value.toString()];
                                 if (this.isURI(value)){
                                     value = `<${value}>`
@@ -209,25 +211,6 @@ class SparqlAdapter {
                                 filters.push(filterString)
                             }
                         }
-
-
-                        // if (uri === "@id") {
-                        //     logger.debug(value);
-                        //     newIds = newIds.filter(x => value.includes(x));
-                        // }
-                        // else {
-                        //     // value or child id?
-                        //     logger.debug(value);
-                        //     logger.debug(uri);  
-                        //     newIds = newIds.filter(x => {
-                        //         let propValue = this.getSingleLiteral(x, uri);
-                        //         logger.debug(propValue);
-                        //         if (value.includes(propValue.value)) {
-                        //             return true;
-                        //         }
-                        //         return false;
-                        //     });
-                        // }
                     }
                     else {
                         console.log("SKIP");
@@ -235,8 +218,7 @@ class SparqlAdapter {
                 }
             }
         }
-
-        // logger.debug(`prepareFilters: filters ${JSON.stringify(filters)}`)
+        logger.debug(`prepareFilters: filters ${JSON.stringify(filters)}`)
         if (Object.keys(filters).length === 0) {
             return undefined;
         }
