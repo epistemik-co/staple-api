@@ -61,6 +61,7 @@ async function Demo() {
         //     collectionName: "quads3",
         // }
             );//, require(appRoot + "/config/database.js"));
+    let demo = {};
     demo.database = stapleApi.database;
     let schema = stapleApi.schema;
     demo.server = new ApolloServer({
