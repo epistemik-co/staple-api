@@ -59,12 +59,15 @@ class SparqlAdapter {
 
         const url = this.configFile.url + "?query=" + query
         // logger.debug(`loadCoreQueryDataFromDB: url: ${url}`);
-        const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
-        // logger.debug(`loadCoreQueryDataFromDB: fetch response: ${response}`);
-
-        // logger.debug("Graphy database rdf insert start");
-        await database.insertRDF(response);
-        // logger.debug("Graphy database rdf insert end");
+        try {
+            const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
+            // logger.debug(`loadCoreQueryDataFromDB: fetch response: ${response}`);
+            // logger.debug("Graphy database rdf insert start");
+            await database.insertRDF(response);
+            // logger.debug("Graphy database rdf insert end");
+        }catch(err){
+            throw(err);
+        }
 
     }
 
@@ -90,13 +93,15 @@ class SparqlAdapter {
         query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
         const url = this.configFile.url + "?query=" + query
         logger.debug(`url for fetch: ${url}`);
-        const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
-        // logger.debug(`fetch response: ${response}`);
-
-        logger.debug("Graphy database rdf insert start");
-        await database.insertRDF(response);
-        logger.debug("Graphy database rdf insert end");
-
+        try{
+            const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
+            // logger.debug(`fetch response: ${response}`);
+            logger.debug("Graphy database rdf insert start");
+            await database.insertRDF(response);
+            logger.debug("Graphy database rdf insert end");
+        }catch(err){
+            throw(err);
+        }
     }
 
     /**
@@ -106,6 +111,7 @@ class SparqlAdapter {
      */
 
     async pushObjectToBackend(database, input) {
+        let graphName = this.configFile.graphName
         const headers = {
             "Content-Type" : "application/sparql-update",
         }
@@ -115,11 +121,20 @@ class SparqlAdapter {
         input["@context"] = database.schemaMapping["@context2"];
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         logger.debug(`pushObjectToBackend: RDF: ${rdf}`);
-        let insert = "insert data { " + rdf + "}" 
+        let insert = "";
+        if (graphName){
+            insert = `insert data { graph <${graphName}> { ${rdf}}}` 
+        }else{
+            insert = "insert data { " + rdf + "}" 
+        }
 
         const url = this.configFile.updateUrl
         logger.debug(`url for fetch: ${url}`);
-        await fetch(url, {method: 'POST', headers: headers, body: insert}).then(res => res.text());
+        try{
+            await fetch(url, {method: 'POST', headers: headers, body: insert}).then(res => res.text());
+        }catch(err){
+            throw(err);
+        }
     }
 
     /**
@@ -129,6 +144,7 @@ class SparqlAdapter {
      */
 
     async removeObject(database, objectIDs) {
+        let graphName = this.configFile.graphName;
         const headers = {
             "Content-Type" : "application/sparql-update",
         }
@@ -137,13 +153,21 @@ class SparqlAdapter {
         logger.debug(`removeObject: objectIDs: ${objectIDs}`);
         let values = objectIDs.map(id => ("<" + id + ">"));
         values = values.join(" ");
-        
-        let deleteQuery = `delete {?x ?y ?z} where { values ?x {${values}} ?x ?y ?z .}`
+        let deleteQuery = "";
+        if (graphName){
+            deleteQuery = `delete {graph <${graphName}> {?x ?y ?z}} where { graph <${graphName}> {values ?x {${values}} ?x ?y ?z .}}`
+        }else{
+            deleteQuery = `delete {?x ?y ?z} where { values ?x {${values}} ?x ?y ?z .}`
+        }
         logger.debug(`removeObject: deleteQuery: ${deleteQuery}`)
         const url = this.configFile.updateUrl
         logger.debug(`url for fetch: ${url}`);
-        const response = await fetch(url, {method: 'POST', headers: headers, body: deleteQuery}).then(res => res.text());
-        logger.debug(`fetch response: ${JSON.stringify(response)}`);
+        try {
+            await fetch(url, {method: 'POST', headers: headers, body: deleteQuery}).then(res => res.text());
+            return true
+        }catch(err){
+            throw(err);
+        }
     }
 
     /**
