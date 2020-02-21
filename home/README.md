@@ -66,14 +66,14 @@ While data in such storages constitutes pieces of the same knowledge graph, it i
 
 ?> This software has been created by [EPISTEMIK](http://epistemik.co) and is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
 
-## Technology stack
+## Technology 
 
+* [NodeJS](https://nodejs.org)
 * [GraphQL](https://graphql.org/)
 * [JSON-LD](https://json-ld.org)
 * [schema.org](http://schema.org)
 * [graphy.js](https://graphy.link/)
-* [MongoDB](https://www.mongodb.com/)
-* [NodeJS](https://nodejs.org)
+
 
 ## Contact
 
