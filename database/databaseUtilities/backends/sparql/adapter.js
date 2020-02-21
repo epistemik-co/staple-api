@@ -29,20 +29,29 @@ class SparqlAdapter {
         let _type = type
         let query = "";
         //TODO: handle graphname
-        // let graphName = this.configFile.graphName
-        // if (graphName !== undefined){
-        
-        // }
+        let graphName = this.configFile.graphName
         if (inferred) {
             let typeForQuery = '?x <http://staple-api.org/datamodel/type> <' + _type + '> . ?x ?y ?z .'
-            query = `construct {?x ?y ?z} where {${typeForQuery}}`; 
+            if (graphName){
+                query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`; 
+            }else{
+                query = `construct {?x ?y ?z} where {${typeForQuery}}`; 
+            }
         }
         else {
-            let typeForQuery = '?x a <' + _type + '> . ?x ?y ?z .'
+            let typeForQuery = `?x a <${_type}> . ?x ?y ?z .`;
             if (filters){
-                query = `construct {?x ?y ?z} where { ${filters.join(" ")} ${typeForQuery}}`;
+                if (graphName){
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> { ${filters.join(" ")} ${typeForQuery}}}`;
+                }else{
+                    query = `construct {?x ?y ?z} where { ${filters.join(" ")} ${typeForQuery}}`;
+                }
             }else{
-                query = `construct {?x ?y ?z} where { ${typeForQuery}}`;
+                if (graphName){
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`;
+                }else{
+                    query = `construct {?x ?y ?z} where { ${typeForQuery}}`;
+                }
             }
         }
 
@@ -103,7 +112,7 @@ class SparqlAdapter {
 
         logger.info("pushObjectToBackend in sparql was called")
 
-        input["@context"] = database.schemaMapping["@context"];
+        input["@context"] = database.schemaMapping["@context2"];
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         logger.debug(`pushObjectToBackend: RDF: ${rdf}`);
         let insert = "insert data { " + rdf + "}" 

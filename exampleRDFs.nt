@@ -1,3 +1,22 @@
+<http://example.com/bank> <http://example.com/employee> <http://example.com/john> .
+<http://example.com/bank> <http://example.com/name> "National Bank" .
+<http://example.com/bank> <http://example.com/revenue> "1.25E1"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.com/bank> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/john> <http://example.com/age> "35"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/bank> .
+<http://example.com/john> <http://example.com/customerOf> <http://example.com/mobile> .
+<http://example.com/john> <http://example.com/isMarried> "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://example.com/john> <http://example.com/name> "John Smith" .
+<http://example.com/john> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Person> .
+<http://example.com/mark> <http://example.com/age> "40"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://example.com/mark> <http://example.com/customerOf> <http://example.com/bank> .
+<http://example.com/mark> <http://example.com/isMarried> "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+<http://example.com/mark> <http://example.com/name> "Mark Brown" .
+<http://example.com/mark> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Person> .
+<http://example.com/mobile> <http://example.com/employee> <http://example.com/mark> .
+<http://example.com/mobile> <http://example.com/name> "Mobile Network Provider" .
+<http://example.com/mobile> <http://example.com/revenue> "10"^^<http://www.w3.org/2001/XMLSchema#integer> .
+<http://example.com/mobile> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
 <http://example.com/bank> <http://staple-api.org/datamodel/type> <http://example.com/Organization> .
 <http://example.com/john> <http://staple-api.org/datamodel/type> <http://example.com/Person> .
 <http://example.com/mark> <http;//staple-api.org/datamodel/type> <http://example.com/Person> .

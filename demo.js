@@ -52,7 +52,7 @@ async function Demo() {
             type: "sparql",
             url: "http://localhost:3030/staple/sparql", 
             updateUrl: "http://localhost:3030/staple/update",
-            graphName: "staple"
+            graphName: "http://example.com/test"
         }
         // {
         //     type: "mongodb",
