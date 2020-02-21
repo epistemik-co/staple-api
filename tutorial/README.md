@@ -4,6 +4,18 @@ Try querying our [live playground](http://playground.staple-api.org) first, for 
 
 ```
 {
+  _CONTEXT {
+      _id
+      _type
+      Person
+      Organization
+      name
+      age
+      isMarried
+      customerOf
+      revenue
+      employee
+  }
   Person {
     _id
     _type
@@ -27,7 +39,7 @@ Try querying our [live playground](http://playground.staple-api.org) first, for 
 You can also start the dafault [playground on Repl](/tutorial/?id=playground-on-repl).
 
 
-## Running locally
+## Running Staple API
 
 Staple API is built in Node.js. You can ensure Node.js is installed by executing the following command:
 
@@ -36,11 +48,6 @@ node -v
 ```
 
 If no version is shown, please consult the installation instructions at [https://nodejs.org/](https://nodejs.org/).
-
-Further, you need to install `staple-api` with:
-```bash
-npm i staple-api
-```
 
 The schema and resolvers of the GraphQL serivce inside Staple API are generated automatically based on the input [RDF ontology](/docs/?id=ontology-and-schema). The ontology should be defined in the [RDF Turtle sytnax](https://www.w3.org/TR/turtle/) and provided in a file path or as a string. Create a sample `ontology.ttl` file in the project:
 
@@ -76,6 +83,12 @@ example:employee a rdf:Property ;
 
 ### Query the API
 
+Install packages:
+
+```bash
+npm i staple-api
+```
+
 Create `demo.js` file:
 
 ```javascript
@@ -107,8 +120,7 @@ node demo.js
 Install packages:
 
 ```bash
-npm i express
-npm i express-graphql
+npm i staple-api express express-graphql
 ```
 
 Create file `demo.js`:
@@ -150,8 +162,7 @@ node demo.js
 Install packages:
 
 ```bash
-npm i express
-npm i express-graphql
+npm i staple-api express express-graphql
 ```
 
 Create file `demo.js`:
@@ -192,6 +203,58 @@ Run the demo:
 ```bash
 node demo.js
 ```
+
+### Convert results to RDF
+
+By applying JSON-LD context, assumed by every instance of Staple API, the response of each query can be stragihtforwardly rendered as RDF, which provides a disambiguated and graph-based view of the same data.
+
+Install packages:
+
+```bash
+npm i staple-api express express-graphql
+```
+
+Create file `demo.js`:
+
+
+```javascript 
+const staple = require("staple-api");
+const jsonld = require("jsonld")
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+async function StapleDemo() {
+    let stapleApi = await staple(ontology);  
+    let context = stapleApi.context
+    let data = {}
+
+    await stapleApi.graphql('mutation { Person(input: { _id: "http://example.com/john" name: "John Smith" } ) }').then((response) => {
+      });
+
+    await stapleApi.graphql('{ Person { _id name } }').then((response) => {
+        data = response.data
+      });
+
+      data["@context"] = context
+      data["@id"] = "@graph"
+
+      let rdf = await jsonld.toRDF(data, { format: "application/n-quads" });
+      console.log("JSON-LD:")
+      console.log(JSON.stringify(data))
+      console.log("\nRDF:")
+      console.log(rdf)
+}
+
+StapleDemo()
+```
+
+Run the demo:
+```bash
+node demo.js
+```
+
 
 ## Playground on Repl
 
