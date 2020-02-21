@@ -20,7 +20,8 @@ class SparqlAdapter {
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
-
+        const {bodyFilters, whereFilters}= this.preparefilters(database, selectionSet, tree)
+        console.log("FILTER FOR")
         const headers = {
             "Content-Type" : "application/sparql-query",
             "Accept" : "application/ld+json"
@@ -31,22 +32,24 @@ class SparqlAdapter {
 
         if (inferred) {
             let typeForQuery = '?x <http://staple-api.org/datamodel/type> <' + _type + '> . ?x ?y ?z .'
-            query = `construct {?x ?y ?z} where {` + typeForQuery + `}`; 
+            query = `construct {?x ?y ?z} where {${typeForQuery}}`; 
         }
         else {
             let typeForQuery = '?x a <' + _type + '> . ?x ?y ?z .'
-            query = `construct {?x ?y ?z} where {` + typeForQuery + `}`;
+            query = `construct {?x ?y ?z} where { ${whereFilters.join(" ")}. ${typeForQuery} ${bodyFilters.join("\n")}}`;
         }
 
+        console.log(query)
+
         const url = this.configFile.url + "?query=" + query
-        logger.debug(`loadCoreQueryDataFromDB: url: ${url}`);
+        // logger.debug(`loadCoreQueryDataFromDB: url: ${url}`);
         const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.json());
-        logger.debug(`loadCoreQueryDataFromDB: fetch response: ${JSON.stringify(response)}`);
+        // logger.debug(`loadCoreQueryDataFromDB: fetch response: ${JSON.stringify(response)}`);
 
         const rdf = await jsonld.toRDF(response, { format: "application/n-quads" });
-        logger.debug("Graphy database rdf insert start");
+        // logger.debug("Graphy database rdf insert start");
         await database.insertRDF(rdf);
-        logger.debug("Graphy database rdf insert end");
+        // logger.debug("Graphy database rdf insert end");
 
     }
 
@@ -67,19 +70,16 @@ class SparqlAdapter {
         }
 
         let query = "";
-
         let values = sub.map(s => ("<" + s + ">"))
         values = values.join(" ");
-        console.log(values)
         query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
-
         const url = this.configFile.url + "?query=" + query
         logger.debug(`url for fetch: ${url}`);
         const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.json());
-        logger.debug(`fetch response: ${JSON.stringify(response)}`);
+        // logger.debug(`fetch response: ${JSON.stringify(response)}`);
 
         const rdf = await jsonld.toRDF(response, { format: "application/n-quads" });
-        logger.debug(`RDF: ${rdf}`)
+        // logger.debug(`RDF: ${rdf}`)
         logger.debug("Graphy database rdf insert start");
         await database.insertRDF(rdf);
         logger.debug("Graphy database rdf insert end");
@@ -135,6 +135,12 @@ class SparqlAdapter {
         logger.debug(`fetch response: ${JSON.stringify(response)}`);
     }
 
+    isURI(str) {
+        var urlRegex = /\w+:(\/?\/?)[^\s]+/gm;
+        var url = new RegExp(urlRegex, 'i');
+        return str.length < 2083 && url.test(str);
+   }
+
     /**
      * Prepare filters
      * @param  {database} cache for results - graphy
@@ -145,63 +151,96 @@ class SparqlAdapter {
 
     preparefilters(database, selection, tree) {
         // console.log(util.inspect(selection,false,null,true)) 
+        logger.debug(JSON.stringify(selection))
         let query = {};
         let fieldName = selection.name.value;
+        logger.debug(`preparefilters: ${fieldName}`)
+
         let fieldData = tree[fieldName];
+        logger.debug(`preparefilters: ${fieldData}`)
 
         if (fieldData === undefined) {
             return {};
         }
 
+        let bodyFilters = [];
+        let whereFilters = [];
+
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
                 for (let filterField of argument.value.fields) {
-                    // console.log("OBJECT");
-                    // console.log(filterField);
-                    // console.log("\n\n");
+                    // logger.debug("OBJECT");
+                    // logger.debug(filterField);
+                    // logger.debug("\n\n");
+                    //
                     if (fieldData.data[filterField.name.value] !== undefined) {
-                        // console.log("ADD TO THE FILTER QUERY");
-                        if (filterField.value.kind === "ListValue") {
-                            let objectFilterName = filterField.name.value;
-
-                            query[objectFilterName] = {};
-                            query[objectFilterName]["$in"] = [];
-
-                            for (let elem of filterField.value.values) {
-                                if (elem.kind === "IntValue") {
-                                    query[objectFilterName]["$in"].push(parseInt(elem.value));
-                                }
-                                else if (elem.kind === "FloatValue") {
-                                    query[objectFilterName]["$in"].push(parseFloat(elem.value));
-                                }
-                                else {
-                                    query[objectFilterName]["$in"].push(elem.value);
-                                }
+                        logger.debug("ADD TO THE FILTER QUERY");
+                        logger.debug(JSON.stringify(fieldData.data[filterField.name.value]));
+                        logger.debug(`prepareFilters: ${fieldData.data[filterField.name.value].uri}`)
+                        let uri = fieldData.data[filterField.name.value].uri;
+                        let value = filterField.value;
+                        let filterString= "";
+                        if (uri === "@id"){
+                            value = value.value.toString()
+                            if (this.isURI(value)){
+                                value.replace("\"", "")
+                                value = `<${value}>`
+                            }else{
+                                value = `"${value}"`
                             }
-                        }
-                        else {
-                            if (filterField.value.kind === "IntValue") {
-                                query[filterField.name.value] = parseInt(filterField.value.value);
-                            }
-                            else if (filterField.value.kind === "FloatValue") {
-                                query[filterField.name.value] = parseFloat(filterField.value.value);
+                            filterString = `values ?x {${value}}`
+                            whereFilters.push(filterString)
+                        }else{
+                            if (value.kind === "ListValue") {
+                                value = value.values.map(x => (this.isURI(x.value.toString()) ?
+                                    `<${x.value.toString()}>`: `"${x.value.toString()}"`));
+                                value = value.join(", ")
+                                filterString = `?x <${uri}> ?p . filter (?p in (${value})) .` 
+                                bodyFilters.push(filterString)
                             }
                             else {
-                                query[filterField.name.value] = filterField.value.value;
+                                value = [value.value.toString()];
+                                if (this.isURI(value)){
+                                    value = `<${value}>`
+                                }else{
+                                    value = `"${value}"`
+                                }
+                                filterString  = `?x <${uri}> ${value} .`
+                                bodyFilters.push(filterString)
                             }
                         }
+
+
+                        // if (uri === "@id") {
+                        //     logger.debug(value);
+                        //     newIds = newIds.filter(x => value.includes(x));
+                        // }
+                        // else {
+                        //     // value or child id?
+                        //     logger.debug(value);
+                        //     logger.debug(uri);  
+                        //     newIds = newIds.filter(x => {
+                        //         let propValue = this.getSingleLiteral(x, uri);
+                        //         logger.debug(propValue);
+                        //         if (value.includes(propValue.value)) {
+                        //             return true;
+                        //         }
+                        //         return false;
+                        //     });
+                        // }
                     }
                     else {
-                        logger.debug("SKIP");
+                        console.log("SKIP");
                     }
                 }
             }
         }
 
-        if (Object.keys(query).length === 0 && query.constructor === Object) {
+        // logger.debug(`prepareFilters: filters ${JSON.stringify(filters)}`)
+        if (Object.keys(bodyFilters).length === 0 && Object.keys(whereFilters).length === 0 ) {
             return undefined;
         }
-        return query;
+        return {bodyFilters: bodyFilters, whereFilters: whereFilters};
     }
 }
 
