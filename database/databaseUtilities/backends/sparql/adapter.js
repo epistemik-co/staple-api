@@ -1,6 +1,5 @@
 const logger = require("../../../../config/winston");
 const jsonld = require("jsonld");
-const util = require("util");
 const fetch = require('node-fetch');
 
 class SparqlAdapter {
@@ -31,17 +30,17 @@ class SparqlAdapter {
         let graphName = this.configFile.graphName
         if (inferred) {
             let typeForQuery = `?x <http://staple-api.org/datamodel/type> <${_type}> .} limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
-            if (filters){
+            if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
                 } else {
                     query = `construct {?x ?y ?z} where {{select ?x where { ${filters.join(" ")} ${typeForQuery}}`;
                 }
-            }else{
+            } else {
                 if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`;
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> { {select ?x where { ${typeForQuery}}}`;
                 } else {
-                    query = `construct {?x ?y ?z} where {${typeForQuery}}`;
+                    query = `construct {?x ?y ?z} where { {select?x where { ${typeForQuery}}`;
                 }
             }
         }
