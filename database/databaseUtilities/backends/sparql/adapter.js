@@ -28,29 +28,36 @@ class SparqlAdapter {
 
         let _type = type
         let query = "";
-        //TODO: handle graphname
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = `{select ?x where {?x <http://staple-api.org/datamodel/type> <' + _type + '> .} limit 10 offset }${10 * page - 10}  ?x ?y ?z .`
-            if (graphName) {
-                query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`;
-            } else {
-                query = `construct {?x ?y ?z} where {${typeForQuery}}`;
-            }
-        }
-        else {
-            let typeForQuery = `{select ?x where {?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
-            if (filters) {
+            let typeForQuery = `?x <http://staple-api.org/datamodel/type> <${_type}> .} limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            if (filters){
                 if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> { ${filters.join(" ")} ${typeForQuery}}}`;
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
                 } else {
-                    query = `construct {?x ?y ?z} where { ${filters.join(" ")} ${typeForQuery}}`;
+                    query = `construct {?x ?y ?z} where {{select ?x where { ${filters.join(" ")} ${typeForQuery}}`;
                 }
-            } else {
+            }else{
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`;
                 } else {
-                    query = `construct {?x ?y ?z} where { ${typeForQuery}}`;
+                    query = `construct {?x ?y ?z} where {${typeForQuery}}`;
+                }
+            }
+        }
+        else {
+            let typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            if (filters) {
+                if (graphName) {
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
+                } else {
+                    query = `construct {?x ?y ?z} where {{select ?x where { ${filters.join(" ")} ${typeForQuery}}`;
+                }
+            } else {
+                if (graphName) {
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${typeForQuery}}}`;
+                } else {
+                    query = `construct {?x ?y ?z} where {{select ?x where { ${typeForQuery}}`;
                 }
             }
         }
@@ -87,6 +94,7 @@ class SparqlAdapter {
         let values = sub.map(s => ("<" + s + ">"))
         values = values.join(" ");
         query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
+        logger.debug(`loadChildObjectsByUris: SPARQL query: ${query}`);
         const url = this.configFile.url + "?query=" + query
         logger.debug(`url for fetch: ${url}`);
         try {
@@ -243,7 +251,7 @@ class SparqlAdapter {
                 }
             }
         }
-        logger.debug(`prepareFilters: filters ${JSON.stringify(filters)}`)
+        logger.debug(`prepareFilters: filters: ${JSON.stringify(filters)}`)
         if (Object.keys(filters).length === 0) {
             return undefined;
         }
