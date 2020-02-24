@@ -59,7 +59,7 @@ class SparqlAdapter {
 
         const url = this.configFile.url + "?query=" + query
         try {
-            await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+            const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
             await database.insertRDF(response);
         } catch (err) {
             throw (err);
@@ -90,7 +90,7 @@ class SparqlAdapter {
         const url = this.configFile.url + "?query=" + query
         logger.debug(`url for fetch: ${url}`);
         try {
-            await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+            const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
             await database.insertRDF(response);
         } catch (err) {
             throw (err);
