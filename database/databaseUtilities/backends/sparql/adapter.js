@@ -20,10 +20,10 @@ class SparqlAdapter {
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
-        const filters= this.preparefilters(database, selectionSet, tree)
+        const filters = this.preparefilters(database, selectionSet, tree)
         const headers = {
-            "Content-Type" : "application/sparql-query",
-            "Accept" : "application/n-triples"
+            "Content-Type": "application/sparql-query",
+            "Accept": "application/n-triples"
         }
 
         let _type = type
@@ -31,42 +31,38 @@ class SparqlAdapter {
         //TODO: handle graphname
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = '?x <http://staple-api.org/datamodel/type> <' + _type + '> . ?x ?y ?z .'
-            if (graphName){
-                query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`; 
-            }else{
-                query = `construct {?x ?y ?z} where {${typeForQuery}}`; 
+            let typeForQuery = `{select ?x where {?x <http://staple-api.org/datamodel/type> <' + _type + '> .} limit 10 offset }${10 * page - 10}  ?x ?y ?z .`
+            if (graphName) {
+                query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`;
+            } else {
+                query = `construct {?x ?y ?z} where {${typeForQuery}}`;
             }
         }
         else {
-            let typeForQuery = `?x a <${_type}> . ?x ?y ?z .`;
-            if (filters){
-                if (graphName){
+            let typeForQuery = `{select ?x where {?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            if (filters) {
+                if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> { ${filters.join(" ")} ${typeForQuery}}}`;
-                }else{
+                } else {
                     query = `construct {?x ?y ?z} where { ${filters.join(" ")} ${typeForQuery}}`;
                 }
-            }else{
-                if (graphName){
+            } else {
+                if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> { ${typeForQuery}}}`;
-                }else{
+                } else {
                     query = `construct {?x ?y ?z} where { ${typeForQuery}}`;
                 }
             }
         }
 
-        // console.log(query)
+        logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
 
         const url = this.configFile.url + "?query=" + query
-        // logger.debug(`loadCoreQueryDataFromDB: url: ${url}`);
         try {
-            const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
-            // logger.debug(`loadCoreQueryDataFromDB: fetch response: ${response}`);
-            // logger.debug("Graphy database rdf insert start");
+            await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
             await database.insertRDF(response);
-            // logger.debug("Graphy database rdf insert end");
-        }catch(err){
-            throw(err);
+        } catch (err) {
+            throw (err);
         }
 
     }
@@ -83,8 +79,8 @@ class SparqlAdapter {
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
 
         const headers = {
-            "Content-Type" : "application/sparql-query",
-            "Accept" : "application/n-triples"
+            "Content-Type": "application/sparql-query",
+            "Accept": "application/n-triples"
         }
 
         let query = "";
@@ -93,14 +89,11 @@ class SparqlAdapter {
         query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
         const url = this.configFile.url + "?query=" + query
         logger.debug(`url for fetch: ${url}`);
-        try{
-            const response = await fetch(url, {method: 'GET', headers: headers}).then(res => res.text());
-            // logger.debug(`fetch response: ${response}`);
-            logger.debug("Graphy database rdf insert start");
+        try {
+            await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
             await database.insertRDF(response);
-            logger.debug("Graphy database rdf insert end");
-        }catch(err){
-            throw(err);
+        } catch (err) {
+            throw (err);
         }
     }
 
@@ -113,7 +106,7 @@ class SparqlAdapter {
     async pushObjectToBackend(database, input) {
         let graphName = this.configFile.graphName
         const headers = {
-            "Content-Type" : "application/sparql-update",
+            "Content-Type": "application/sparql-update",
         }
 
         logger.info("pushObjectToBackend in sparql was called")
@@ -122,18 +115,16 @@ class SparqlAdapter {
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         logger.debug(`pushObjectToBackend: RDF: ${rdf}`);
         let insert = "";
-        if (graphName){
-            insert = `insert data { graph <${graphName}> { ${rdf}}}` 
-        }else{
-            insert = "insert data { " + rdf + "}" 
+        if (graphName) {
+            insert = `insert data { graph <${graphName}> { ${rdf}}}`
+        } else {
+            insert = "insert data { " + rdf + "}"
         }
 
-        const url = this.configFile.updateUrl
-        logger.debug(`url for fetch: ${url}`);
-        try{
-            await fetch(url, {method: 'POST', headers: headers, body: insert}).then(res => res.text());
-        }catch(err){
-            throw(err);
+        try {
+            await fetch(this.configFile.updateUrl, { method: 'POST', headers: headers, body: insert }).then(res => res.text());
+        } catch (err) {
+            throw (err);
         }
     }
 
@@ -146,7 +137,7 @@ class SparqlAdapter {
     async removeObject(database, objectIDs) {
         let graphName = this.configFile.graphName;
         const headers = {
-            "Content-Type" : "application/sparql-update",
+            "Content-Type": "application/sparql-update",
         }
 
         logger.info("removeObject in sparql was called")
@@ -154,19 +145,18 @@ class SparqlAdapter {
         let values = objectIDs.map(id => ("<" + id + ">"));
         values = values.join(" ");
         let deleteQuery = "";
-        if (graphName){
+        if (graphName) {
             deleteQuery = `delete {graph <${graphName}> {?x ?y ?z}} where { graph <${graphName}> {values ?x {${values}} ?x ?y ?z .}}`
-        }else{
+        } else {
             deleteQuery = `delete {?x ?y ?z} where { values ?x {${values}} ?x ?y ?z .}`
         }
         logger.debug(`removeObject: deleteQuery: ${deleteQuery}`)
         const url = this.configFile.updateUrl
-        logger.debug(`url for fetch: ${url}`);
         try {
-            await fetch(url, {method: 'POST', headers: headers, body: deleteQuery}).then(res => res.text());
+            await fetch(url, { method: 'POST', headers: headers, body: deleteQuery }).then(res => res.text());
             return true
-        }catch(err){
-            throw(err);
+        } catch (err) {
+            throw (err);
         }
     }
 
@@ -180,7 +170,7 @@ class SparqlAdapter {
         var urlRegex = /\w+:(\/?\/?)[^\s]+/gm;
         var url = new RegExp(urlRegex, 'i');
         return str.length < 2083 && url.test(str);
-   }
+    }
 
     /**
      * Prepare filters
@@ -214,41 +204,41 @@ class SparqlAdapter {
                         // logger.debug(`prepareFilters: ${fieldData.data[filterField.name.value].uri}`)
                         let uri = fieldData.data[filterField.name.value].uri;
                         let value = filterField.value;
-                        let filterString= "";
-                        if (uri === "@id"){
+                        let filterString = "";
+                        if (uri === "@id") {
                             value = value.value.toString()
-                            if (this.isURI(value)){
+                            if (this.isURI(value)) {
                                 value.replace("\"", "")
                                 value = `<${value}>`
-                            }else{
+                            } else {
                                 value = `"${value}"`
                             }
                             filterString = `values ?x {${value}}`
                             filters.push(filterString)
-                        }else{
+                        } else {
                             if (value.kind === "ListValue") {
                                 value = value.values.map(x => (this.isURI(x.value.toString()) ?
-                                    `<${x.value.toString()}>`: `"${x.value.toString()}"`));
+                                    `<${x.value.toString()}>` : `"${x.value.toString()}"`));
                                 value = value.join(", ")
-                                filterString = `?x <${uri}> ?p . filter (?p in (${value})) .` 
+                                filterString = `?x <${uri}> ?p . filter (?p in (${value})) .`
                                 filters.push(filterString)
-                            } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue" ) {
-                                filterString = `?x <${uri}> ?p . filter (?p in (${value.value.toString()})) .` 
+                            } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
+                                filterString = `?x <${uri}> ?p . filter (?p in (${value.value.toString()})) .`
                                 filters.push(filterString)
                             } else {
                                 value = [value.value.toString()];
-                                if (this.isURI(value)){
+                                if (this.isURI(value)) {
                                     value = `<${value}>`
-                                }else{
+                                } else {
                                     value = `"${value}"`
                                 }
-                                filterString  = `?x <${uri}> ${value} .`
+                                filterString = `?x <${uri}> ${value} .`
                                 filters.push(filterString)
                             }
                         }
                     }
                     else {
-                        console.log("SKIP");
+                        logger.debug("SKIP");
                     }
                 }
             }

@@ -36,7 +36,7 @@ class Database {
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
     async loadChildObjectsByUris(sub, selection, tree, parentName) {
         logger.info("loadChildObjectsByUris was called in database/database");
-        logger.debug(`with arguments : sub: ${sub}  ... `);
+        // logger.debug(`with arguments : sub: ${sub}  ... `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
@@ -57,7 +57,7 @@ class Database {
 
     async loadObjectsByUris(sub) {
         logger.info("loadObjectsByUris was called in database/database");
-        logger.debug(`with arguments : sub: ${sub}`);
+        // logger.debug(`with arguments : sub: ${sub}`);
 
         if (this.adapter) {
             await this.adapter.loadObjectsByUris(this, sub);

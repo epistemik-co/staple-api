@@ -2,6 +2,28 @@
 <http://example.com/bank> <http://example.com/name> "National Bank" .
 <http://example.com/bank> <http://example.com/revenue> "1.25E1"^^<http://www.w3.org/2001/XMLSchema#double> .
 <http://example.com/bank> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfPoland> <http://example.com/name> "National Bank of Poland" .
+<http://example.com/bankOfPoland> <http://example.com/revenue> "30.25E1"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.com/bankOfPoland> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfRussia> <http://example.com/name> "National Bank of Russia" .
+<http://example.com/bankOfRussia> <http://example.com/revenue> "30.25E1"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.com/bankOfRussia> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfItaly> <http://example.com/name> "National Bank of Italy" .
+<http://example.com/bankOfItaly> <http://example.com/revenue> "30.25E1"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.com/bankOfItaly> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfJapan> <http://example.com/name> "National Bank of Japan" .
+<http://example.com/bankOfJapan> <http://example.com/revenue> "30.25E1"^^<http://www.w3.org/2001/XMLSchema#double> .
+<http://example.com/bankOfJapan> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfChina> <http://example.com/name> "National Bank of China" .
+<http://example.com/bankOfChina> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfEngland> <http://example.com/name> "National Bank of England" .
+<http://example.com/bankOfEngland> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfGermany> <http://example.com/name> "National Bank of Germany" .
+<http://example.com/bankOfGermany> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfSovietUnion> <http://example.com/name> "National Bank of Soviet Union" .
+<http://example.com/bankOfSovietUnion> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
+<http://example.com/bankOfEuropeanUnion> <http://example.com/name> "National Bank of European Union" .
+<http://example.com/bankOfEuropeanUnion> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Organization> .
 <http://example.com/john> <http://example.com/age> "35"^^<http://www.w3.org/2001/XMLSchema#integer> .
 <http://example.com/john> <http://example.com/customerOf> <http://example.com/bank> .
 <http://example.com/john> <http://example.com/customerOf> <http://example.com/mobile> .
