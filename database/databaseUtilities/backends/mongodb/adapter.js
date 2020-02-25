@@ -12,7 +12,8 @@ class MongodbAdapter {
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         const fieldName = selectionSet.name.value;
-        const subTypes = tree[fieldName]["subTypes"];
+        let subTypes = tree[fieldName]["subTypes"];
+        subTypes = subTypes.map(s => this.removeNamespace(s));
 
         let query = this.preparefilters(database, selectionSet, tree);
         if (this.client === undefined) {
@@ -31,15 +32,13 @@ class MongodbAdapter {
 
             let result;
             if (inferred) {
-                for (let subType of subTypes) {
-                    query["_type"] = this.removeNamespace(subType);
-                    if (page === undefined) {
-                        result = await collection.find(query).toArray();
-                    }
-                    else {
-                        logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
-                        result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
-                    }
+                query["_type"] = { "$in": subTypes };
+                if (page === undefined) {
+                    result = await collection.find(query).toArray();
+                }
+                else {
+                    logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+                    result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
                 }
             } else {
                 query["_type"] = _type;
