@@ -35,8 +35,8 @@ class Database {
 
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
     async loadChildObjectsByUris(sub, selection, tree, parentName) {
-        logger.info("loadChildObjectsByUris was called");
-        logger.debug(`with arguments : sub: ${sub}  ... `);
+        logger.info("loadChildObjectsByUris was called in database/database");
+        // logger.debug(`with arguments : sub: ${sub}  ... `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
@@ -45,8 +45,8 @@ class Database {
     }
 
     async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined) {
-        logger.info("loadCoreQueryDataFromDB was called");
-        logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${selectionSet} inferred: ${inferred} `);
+        logger.info("loadCoreQueryDataFromDB was called in database/database");
+        logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
@@ -56,8 +56,8 @@ class Database {
     }
 
     async loadObjectsByUris(sub) {
-        logger.info("loadObjectsByUris was called");
-        logger.debug(`with arguments : sub: ${sub}`);
+        logger.info("loadObjectsByUris was called in database/database");
+        // logger.debug(`with arguments : sub: ${sub}`);
 
         if (this.adapter) {
             await this.adapter.loadObjectsByUris(this, sub);
@@ -65,7 +65,7 @@ class Database {
     }
 
     async pushObjectToBackend(input) {
-        logger.info("pushObjectToBackend was called");
+        logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
         // console.log((util.inspect(await flatJson , false, null, true)));
         if (this.adapter) {
@@ -74,16 +74,9 @@ class Database {
     }
 
     async removeObject(objectID){
-        logger.info("removeObject was called"); 
+        logger.info("removeObject was called in database/database"); 
         if (this.adapter) {
            return await this.adapter.removeObject(this, objectID);
-        } 
-    }
-
-    async removeObjects(objectIDs){
-        logger.info("removeObject was called"); 
-        if (this.adapter) {
-           return await this.adapter.removeObject(this, objectIDs);
         } 
     }
 
@@ -285,7 +278,7 @@ class Database {
     async loadQueryData(queryInfo, uri, page, inferred, tree, filter) {
         return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter);
     }
-
+1
 }
 
 module.exports = Database;

@@ -15,8 +15,14 @@ class BackendSelector {
         }
 
         if (configObject.type === "mongodb") {
-            logger.info("You are using in mongodb");
+            logger.info("You are using mongodb");
             adapterType = require("../backends/mongodb/adapter");
+            this.backend = new adapterType(configObject);
+        }
+
+        if (configObject.type === "sparql") {
+            logger.info("You are using sparql");
+            adapterType = require("../backends/sparql/adapter");
             this.backend = new adapterType(configObject);
         }
         // else if(configObject.type === "mysql"){ ... }
@@ -59,6 +65,7 @@ class BackendSelector {
         }
     }
 
+    //removes objects from db. ObjectID is a list of ids
     async removeObject(database, objectID){
         logger.info("removeObject was called"); 
         if (this.backend) {

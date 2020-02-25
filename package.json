@@ -1,6 +1,6 @@
 {
   "name": "staple-api",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Staple API - GraphQL API for Knowledge Graphs",
   "keywords": [
     "graphql",
@@ -20,6 +20,7 @@
     "jsonld": "^1.6.2",
     "mongodb": "^3.3.0-beta2",
     "morgan": "^1.9.1",
+    "node-fetch": "^2.6.0",
     "uuid": "^3.3.2",
     "winston": "^3.2.1"
   },

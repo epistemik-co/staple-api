@@ -1,7 +1,5 @@
 const MongoClient = require("mongodb").MongoClient;
 const logger = require("../../../../config/winston");
-
-/* eslint-disable require-atomic-updates */
 const jsonld = require("jsonld");
 const util = require("util");
 
@@ -23,7 +21,7 @@ class MongodbAdapter {
             let _type = undefined;
 
             if (query === undefined) {
-                _type = database.schemaMapping["@revContext"][type];
+                _type = database.schemaMapping["@revContext"][type]; //URI FOR TYPE 
                 query = {};
             }
 
@@ -63,6 +61,7 @@ class MongodbAdapter {
     }
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
+
         logger.log("info", "loadChildObjectsByUris was called");
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
@@ -143,7 +142,7 @@ class MongodbAdapter {
     }
 
     preparefilters(database, selection, tree) {
-        // console.log(util.inspect(selection,false,null,true)) 
+
         let query = {};
         let fieldName = selection.name.value;
         let fieldData = tree[fieldName];
@@ -155,11 +154,7 @@ class MongodbAdapter {
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
                 for (let filterField of argument.value.fields) {
-                    // console.log("OBJECT");
-                    // console.log(filterField);
-                    // console.log("\n\n");
                     if (fieldData.data[filterField.name.value] !== undefined) {
-                        // console.log("ADD TO THE FILTER QUERY");
                         if (filterField.value.kind === "ListValue") {
                             let objectFilterName = filterField.name.value;
 
