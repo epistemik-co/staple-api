@@ -128,11 +128,6 @@ class SparqlAdapter {
         logger.info("pushObjectToBackend in sparql was called")
 
         input["@context"] = database.schemaMapping["@context2"];
-        let type = database.schemaMapping["@context"][input._type];
-        let superclasses = database.schemaMapping["@graphMap"][type]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
-        let types = superclasses.map(x => x["@id"]);
-        input["@context"]["_inferred"] = { "@id": "http://staple-api.org/datamodel/type", "@type": "@id" };
-        input._inferred = types
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         logger.debug(`pushObjectToBackend: RDF: ${rdf}`);
         let insert = "";
