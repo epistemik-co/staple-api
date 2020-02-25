@@ -25,12 +25,10 @@ const updateTypes = (req, schemaMapping, field) => {
     let objectName = field.name.value;
     let uri = schemaMapping["@context"][objectName];
     req.input["_type"] = objectName;
-    req.input["_inferred"] = [];
     if(schemaMapping["@graphMap"][uri]){
         let listOfSubTypes = schemaMapping["@graphMap"][uri]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
         for(let type of listOfSubTypes){
             let typeName = schemaMapping["@revContext"][type["@id"]];
-            req.input["_inferred"].push(typeName);
         }
     }
 };
