@@ -34,8 +34,11 @@ class MemoryDatabase {
         }
 
         // all ids
-        let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-
+        // console.log("GET SUBJECTS BY TYPE")
+        // console.log(type)
+        const subTypes = tree[fieldName]['subTypes']
+        let ids = await this.getSubjectsByType(type, subTypes, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
+        // console.log(ids)
         // filter
         if (fieldData) {
             ids = this.preparefilters(ids, fieldData, selection);
@@ -86,7 +89,7 @@ class MemoryDatabase {
                         else {
                             // value or child id?
                             logger.debug(value);
-                            logger.debug(uri);  
+                            logger.debug(uri);
                             newIds = newIds.filter(x => {
                                 let propValue = this.getSingleLiteral(x, uri);
                                 logger.debug(propValue);
@@ -163,7 +166,7 @@ class MemoryDatabase {
 
 
     async removeObject(database, objectIDs) {
-        for (var id of objectIDs){
+        for (var id of objectIDs) {
             this.deleteID(id);
         }
         return true;
@@ -188,38 +191,55 @@ class MemoryDatabase {
     }
 
     // returns array of uri - Core Query
-    async getSubjectsByType(type, predicate, inferred = false, page = undefined) {
+    async getSubjectsByType(type, subTypes, predicate, inferred = false, page = undefined) {
         type = factory.namedNode(type);
         let i = 0;
 
-        if (inferred) {
-            predicate = factory.namedNode(this.stampleDataType);
-        }
-        else {
-            predicate = factory.namedNode(predicate);
-        }
-
-        const temp = this.database.match(null, predicate, type);
+        predicate = factory.namedNode(predicate);
         let data = [];
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            i++;
-            if(page){
-                if (i > (page - 1) * 10) {
+
+        if (inferred) {
+            for (let subType of subTypes) {
+                type.value = subType
+                let temp = this.database.match(null, predicate, type);
+                var itr = temp.quads();
+                var x = itr.next();
+                while (!x.done) {
+                    i++;
+                    if (page) {
+                        if (i > (page - 1) * 10) {
+                            data.push(x.value.subject.value);
+                        }
+                        if (i + 1 > page * 10) {
+                            break;
+                        }
+                    }
+                    else {
+                        data.push(x.value.subject.value);
+                    }
+                    x = itr.next();
+                }
+            }
+        } else {
+            let temp = this.database.match(null, predicate, type);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                i++;
+                if (page) {
+                    if (i > (page - 1) * 10) {
+                        data.push(x.value.subject.value);
+                    }
+                    if (i + 1 > page * 10) {
+                        break;
+                    }
+                }
+                else {
                     data.push(x.value.subject.value);
                 }
-                if (i + 1 > page * 10) {
-                    break;
-                }
+                x = itr.next();
             }
-            else{
-                data.push(x.value.subject.value);
-            }
-            x = itr.next();
         }
-
-
         return data;
     }
 

@@ -209,7 +209,12 @@ async function process(ontology) {
                         return {
                             "@id": supClass
                         };
-                    })
+                    }), 
+                    "subClasses": schema_spec.classes[c].sub.map(function (supClass) {
+                        return {
+                            "@id": supClass
+                        };
+                    }), 
                 });
 
             } else {
@@ -222,7 +227,12 @@ async function process(ontology) {
                         return {
                             "@id": supClass
                         };
-                    })
+                    }),
+                    "subClasses": schema_spec.classes[c].sub.map(function (supClass) {
+                        return {
+                            "@id": supClass
+                        };
+                    }),
                 });
             }
 
@@ -247,6 +257,7 @@ async function process(ontology) {
         "@graph": graph
     };
 
+        // console.log(JSON.stringify(jsonld))
         return jsonld;
 }
 

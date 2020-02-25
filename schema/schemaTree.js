@@ -60,16 +60,20 @@ const handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUn
         newNode["type"] = "Reverse";
     }
     else{
+        // console.log(id);
         newNode["uri"] = id;
 
         // let tempNewNodeType = schemaMapping["@graph"].filter((x) => { return x["@id"] === id })[0];
         let tempNewNodeType = schemaMapping["@graphMap"][id];
-
+        // console.log(tempNewNodeType)
         if (tempNewNodeType === undefined) {
             newNode["type"] = undefined;
         }
         else {
             newNode["type"] = tempNewNodeType["@type"];
+            newNode["superTypes"] = tempNewNodeType['http://www.w3.org/2000/01/rdf-schema#subClassOf'].map(t => t["@id"])
+            newNode["subTypes"] = tempNewNodeType['subClasses'].map(t => t["@id"])
+            // console.log(newNode)
         }
     }
 
@@ -108,6 +112,7 @@ const handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUn
     });
 
     newNode["data"] = newNodeData;
+    // console.log(newNode)
 };
 
 // const saveTreeToFile = (treeFromSchema, path) => {
@@ -185,6 +190,9 @@ const createTree = (schemaMappingArg, schemaString) => {
         }
         else if (schema.getTypeMap()[schemaTypeName].astNode.kind === "ObjectTypeDefinition") {
             handleObjectType(newNode, newNodeData, schema, schemaTypeName, listOfUnions);
+
+            //tutaj subclasses
+
         }
         else {
             logger.warn(`NEW NODE KIND: ${schema.getTypeMap()[schemaTypeName].astNode.kind}`);
@@ -193,7 +201,12 @@ const createTree = (schemaMappingArg, schemaString) => {
         treeFromSchema[schema.getTypeMap()[schemaTypeName]["name"]] = newNode;
     }
 
+    // for (let t in treeFromSchema){
+    //     console.log(t)
+    // }
+
     // saveTreeToFile(treeFromSchema, "../output.json"); 
+    // console.log(JSON.stringify(treeFromSchema))
     return treeFromSchema;
 };
 
