@@ -63,6 +63,8 @@ class SparqlAdapter {
 
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
 
+        // console.log(query);
+
         const url = this.configFile.url + "?query=" + query
         try {
             const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
@@ -83,7 +85,6 @@ class SparqlAdapter {
      */
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
-
         const headers = {
             "Content-Type": "application/sparql-query",
             "Accept": "application/n-triples"
@@ -92,7 +93,12 @@ class SparqlAdapter {
         let query = "";
         let values = sub.map(s => ("<" + s + ">"))
         values = values.join(" ");
-        query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
+        let graphName = this.configFile.graphName
+        if (graphName){
+            query = `construct {?x ?y ?z} where { graph <${graphName}> { values ?x {` + values + `} ?x ?y ?z}}`;
+        }else{
+            query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
+        }
         logger.debug(`loadChildObjectsByUris: SPARQL query: ${query}`);
         const url = this.configFile.url + "?query=" + query
         logger.debug(`url for fetch: ${url}`);
