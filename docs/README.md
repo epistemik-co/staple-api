@@ -1503,16 +1503,19 @@ let ontology = {
 
 ### Back-end configuration
 
-Currently two back-end storage connectors are supported (more to be added soon) (see [Getting started](/tutorial/?id=running-a-demo) for working examples):
+Currently the following back-end storage connectors are supported (more to be added soon) (see [Getting started](/tutorial/?id=running-a-demo) for working examples):
 
 1. [graphy.js](http://graphy.link)
 2. [MongoDB](https://www.mongodb.com/)
+3. [SPARQL endpoint](https://www.w3.org/TR/sparql11-protocol/)
 
 **graphy.js** is a lightweight in memory quad store (graph database for RDF). It is enabled by default and no additional configuration is required to initiate it. It is well-suitted for rapid testing and prototyping. Note that all data inserted to this storage during the runtime is lost on closing the service. 
 
 
 **MongoDB** is a popular JSON document store available as a stand-alone server or a cloud service ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas)). In order to use Staple API on top of MongoDB a corresponding configuration needs to be passed when initiating the service.
 
+
+**SPARQL endpoint** is a standard query endpoint exposed by any RDF triple stores, which complies with the [W3C specification](https://www.w3.org/TR/sparql11-protocol/).
 
 <!-- tabs:start -->
 
@@ -1560,6 +1563,34 @@ where:
 * `127.0.0.1:27017` is the `IP:port` of the MongoDB endpoint
 * `dbName` is the name of the designated MongoDB database
 * `collectionName` is the name of the designated MongoDB collection
+
+#### **SPARQL**
+
+```javascript
+import staple-api
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+let config = {
+    type: "sparql",
+    url: "http://sparql-query-uri", 
+    updateUrl: "http://sparql-update-uri",
+    graphName: "http://graph-name"
+};
+
+async function StapleDemo() {
+    let stapleApi = await staple(ontology, config);
+}
+
+StapleDemo()
+```
+where:
+* `type: "sparql"` is a constant attribute for this connector
+* `http://sparql-query-uri` is the URL of the SPARQL query endpoint
+* `http://sparql-update-uri` is the URL of the SPARQL update query endpoint (usually the same as the one above, but not always)
+* `http://graph-name` (optional parameter) name of the target graph in the triple store
 
 <!-- tabs:end -->
 

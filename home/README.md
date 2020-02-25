@@ -33,7 +33,7 @@ While data in such storages constitutes pieces of the same knowledge graph, it i
 
 :heavy_check_mark: Basic type inheritance / inference supported.
 
-:heavy_check_mark: A connector to a MongoDB storage (other back-ends coming soon!).
+:heavy_check_mark: Connectors to MongoDB and SPARQL endpoints (other back-ends coming soon!).
 
 :heavy_check_mark: An in-memory graph database for rapid testing and prototyping.
 

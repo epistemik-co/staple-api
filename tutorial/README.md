@@ -155,7 +155,7 @@ Run the demo:
 node demo.js
 ```
 
-### Run with MongoDB
+### Run over MongoDB
 
 [Install and run MongoDB](https://docs.mongodb.com/manual/installation/) locally as a standalone on the default port `27017`. Create a database `staple` and with a new collection `staple`.
 
@@ -181,6 +181,55 @@ let config = {
     url: "mongodb://127.0.0.1:27017", 
     dbName: "staple",
     collectionName: "staple",
+};
+
+async function StapleDemo() {
+    let stapleApi = await staple(ontology, config);
+
+    var app = express();
+    app.use('/graphql', graphqlHTTP({
+        schema: stapleApi.schema,
+        graphiql: true
+    }));
+    
+    app.listen(4000);
+    console.log('Running a GraphQL API server at localhost:4000/graphql');
+}
+
+StapleDemo()
+```
+
+Run the demo:
+```bash
+node demo.js
+```
+
+### Run over SPARQL
+
+Install and run a triple store locally, e.g., [Apache Jena Fuseki](https://jena.apache.org/documentation/fuseki2/) as a standalone server on the default port `3030`. Create a dataset `staple`.
+
+Install packages:
+
+```bash
+npm i staple-api express express-graphql
+```
+
+Create file `demo.js`:
+
+```javascript
+var express = require('express');
+var graphqlHTTP = require('express-graphql');
+const staple = require("staple-api");
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+let config = {
+    type: "sparql",
+    url: "http://localhost:3030/staple/sparql", 
+    updateUrl: "http://localhost:3030/staple/update",
+    graphName: "http://example.com/test"
 };
 
 async function StapleDemo() {
