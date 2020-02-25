@@ -19,6 +19,9 @@ class SparqlAdapter {
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
+        const fieldName = selectionSet.name.value;
+        let subTypes = tree[fieldName]["subTypes"];
+        subTypes = subTypes.map(t => ("<" + t + ">")).join(", ");
         const filters = this.preparefilters(database, selectionSet, tree)
         const headers = {
             "Content-Type": "application/sparql-query",
@@ -29,7 +32,7 @@ class SparqlAdapter {
         let query = "";
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = `?x <http://staple-api.org/datamodel/type> <${_type}> .} limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            let typeForQuery = `?x <http://staple-api.org/datamodel/type> ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;

@@ -11,6 +11,9 @@ class MongodbAdapter {
     }
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
+        console.log("load core query data")
+        const fieldName = selectionSet.name.value;
+        const subTypes = tree[fieldName]["subTypes"];
 
         let query = this.preparefilters(database, selectionSet, tree);
         if (this.client === undefined) {
@@ -26,25 +29,29 @@ class MongodbAdapter {
                 _type = database.schemaMapping["@revContext"][type]; //URI FOR TYPE 
                 query = {};
             }
-
-            if (_type !== undefined) {
-                if (inferred) {
-                    query["_inferred"] = _type;
+            
+            let result;
+            if (inferred){
+                for (let subType of subTypes){
+                    query["_type"] = this.removeNamespace(subType);
+                    if (page === undefined) {
+                        result = await collection.find(query).toArray();
+                    }
+                    else {
+                        logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+                        result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+                    }
+                }
+            }else{
+                query["_type"] = _type;
+                if (page === undefined) {
+                    result = await collection.find(query).toArray();
                 }
                 else {
-                    query["_type"] = _type;
+                    logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+                    result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
                 }
             }
-
-            let result;
-            if (page === undefined) {
-                result = await collection.find(query).toArray();
-            }
-            else {
-                logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
-                result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
-            }
-    
 
             result = result.map(x => {
                 x["@context"] = database.schemaMapping["@context"];
@@ -202,6 +209,12 @@ class MongodbAdapter {
         }
         return query;
     }
+
+    removeNamespace(nameWithNamesapace) {
+        nameWithNamesapace = String(nameWithNamesapace).split(/([/|#])/);
+        nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
+        return nameWithNamesapace;
+      }
 }
 
 module.exports = MongodbAdapter;

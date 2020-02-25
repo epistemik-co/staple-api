@@ -48,12 +48,12 @@ async function Demo() {
         rdfs:comment "An organization this agent is a customer of" ;
         schema:domainIncludes example:Agent ;
         schema:rangeIncludes example:Organization .`},
-        // {
-        //     type: "sparql",
-        //     url: "http://localhost:3030/staple/sparql", 
-        //     updateUrl: "http://localhost:3030/staple/update",
-        //     graphName: "http://example.com/test"
-        // }
+        {
+            type: "sparql",
+            url: "http://localhost:3030/staple/sparql", 
+            updateUrl: "http://localhost:3030/staple/update",
+            // graphName: "http://example.com/test"
+        }
         // {
         //     type: "mongodb",
         //     url: "mongodb://127.0.0.1:27017", 
