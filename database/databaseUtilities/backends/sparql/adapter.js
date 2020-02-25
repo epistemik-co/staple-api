@@ -221,6 +221,7 @@ class SparqlAdapter {
                         // logger.debug(JSON.stringify(fieldData.data[filterField.name.value]));
                         // logger.debug(`prepareFilters: ${fieldData.data[filterField.name.value].uri}`)
                         let uri = fieldData.data[filterField.name.value].uri;
+                        let variableForQuery = filterField.name.value;
                         let value = filterField.value;
                         let filterString = "";
                         if (uri === "@id") {
@@ -238,10 +239,10 @@ class SparqlAdapter {
                                 value = value.values.map(x => (this.isURI(x.value.toString()) ?
                                     `<${x.value.toString()}>` : `"${x.value.toString()}"`));
                                 value = value.join(", ")
-                                filterString = `?x <${uri}> ?p . filter (?p in (${value})) .`
+                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
                                 filters.push(filterString)
                             } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
-                                filterString = `?x <${uri}> ?p . filter (?p in (${value.value.toString()})) .`
+                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`
                                 filters.push(filterString)
                             } else {
                                 value = [value.value.toString()];
