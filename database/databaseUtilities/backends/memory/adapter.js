@@ -24,7 +24,6 @@ class MemoryDatabase {
 
     async loadCoreQueryDataFromDB(database, type, page = undefined, selection = undefined, inferred = false, tree = undefined) {
         // search selectionSet for core objects load them
-        // console.log(selectionSet);
         let fieldName = selection.name.value;
         let fieldData = tree[fieldName];
 
@@ -34,7 +33,8 @@ class MemoryDatabase {
         }
 
         // all ids
-        let ids = await this.getSubjectsByType(type, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
+        const subTypes = tree[fieldName]['subTypes']
+        let ids = await this.getSubjectsByType(type, subTypes, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
 
         // filter
         if (fieldData) {
@@ -86,7 +86,7 @@ class MemoryDatabase {
                         else {
                             // value or child id?
                             logger.debug(value);
-                            logger.debug(uri);  
+                            logger.debug(uri);
                             newIds = newIds.filter(x => {
                                 let propValue = this.getSingleLiteral(x, uri);
                                 logger.debug(propValue);
@@ -109,7 +109,6 @@ class MemoryDatabase {
     async loadChildObjectsByUris(database, sub, selection /*, tree, parentName*/) {
         // search selectionSet for core objects load them
         let fieldName = selection.name.value;
-        // let fieldData = tree[fieldName];
 
         if (fieldName === undefined) {
             logger.error("Could not find type of object");
@@ -158,17 +157,13 @@ class MemoryDatabase {
 
 
     async removeObject(database, objectIDs) {
-        for (var id of objectIDs){
+        for (var id of objectIDs) {
             this.deleteID(id);
         }
         return true;
     }
-    // // filters need to be implemented
-    // preparefilters(database, selection, tree, parentName) {
-    //     return undefined;
-    // }
 
-
+    
     create(sub, pred, obj, gra = null) {
         sub = factory.namedNode(sub);
         pred = factory.namedNode(pred);
@@ -183,38 +178,55 @@ class MemoryDatabase {
     }
 
     // returns array of uri - Core Query
-    async getSubjectsByType(type, predicate, inferred = false, page = undefined) {
+    async getSubjectsByType(type, subTypes, predicate, inferred = false, page = undefined) {
         type = factory.namedNode(type);
         let i = 0;
 
-        if (inferred) {
-            predicate = factory.namedNode(this.stapleDataType);
-        }
-        else {
-            predicate = factory.namedNode(predicate);
-        }
-
-        const temp = this.database.match(null, predicate, type);
+        predicate = factory.namedNode(predicate);
         let data = [];
-        var itr = temp.quads();
-        var x = itr.next();
-        while (!x.done) {
-            i++;
-            if(page){
-                if (i > (page - 1) * 10) {
+
+        if (inferred) {
+            for (let subType of subTypes) {
+                type.value = subType
+                let temp = this.database.match(null, predicate, type);
+                var itr = temp.quads();
+                var x = itr.next();
+                while (!x.done) {
+                    i++;
+                    if (page) {
+                        if (i > (page - 1) * 10) {
+                            data.push(x.value.subject.value);
+                        }
+                        if (i + 1 > page * 10) {
+                            break;
+                        }
+                    }
+                    else {
+                        data.push(x.value.subject.value);
+                    }
+                    x = itr.next();
+                }
+            }
+        } else {
+            let temp = this.database.match(null, predicate, type);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                i++;
+                if (page) {
+                    if (i > (page - 1) * 10) {
+                        data.push(x.value.subject.value);
+                    }
+                    if (i + 1 > page * 10) {
+                        break;
+                    }
+                }
+                else {
                     data.push(x.value.subject.value);
                 }
-                if (i + 1 > page * 10) {
-                    break;
-                }
+                x = itr.next();
             }
-            else{
-                data.push(x.value.subject.value);
-            }
-            x = itr.next();
         }
-
-
         return data;
     }
 

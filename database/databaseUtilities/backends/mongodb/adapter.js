@@ -9,6 +9,9 @@ class MongodbAdapter {
     }
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
+        const fieldName = selectionSet.name.value;
+        let subTypes = tree[fieldName]["subTypes"];
+        subTypes = subTypes.map(s => this.removeNamespace(s));
 
         let query = this.preparefilters(database, selectionSet, tree);
         if (this.client === undefined) {
@@ -25,24 +28,26 @@ class MongodbAdapter {
                 query = {};
             }
 
-            if (_type !== undefined) {
-                if (inferred) {
-                    query["_inferred"] = _type;
+            let result;
+            if (inferred) {
+                query["_type"] = { "$in": subTypes };
+                if (page === undefined) {
+                    result = await collection.find(query).toArray();
                 }
                 else {
-                    query["_type"] = _type;
+                    logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+                    result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
+                }
+            } else {
+                query["_type"] = _type;
+                if (page === undefined) {
+                    result = await collection.find(query).toArray();
+                }
+                else {
+                    logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
+                    result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
                 }
             }
-
-            let result;
-            if (page === undefined) {
-                result = await collection.find(query).toArray();
-            }
-            else {
-                logger.debug(`Mongo db query:\n${util.inspect(query, false, null, true /* enable colors */)}`);
-                result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
-            }
-    
 
             result = result.map(x => {
                 x["@context"] = database.schemaMapping["@context2"];
@@ -125,7 +130,7 @@ class MongodbAdapter {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
-        let query = { "_id": { $in: objectIDs }};
+        let query = { "_id": { $in: objectIDs } };
         try {
             const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
@@ -135,7 +140,7 @@ class MongodbAdapter {
             let res = await collection.deleteMany(query);
 
             return res.result.n;
-            
+
         } catch (err) {
             logger.error(err);
         }
@@ -196,6 +201,12 @@ class MongodbAdapter {
             return undefined;
         }
         return query;
+    }
+
+    removeNamespace(nameWithNamesapace) {
+        nameWithNamesapace = String(nameWithNamesapace).split(/([/|#])/);
+        nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
+        return nameWithNamesapace;
     }
 }
 

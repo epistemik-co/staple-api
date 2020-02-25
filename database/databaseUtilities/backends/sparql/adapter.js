@@ -19,6 +19,9 @@ class SparqlAdapter {
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
+        const fieldName = selectionSet.name.value;
+        let subTypes = tree[fieldName]["subTypes"];
+        subTypes = subTypes.map(t => ("<" + t + ">")).join(", ");
         const filters = this.preparefilters(database, selectionSet, tree)
         const headers = {
             "Content-Type": "application/sparql-query",
@@ -29,7 +32,7 @@ class SparqlAdapter {
         let query = "";
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = `?x <http://staple-api.org/datamodel/type> <${_type}> .} limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            let typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
@@ -92,9 +95,9 @@ class SparqlAdapter {
         let values = sub.map(s => ("<" + s + ">"))
         values = values.join(" ");
         let graphName = this.configFile.graphName
-        if (graphName){
+        if (graphName) {
             query = `construct {?x ?y ?z} where { graph <${graphName}> { values ?x {` + values + `} ?x ?y ?z}}`;
-        }else{
+        } else {
             query = `construct {?x ?y ?z} where { values ?x {` + values + `} ?x ?y ?z}`;
         }
         logger.debug(`loadChildObjectsByUris: SPARQL query: ${query}`);
@@ -123,11 +126,6 @@ class SparqlAdapter {
         logger.info("pushObjectToBackend in sparql was called")
 
         input["@context"] = database.schemaMapping["@context2"];
-        let type = database.schemaMapping["@context"][input._type];
-        let superclasses = database.schemaMapping["@graphMap"][type]["http://www.w3.org/2000/01/rdf-schema#subClassOf"];
-        let types = superclasses.map(x => x["@id"]);
-        input["@context"]["_inferred"]={"@id":"http://staple-api.org/datamodel/type", "@type": "@id"};
-        input._inferred = types
         const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
         logger.debug(`pushObjectToBackend: RDF: ${rdf}`);
         let insert = "";

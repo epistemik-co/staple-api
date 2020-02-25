@@ -150,9 +150,9 @@ function union(set1, set2) {
 
 async function process(ontology) {
     database = new DatabaseInterface();
-    if (ontology.string){
+    if (ontology.string) {
         await database.readFromString(ontology.string);
-    }else{
+    } else {
         await database.readFromFile(ontology.file);
     }
     let schema_spec = {
@@ -209,7 +209,12 @@ async function process(ontology) {
                         return {
                             "@id": supClass
                         };
-                    })
+                    }),
+                    "subClasses": schema_spec.classes[c].sub.map(function (supClass) {
+                        return {
+                            "@id": supClass
+                        };
+                    }),
                 });
 
             } else {
@@ -222,7 +227,12 @@ async function process(ontology) {
                         return {
                             "@id": supClass
                         };
-                    })
+                    }),
+                    "subClasses": schema_spec.classes[c].sub.map(function (supClass) {
+                        return {
+                            "@id": supClass
+                        };
+                    }),
                 });
             }
 
@@ -230,9 +240,9 @@ async function process(ontology) {
     }
     for (var p in schema_spec.properties) {
         context[schema_spec.properties[p].name] = p;
-        if (schema_spec.properties[p].range != "integer" && schema_spec.properties[p].range != "string" && schema_spec.properties[p].range != "decimal" && schema_spec.properties[p].range != "boolean"){
-            context2[schema_spec.properties[p].name] = {"@id": p, "@type": "@id"};
-        }else{
+        if (schema_spec.properties[p].range != "integer" && schema_spec.properties[p].range != "string" && schema_spec.properties[p].range != "decimal" && schema_spec.properties[p].range != "boolean") {
+            context2[schema_spec.properties[p].name] = { "@id": p, "@type": "@id" };
+        } else {
             context2[schema_spec.properties[p].name] = p;
         }
         graph.push({
@@ -247,7 +257,8 @@ async function process(ontology) {
         "@graph": graph
     };
 
-        return jsonld;
+    // console.log(JSON.stringify(jsonld))
+    return jsonld;
 }
 
 module.exports = {
