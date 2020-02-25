@@ -32,7 +32,7 @@ class SparqlAdapter {
         let query = "";
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = `?x <http://staple-api.org/datamodel/type> ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            let typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
