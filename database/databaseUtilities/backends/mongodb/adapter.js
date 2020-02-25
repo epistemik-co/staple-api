@@ -11,7 +11,6 @@ class MongodbAdapter {
     }
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
-        console.log("load core query data")
         const fieldName = selectionSet.name.value;
         const subTypes = tree[fieldName]["subTypes"];
 
@@ -29,10 +28,10 @@ class MongodbAdapter {
                 _type = database.schemaMapping["@revContext"][type]; //URI FOR TYPE 
                 query = {};
             }
-            
+
             let result;
-            if (inferred){
-                for (let subType of subTypes){
+            if (inferred) {
+                for (let subType of subTypes) {
                     query["_type"] = this.removeNamespace(subType);
                     if (page === undefined) {
                         result = await collection.find(query).toArray();
@@ -42,7 +41,7 @@ class MongodbAdapter {
                         result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
                     }
                 }
-            }else{
+            } else {
                 query["_type"] = _type;
                 if (page === undefined) {
                     result = await collection.find(query).toArray();
@@ -133,7 +132,7 @@ class MongodbAdapter {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
-        let query = { "_id": { $in: objectIDs }};
+        let query = { "_id": { $in: objectIDs } };
         try {
             const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
@@ -143,7 +142,7 @@ class MongodbAdapter {
             let res = await collection.deleteMany(query);
 
             return res.result.n;
-            
+
         } catch (err) {
             logger.error(err);
         }
@@ -214,7 +213,7 @@ class MongodbAdapter {
         nameWithNamesapace = String(nameWithNamesapace).split(/([/|#])/);
         nameWithNamesapace = nameWithNamesapace[nameWithNamesapace.length - 1];
         return nameWithNamesapace;
-      }
+    }
 }
 
 module.exports = MongodbAdapter;
