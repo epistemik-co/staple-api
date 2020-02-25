@@ -278,7 +278,7 @@ class Database {
     async loadQueryData(queryInfo, uri, page, inferred, tree, filter) {
         return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter);
     }
-1
+
 }
 
 module.exports = Database;
