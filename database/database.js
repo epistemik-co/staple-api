@@ -12,8 +12,8 @@ class Database {
     constructor(schemaMapping, configObject) {
         this.updateSchemaMapping(schemaMapping);
         this.schemaMapping = schemaMapping;
-
-        this.selectAdapter(configObject);
+//TODO: change configObject
+        this.selectAdapter(configObject); 
 
         this.database = dataset_tree();
         this.stapleDataType = "http://staple-api.org/datamodel/type";
@@ -23,7 +23,7 @@ class Database {
 
         logger.log("info", "Database is ready to use");
     }
-
+//TODO: change configObject
     selectAdapter(configObject) {
         this.adapter = new BackendSelector(this.schemaMapping, configObject);
     }
@@ -44,13 +44,12 @@ class Database {
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = "mongodb") {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
-        logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
-
+        // logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree);
+            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, source);
         }
 
     }

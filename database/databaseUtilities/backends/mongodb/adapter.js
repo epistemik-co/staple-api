@@ -5,7 +5,7 @@ const util = require("util");
 
 class MongodbAdapter {
     constructor(configFile) {
-        this.configFile = configFile;
+        this.configFile = configFile.dataSources.mongodb;
     }
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
@@ -17,7 +17,7 @@ class MongodbAdapter {
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
-
+        
         try {
             const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
@@ -42,6 +42,7 @@ class MongodbAdapter {
                 if(_type){
                     query["_type"] = _type;
                 }
+
                 if (page === undefined) {
                     result = await collection.find(query).toArray();
                 }

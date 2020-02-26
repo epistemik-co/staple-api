@@ -5,26 +5,26 @@ class BackendSelector {
 //TODO: change configObject handling
     constructor(schemaMapping, configObject) {
         let adapterType = undefined;
-        this.backend = undefined;
+        this.backend = {};
 
         if (configObject.dataSources === undefined) {
             logger.debug(configObject.dataSources[0])
             logger.warn("You are using in memory database!");
             adapterType = require("../backends/memory/adapter");
-            this.backend = new adapterType(schemaMapping);
+            this.backend.memory = new adapterType(schemaMapping);
             return;
         }
 
         if (configObject.dataSources.mongodb) {
             logger.info("You are using mongodb");
             adapterType = require("../backends/mongodb/adapter");
-            this.backend = new adapterType(configObject);
+            this.backend.mongodb = new adapterType(configObject);
         }
 
         if (configObject.dataSources.sparql) {
             logger.info("You are using sparql");
             adapterType = require("../backends/sparql/adapter");
-            this.backend = new adapterType(configObject);
+            this.backend.sparql = new adapterType(configObject);
         }
         // else if(configObject.type === "mysql"){ ... }
 
@@ -40,15 +40,15 @@ class BackendSelector {
     // selectionSet - graphql query
     // inferred - true if inferred types are expected
     // tree - structure describing data
-    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined) {
-        if (this.backend) {
-            await this.backend.loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source= "mongodb") {
+        if (this.backend[source]) {
+            await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
         }
     }
 
-    async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
-        if (this.backend) {
-            await this.backend.loadChildObjectsByUris(database, sub, selection, tree, parentName);
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName, source="mongodb") {
+        if (this.backend[source]) {
+            await this.backend[source].loadChildObjectsByUris(database, sub, selection, tree, parentName);
         }
     }
 
@@ -60,17 +60,17 @@ class BackendSelector {
     }
 
     // sub = [ ... ]
-    async pushObjectToBackend(database, input) { 
-        if (this.backend) {
+    async pushObjectToBackend(database, input, source="mongodb") { 
+        if (this.backend["source"]) {
             await this.backend.pushObjectToBackend(database, input);
         }
     }
 
     //removes objects from db. ObjectID is a list of ids
-    async removeObject(database, objectID){
+    async removeObject(database, objectID, source="mongodb"){
         logger.info("removeObject was called"); 
-        if (this.backend) {
-            return await this.backend.removeObject(this, objectID);
+        if (this.backend[source]) {
+            return await this.backend[source].removeObject(this, objectID);
         } 
     }
  
