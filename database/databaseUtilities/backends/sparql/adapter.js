@@ -17,7 +17,7 @@ class SparqlAdapter {
      * @param {tree} 
      */
 
-    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
@@ -32,7 +32,12 @@ class SparqlAdapter {
         let query = "";
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            let typeForQuery;
+            if (page !== undefined) {
+                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            } else {
+                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } }  ?x ?y ?z .`
+            }
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
@@ -48,7 +53,12 @@ class SparqlAdapter {
             }
         }
         else {
-            let typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            let typeForQuery;
+            if (page !== undefined){
+                typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            }else{
+                typeForQuery = `?x a <${_type}> . } } ?x ?y ?z .`;
+            }
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
