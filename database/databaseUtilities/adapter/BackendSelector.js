@@ -2,25 +2,26 @@ const logger = require("../../../config/winston");
 
 class BackendSelector {
     // this.backend contains object with methods implemented for specyfic backend
-
+//TODO: change configObject handling
     constructor(schemaMapping, configObject) {
         let adapterType = undefined;
         this.backend = undefined;
 
-        if (configObject === undefined) {
+        if (configObject.dataSources === undefined) {
+            logger.debug(configObject.dataSources[0])
             logger.warn("You are using in memory database!");
             adapterType = require("../backends/memory/adapter");
             this.backend = new adapterType(schemaMapping);
             return;
         }
 
-        if (configObject.type === "mongodb") {
+        if (configObject.dataSources.mongodb) {
             logger.info("You are using mongodb");
             adapterType = require("../backends/mongodb/adapter");
             this.backend = new adapterType(configObject);
         }
 
-        if (configObject.type === "sparql") {
+        if (configObject.dataSources.sparql) {
             logger.info("You are using sparql");
             adapterType = require("../backends/sparql/adapter");
             this.backend = new adapterType(configObject);

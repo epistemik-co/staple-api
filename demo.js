@@ -6,9 +6,10 @@ const uuidv1 = require("uuid/v1");
 const logger = require("./config/winston");
 const staple = require("./index");
 // const appRoot = require("app-root-path");
- 
+
 async function Demo() {
-    let stapleApi = await staple({string: `@prefix schema: <http://schema.org/> .
+    let stapleApi = await staple({
+        string: `@prefix schema: <http://schema.org/> .
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -55,12 +56,16 @@ async function Demo() {
         //     // graphName: "http://example.com/test"
         // }
         {
-            type: "mongodb",
-            url: "mongodb://127.0.0.1:27017", 
-            dbName: "staple",
-            collectionName: "quads3",
+            dataSources: {
+                mongodb: {
+                    type: "mongodb",
+                    url: "mongodb://127.0.0.1:27017",
+                    dbName: "staple",
+                    collectionName: "quads3",
+                }
+            }
         }
-            );//, require(appRoot + "/config/database.js"));
+    );//, require(appRoot + "/config/database.js"));
     let demo = {};
     demo.database = stapleApi.database;
     let schema = stapleApi.schema;
