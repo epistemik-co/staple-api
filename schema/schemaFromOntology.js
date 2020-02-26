@@ -142,202 +142,201 @@ async function createClassList(ontology /*example file*/) {
           ...inputClassList["Input" + removeNamespace(subClass)].fields,
           ...inputInheritedProperties
         }
-
-        if (filterClassList["Filter" + removeNamespace(subClass)]) {
-          filterClassList["Filter" + removeNamespace(subClass)].fields = {
-            ...filterClassList["Filter" + removeNamespace(subClass)].fields,
-            ...filterInheritedProperties
-          };
-        } else {
-          filterClassList["Filter" + removeNamespace(subClass)] = {};
-          filterClassList["Filter" + removeNamespace(subClass)].fields = {
-            ...filterClassList["Filter" + removeNamespace(subClass)].fields,
-            ...filterInheritedProperties
-          };
-        }
+      }
+      if (filterClassList["Filter" + removeNamespace(subClass)]) {
+        filterClassList["Filter" + removeNamespace(subClass)].fields = {
+          ...filterClassList["Filter" + removeNamespace(subClass)].fields,
+          ...filterInheritedProperties
+        };
+      } else {
+        filterClassList["Filter" + removeNamespace(subClass)] = {};
+        filterClassList["Filter" + removeNamespace(subClass)].fields = {
+          ...filterClassList["Filter" + removeNamespace(subClass)].fields,
+          ...filterInheritedProperties
+        };
       }
     }
   }
-    return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
-  }
+  return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
+}
 
-  /**
-   * Create query type
-   * @param {classList}
-   * @param {filterClassList}
-   * @param {classesSet}
-   * @param {properties} 
-   */
+/**
+ * Create query type
+ * @param {classList}
+ * @param {filterClassList}
+ * @param {classesSet}
+ * @param {properties} 
+ */
 
-  function getFieldsQuery(object) {
-    return () => {
-      let fields = {
-        "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
-        "_type": { type: graphql.GraphQLList(graphql.GraphQLString), description: "Types of the object", args: { "inferred": { type: graphql.GraphQLBoolean, description: "Include inferred types for this object", defaultValue: false } } }
-      };
+function getFieldsQuery(object) {
+  return () => {
+    let fields = {
+      "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
+      "_type": { type: graphql.GraphQLList(graphql.GraphQLString), description: "Types of the object", args: { "inferred": { type: graphql.GraphQLBoolean, description: "Include inferred types for this object", defaultValue: false } } }
+    };
 
-      for (let fieldName in object.fields) {
-        let fieldType = object.fields[fieldName]["type"];
-        if (graphQLScalarTypes[fieldType]) {
-          fields[fieldName] = {
-            type: graphQLScalarTypes[fieldType],
-            description: String(object.fields[fieldName]["description"])
-          };
-        } else {
-          fields[fieldName] = {
-            type: gqlObjects[fieldType],
-            description: String(object.fields[fieldName]["description"])
-          };
-        }
+    for (let fieldName in object.fields) {
+      let fieldType = object.fields[fieldName]["type"];
+      if (graphQLScalarTypes[fieldType]) {
+        fields[fieldName] = {
+          type: graphQLScalarTypes[fieldType],
+          description: String(object.fields[fieldName]["description"])
+        };
+      } else {
+        fields[fieldName] = {
+          type: gqlObjects[fieldType],
+          description: String(object.fields[fieldName]["description"])
+        };
       }
-      return fields;
-    };
-  }
-
-  function filterGetFields(object) {
-    return () => {
-      let fields = {
-        "_id": { type: graphql.GraphQLList(graphql.GraphQLID), description: "The unique identifier of the object" },
-      };
-
-      for (let fieldName in object.fields) {
-        let fieldType = object.fields[fieldName]["type"];
-        if (graphQLScalarTypes[fieldType]) {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
-            description: String(object.fields[fieldName]["description"])
-          };
-        } else {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLID),
-            description: String(object.fields[fieldName]["description"])
-          };
-        }
-      }
-      return fields;
-    };
-  }
-
-  function createQueryType(classList, filterClassList, classesURIs, propertiesURIs) {
-
-    //context query
-
-    var contextType = {
-      name: "_CONTEXT", fields: {
-        "_id": { type: graphql.GraphQLString, description: "@id" },
-        "_type": { type: graphql.GraphQLString, description: "@type" }
-      },
-      description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
-    };
-
-    for (var property of propertiesURIs) {
-      contextType.fields[removeNamespace(property)] = { type: graphql.GraphQLString, description: property };
     }
-
-    for (var classURI of classesURIs) {
-      contextType.fields[removeNamespace(classURI)] = { type: graphql.GraphQLString, description: classURI };
-    }
-
-    contextType = new graphql.GraphQLObjectType(contextType);
-
-    //the rest of the queries
-
-    var queryType = {
-      name: "Query",
-      description: "Get objects of specific types",
-      fields: {
-        "_CONTEXT": { type: contextType, description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema." }
-      }
-    };
-
-    for (var className in classList) {
-      gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
-        name: className,
-        description: String(classList[className].description),
-        fields: getFieldsQuery(classList[className])
-      }));
-      gqlObjects["Filter" + className] = new graphql.GraphQLInputObjectType({
-        name: "Filter" + className,
-        description: String(classList[className].description),
-        fields: filterGetFields(filterClassList["Filter" + className])
-      });
-      queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] } } };
-    }
-
-    queryType = new graphql.GraphQLObjectType(queryType);
-    return queryType;
-  }
-
-  function getFieldsMutation(object) {
-    return () => {
-      let fields = {
-        "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
-      };
-      for (let fieldName in object.fields) {
-        let fieldType = object.fields[fieldName]["type"];
-        if (graphQLScalarTypes[fieldType]) {
-          fields[fieldName] = {
-            type: graphQLScalarTypes[fieldType],
-            description: String(object.fields[fieldName]["description"])
-          };
-        } else {
-          fields[fieldName] = {
-            type: graphql.GraphQLList(graphql.GraphQLID),
-            description: String(object.fields[fieldName]["description"])
-          };
-        }
-      }
-      return fields;
-    };
-  }
-
-  /**
-   * Create mutation type
-   * @param  {classList} classList is a helper object for accesssing output types
-   * @param {inputClassList} inputClassList is a helper object for accessing input types
-   */
-
-  function createMutationType(classList, inputClassList) {
-    var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", description: "Put the item into the database. If already exists - overwrite it.", values: { "PUT": { value: 0 } } });
-    var mutationType = {
-      name: "Mutation",
-      description: "CRUD operations over objects of specific types",
-      fields: {
-        "DELETE": {
-          type: graphql.GraphQLBoolean,
-          description: "Delete an object",
-          args: {
-            "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" }
-          }
-        },
-      }
-    };
-
-    for (var className in classList) {
-      gqlObjects["Input" + className] = new graphql.GraphQLInputObjectType({
-        name: "Input" + className,
-        description: String(classList[className].description),
-        fields: getFieldsMutation(inputClassList["Input" + className])
-      });
-      mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
-    }
-    mutationType = new graphql.GraphQLObjectType(mutationType);
-    return mutationType;
-  }
-
-  /**
-   * Generate schema
-   * @param  {file} file containing ontology
-   */
-
-  async function generateSchema(ontology) {
-    database = new DatabaseInterface();
-    var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(ontology);
-    var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
-    var mutationType = createMutationType(classList, inputClassList);
-    return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
-  }
-
-  module.exports = {
-    generateSchema: generateSchema
+    return fields;
   };
+}
+
+function filterGetFields(object) {
+  return () => {
+    let fields = {
+      "_id": { type: graphql.GraphQLList(graphql.GraphQLID), description: "The unique identifier of the object" },
+    };
+
+    for (let fieldName in object.fields) {
+      let fieldType = object.fields[fieldName]["type"];
+      if (graphQLScalarTypes[fieldType]) {
+        fields[fieldName] = {
+          type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
+          description: String(object.fields[fieldName]["description"])
+        };
+      } else {
+        fields[fieldName] = {
+          type: graphql.GraphQLList(graphql.GraphQLID),
+          description: String(object.fields[fieldName]["description"])
+        };
+      }
+    }
+    return fields;
+  };
+}
+
+function createQueryType(classList, filterClassList, classesURIs, propertiesURIs) {
+
+  //context query
+
+  var contextType = {
+    name: "_CONTEXT", fields: {
+      "_id": { type: graphql.GraphQLString, description: "@id" },
+      "_type": { type: graphql.GraphQLString, description: "@type" }
+    },
+    description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
+  };
+
+  for (var property of propertiesURIs) {
+    contextType.fields[removeNamespace(property)] = { type: graphql.GraphQLString, description: property };
+  }
+
+  for (var classURI of classesURIs) {
+    contextType.fields[removeNamespace(classURI)] = { type: graphql.GraphQLString, description: classURI };
+  }
+
+  contextType = new graphql.GraphQLObjectType(contextType);
+
+  //the rest of the queries
+
+  var queryType = {
+    name: "Query",
+    description: "Get objects of specific types",
+    fields: {
+      "_CONTEXT": { type: contextType, description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema." }
+    }
+  };
+
+  for (var className in classList) {
+    gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
+      name: className,
+      description: String(classList[className].description),
+      fields: getFieldsQuery(classList[className])
+    }));
+    gqlObjects["Filter" + className] = new graphql.GraphQLInputObjectType({
+      name: "Filter" + className,
+      description: String(classList[className].description),
+      fields: filterGetFields(filterClassList["Filter" + className])
+    });
+    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] } } };
+  }
+
+  queryType = new graphql.GraphQLObjectType(queryType);
+  return queryType;
+}
+
+function getFieldsMutation(object) {
+  return () => {
+    let fields = {
+      "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
+    };
+    for (let fieldName in object.fields) {
+      let fieldType = object.fields[fieldName]["type"];
+      if (graphQLScalarTypes[fieldType]) {
+        fields[fieldName] = {
+          type: graphQLScalarTypes[fieldType],
+          description: String(object.fields[fieldName]["description"])
+        };
+      } else {
+        fields[fieldName] = {
+          type: graphql.GraphQLList(graphql.GraphQLID),
+          description: String(object.fields[fieldName]["description"])
+        };
+      }
+    }
+    return fields;
+  };
+}
+
+/**
+ * Create mutation type
+ * @param  {classList} classList is a helper object for accesssing output types
+ * @param {inputClassList} inputClassList is a helper object for accessing input types
+ */
+
+function createMutationType(classList, inputClassList) {
+  var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", description: "Put the item into the database. If already exists - overwrite it.", values: { "PUT": { value: 0 } } });
+  var mutationType = {
+    name: "Mutation",
+    description: "CRUD operations over objects of specific types",
+    fields: {
+      "DELETE": {
+        type: graphql.GraphQLBoolean,
+        description: "Delete an object",
+        args: {
+          "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" }
+        }
+      },
+    }
+  };
+
+  for (var className in classList) {
+    gqlObjects["Input" + className] = new graphql.GraphQLInputObjectType({
+      name: "Input" + className,
+      description: String(classList[className].description),
+      fields: getFieldsMutation(inputClassList["Input" + className])
+    });
+    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
+  }
+  mutationType = new graphql.GraphQLObjectType(mutationType);
+  return mutationType;
+}
+
+/**
+ * Generate schema
+ * @param  {file} file containing ontology
+ */
+
+async function generateSchema(ontology) {
+  database = new DatabaseInterface();
+  var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(ontology);
+  var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
+  var mutationType = createMutationType(classList, inputClassList);
+  return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
+}
+
+module.exports = {
+  generateSchema: generateSchema
+};
