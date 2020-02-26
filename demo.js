@@ -29,19 +29,13 @@ async function Demo() {
         rdfs:comment "Name of the entity" ;
         schema:domainIncludes owl:Thing ;
         schema:rangeIncludes xsd:string .`},
-        // {
-        //     type: "sparql",
-        //     url: "http://localhost:3030/staple/sparql", 
-        //     updateUrl: "http://localhost:3030/staple/update",
-        //     // graphName: "http://example.com/test"
-        // }
         {
             type: "mongodb",
             url: "mongodb://127.0.0.1:27017",
             dbName: "staple",
             collectionName: "quads3",
         }
-    );//, require(appRoot + "/config/database.js"));
+    );
     let demo = {};
     demo.database = stapleApi.database;
     let schema = stapleApi.schema;
@@ -102,35 +96,7 @@ function addEndPoints(app, demo) {
             message: "added successfully"
         });
     });
-
-    // This end-point should create data for qraphql mutation and run it.
-    // does not work
-    app.post("/api/uploadRDF", async (req, res) => {
-        try {
-            demo.database.drop();
-            logger.info("Recived RDF");
-            const todo = req.body;
-            let uuid = uuidv1();
-            logger.info(`UUID FOR NEW RDF ${uuid}`);
-            await demo.database.insertRDF(todo, true, uuid);
-            logger.info(`Database size: ${demo.database.database.size}`);
-            demo.database.countObjects();
-        } catch (error) {
-            logger.error(error);
-            return res.status(500).send({
-                success: "false",
-                message: error
-            });
-        }
-
-        return res.status(201).send({
-            success: "true",
-            message: "added successfully"
-        });
-    });
 }
-
-
 
 Demo();
 
