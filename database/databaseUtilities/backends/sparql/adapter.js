@@ -54,9 +54,9 @@ class SparqlAdapter {
         }
         else {
             let typeForQuery;
-            if (page !== undefined){
+            if (page !== undefined) {
                 typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
-            }else{
+            } else {
                 typeForQuery = `?x a <${_type}> . } } ?x ?y ?z .`;
             }
             if (filters) {
