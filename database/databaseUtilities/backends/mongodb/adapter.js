@@ -39,7 +39,9 @@ class MongodbAdapter {
                     result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
                 }
             } else {
-                query["_type"] = _type;
+                if(_type){
+                    query["_type"] = _type;
+                }
                 if (page === undefined) {
                     result = await collection.find(query).toArray();
                 }
