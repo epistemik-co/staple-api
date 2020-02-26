@@ -21,7 +21,7 @@ class Database {
         this.flatJsons = [];
         this.dbCallCounter = 0;
 
-        this.defaultDetasource = configObject.dataSources.defaut ? onfigObject.dataSources.defaut : "memory";
+        this.defaultDetasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
 
         logger.log("info", "Database is ready to use");
     }
@@ -279,6 +279,9 @@ class Database {
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
     // return 10 ids of the core objects
     async loadQueryData(queryInfo, uri, page, inferred, tree, filter, source=this.defaultDetasource) {
+        if (source === undefined){
+            source = this.defaultDetasource;
+        }
         return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource);
     }
 
