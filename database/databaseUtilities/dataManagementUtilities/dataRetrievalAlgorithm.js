@@ -1,7 +1,7 @@
 const logger = require(`../../../config/winston`);
 const util = require("util");
 
-async function loadQueryData(database, queryInfo, uri, page, inferred, tree) {
+async function loadQueryData(database, queryInfo, uri, page, inferred, tree, source) {
     database.dbCallCounter = 0; // debug only
     database.drop(); // clear db before new query.
 
@@ -16,7 +16,7 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree) {
     for (let coreSelection in coreSelectionSet["selections"]) {
         let selectionSet = coreSelectionSet["selections"][coreSelection];
         if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
-            await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree);
+            await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree, source);
             coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
             await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName);
         }

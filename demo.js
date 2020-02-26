@@ -57,6 +57,7 @@ async function Demo() {
         // }
         {
             dataSources: {
+                default: "mongodb",
                 mongodb: {
                     type: "mongodb",
                     url: "mongodb://127.0.0.1:27017",

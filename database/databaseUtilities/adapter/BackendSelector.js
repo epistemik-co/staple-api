@@ -2,12 +2,12 @@ const logger = require("../../../config/winston");
 
 class BackendSelector {
     // this.backend contains object with methods implemented for specyfic backend
-//TODO: change configObject handling
+    //TODO: change configObject handling
     constructor(schemaMapping, configObject) {
         let adapterType = undefined;
         this.backend = {};
 
-        if (configObject.dataSources === undefined) {
+        if (configObject.dataSources === undefined || configObject.dataSources.memory) {
             logger.debug(configObject.dataSources[0])
             logger.warn("You are using in memory database!");
             adapterType = require("../backends/memory/adapter");
@@ -40,12 +40,13 @@ class BackendSelector {
     // selectionSet - graphql query
     // inferred - true if inferred types are expected
     // tree - structure describing data
+    //TODO: default source
     async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source= "mongodb") {
         if (this.backend[source]) {
             await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
         }
     }
-
+    //TODO: default source
     async loadChildObjectsByUris(database, sub, selection, tree, parentName, source="mongodb") {
         if (this.backend[source]) {
             await this.backend[source].loadChildObjectsByUris(database, sub, selection, tree, parentName);
@@ -60,6 +61,7 @@ class BackendSelector {
     }
 
     // sub = [ ... ]
+    //TODO: default source
     async pushObjectToBackend(database, input, source="mongodb") { 
         if (this.backend["source"]) {
             await this.backend.pushObjectToBackend(database, input);
@@ -67,6 +69,7 @@ class BackendSelector {
     }
 
     //removes objects from db. ObjectID is a list of ids
+    //TODO: default source
     async removeObject(database, objectID, source="mongodb"){
         logger.info("removeObject was called"); 
         if (this.backend[source]) {

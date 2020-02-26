@@ -14,12 +14,14 @@ class Database {
         this.schemaMapping = schemaMapping;
 //TODO: change configObject
         this.selectAdapter(configObject); 
-
+        this.defaultSource = configObject.dataSources
         this.database = dataset_tree();
         this.stapleDataType = "http://staple-api.org/datamodel/type";
 
         this.flatJsons = [];
         this.dbCallCounter = 0;
+
+        this.defaultDetasource = configObject.dataSources.defaut ? onfigObject.dataSources.defaut : "memory";
 
         logger.log("info", "Database is ready to use");
     }
@@ -34,17 +36,19 @@ class Database {
     }
 
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
-    async loadChildObjectsByUris(sub, selection, tree, parentName) {
+    //TODO: default source?
+    async loadChildObjectsByUris(sub, selection, tree, parentName, source = "mongodb") {
         logger.info("loadChildObjectsByUris was called in database/database");
         // logger.debug(`with arguments : sub: ${sub}  ... `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadChildObjectsByUris(this, sub, selection, tree, parentName);
+            await this.adapter.loadChildObjectsByUris(this, sub, selection, tree, parentName, source);
         }
     }
-
-    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = "mongodb") {
+    //TODO: default source?
+    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource) {
+        console.log(source)
         logger.info("loadCoreQueryDataFromDB was called in database/database");
         // logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
         this.dbCallCounter = this.dbCallCounter + 1;
@@ -274,8 +278,8 @@ class Database {
 
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
     // return 10 ids of the core objects
-    async loadQueryData(queryInfo, uri, page, inferred, tree, filter) {
-        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter);
+    async loadQueryData(queryInfo, uri, page, inferred, tree, filter, source=this.defaultDetasource) {
+        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource);
     }
 
 }
