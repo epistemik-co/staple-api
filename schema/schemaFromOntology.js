@@ -203,7 +203,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
     name: "_CONTEXT", fields: {
       "_id": { type: graphql.GraphQLString, description: "@id" },
       "_type": { type: graphql.GraphQLString, description: "@type" },
-      "_SOURCE": {type: graphql.GraphQLEnumType, description: "source description"} //to do
+      "_SOURCE": {type: graphql.GraphQLString, description: "source description"} //to do
     },
     description : "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
   };
@@ -239,7 +239,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
       description: String(classList[className].description),
       fields: filterGetFields(filterClassList["Filter" + className])
     });
-    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] }, "source": {type: graphql.GraphQLEnumType, defaultValue: 1} } };
+    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] }, "source": {type: graphql.GraphQLString, defaultValue: 1} } };
   }
   queryType = new graphql.GraphQLObjectType(queryType);
   return queryType;
