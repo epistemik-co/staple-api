@@ -6,6 +6,7 @@ class BackendSelector {
     constructor(schemaMapping, configObject) {
         let adapterType = undefined;
         this.backend = {};
+        this.defaultDatasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
 
         if (configObject.dataSources === undefined || configObject.dataSources.memory) {
             logger.debug(configObject.dataSources[0])
@@ -41,36 +42,41 @@ class BackendSelector {
     // inferred - true if inferred types are expected
     // tree - structure describing data
     //TODO: default source
-    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source= "mongodb") {
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source=this.defaultDatasource) {
         if (this.backend[source]) {
+            console.log("tetststtsts")
             await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
         }
     }
     //TODO: default source
-    async loadChildObjectsByUris(database, sub, selection, tree, parentName, source="mongodb") {
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName, source=this.defaultDatasource) {
         if (this.backend[source]) {
             await this.backend[source].loadChildObjectsByUris(database, sub, selection, tree, parentName);
         }
     }
 
     // sub = [ ... ]
-    async loadObjectsByUris(database, sub) {
-        if (this.backend) {
-            await this.backend.loadObjectsByUris(database, sub);
+    async loadObjectsByUris(database, sub, source=this.defaultDatasource) {
+        if (this.backend[source]) {
+            await this.backend[source].loadObjectsByUris(database, sub);
         }
     }
 
     // sub = [ ... ]
     //TODO: default source
-    async pushObjectToBackend(database, input, source="mongodb") { 
-        if (this.backend["source"]) {
-            await this.backend.pushObjectToBackend(database, input);
+    async pushObjectToBackend(database, input, source=this.defaultDatasource) { 
+        console.log("TEST BACKEND SELECTOR")
+        console.log(source)
+        console.log(this.backend[source])
+        if (this.backend[source]) {
+            console.log("TEST BACKEND SELECTOR")
+            await this.backend[source].pushObjectToBackend(database, input);
         }
     }
 
     //removes objects from db. ObjectID is a list of ids
     //TODO: default source
-    async removeObject(database, objectID, source="mongodb"){
+    async removeObject(database, objectID, source=this.defaultDatasource){
         logger.info("removeObject was called"); 
         if (this.backend[source]) {
             return await this.backend[source].removeObject(this, objectID);

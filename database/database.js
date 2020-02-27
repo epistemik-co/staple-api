@@ -67,12 +67,12 @@ class Database {
         }
     }
 
-    async pushObjectToBackend(input) {
+    async pushObjectToBackend(input, source=this.defaultDetasource) {
         logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
         // console.log((util.inspect(await flatJson , false, null, true)));
         if (this.adapter) {
-            await this.adapter.pushObjectToBackend(this, input);
+            await this.adapter.pushObjectToBackend(this, input, source);
         } 
     }
 
