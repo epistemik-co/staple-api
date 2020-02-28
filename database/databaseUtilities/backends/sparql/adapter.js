@@ -214,7 +214,6 @@ class SparqlAdapter {
                 for (let filterField of argument.value.fields) {
                     if (fieldData.data[filterField.name.value] !== undefined) {
                         let uri = fieldData.data[filterField.name.value].uri;
-                        let sparqlQueryVariable = filterField.name.value;
                         let variableForQuery = filterField.name.value;
                         let value = filterField.value;
                         let filterString = "";
@@ -247,10 +246,10 @@ class SparqlAdapter {
                                 value = [value.value.toString()];
                                 if (this.isURI(value)) {
                                     value = `<${value}>`
-                                    filterString = `?x <${uri}> ?${sparqlQueryVariable} . filter (?${sparqlQueryVariable} in (${value}))`
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value}))`
                                 } else {
                                     value = `"${value}"`
-                                    filterString = `?x <${uri}> ?${sparqlQueryVariable} . filter (str(?${sparqlQueryVariable}) in (${value}))`
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value}))`
                                 }
                                 filters.push(filterString)
                             }
