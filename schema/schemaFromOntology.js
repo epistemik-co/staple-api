@@ -284,7 +284,8 @@ function createMutationType(classList, inputClassList) {
         type: graphql.GraphQLBoolean,
         description: "Delete an object",
         args: {
-          "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" }
+          "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" },
+          "source": {type: graphql.GraphQLString, description: "source description"}
         }
       },
     }
