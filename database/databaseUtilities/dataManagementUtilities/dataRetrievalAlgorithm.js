@@ -2,6 +2,8 @@ const logger = require(`../../../config/winston`);
 const util = require("util");
 
 async function loadQueryData(database, queryInfo, uri, page, inferred, tree, source) {
+    console.log("DATA RETRIEVAL ALGORITHM")
+    console.log(source)
     database.dbCallCounter = 0; // debug only
     database.drop(); // clear db before new query.
 
