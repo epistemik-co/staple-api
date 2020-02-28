@@ -214,6 +214,7 @@ class SparqlAdapter {
                 for (let filterField of argument.value.fields) {
                     if (fieldData.data[filterField.name.value] !== undefined) {
                         let uri = fieldData.data[filterField.name.value].uri;
+                        let sparqlQueryVariable = filterField.name.value;
                         let variableForQuery = filterField.name.value;
                         let value = filterField.value;
                         let filterString = "";
@@ -229,10 +230,15 @@ class SparqlAdapter {
                             filters.push(filterString)
                         } else {
                             if (value.kind === "ListValue") {
+                                let helper = value.values[0];
                                 value = value.values.map(x => (this.isURI(x.value.toString()) ?
                                     `<${x.value.toString()}>` : `"${x.value.toString()}"`));
                                 value = value.join(", ")
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
+                                if (this.isURI(helper.value.toString())){
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
+                                }else{
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value})) .`
+                                }
                                 filters.push(filterString)
                             } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
                                 filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`
@@ -241,10 +247,11 @@ class SparqlAdapter {
                                 value = [value.value.toString()];
                                 if (this.isURI(value)) {
                                     value = `<${value}>`
+                                    filterString = `?x <${uri}> ?${sparqlQueryVariable} . filter (?${sparqlQueryVariable} in (${value}))`
                                 } else {
                                     value = `"${value}"`
+                                    filterString = `?x <${uri}> ?${sparqlQueryVariable} . filter (str(?${sparqlQueryVariable}) in (${value}))`
                                 }
-                                filterString = `?x <${uri}> ${value} .`
                                 filters.push(filterString)
                             }
                         }

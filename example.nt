@@ -48,3 +48,6 @@
 <http://example.com/john> <http://staple-api.org/datamodel/type> <http://example.com/Agent> .
 <http://example.com/mark> <http;//staple-api.org/datamodel/type> <http://example.com/Agent> .
 <http://example.com/mobile> <http://staple-api.org/datamodel/type> <http://example.com/Agent> .
+<http://example.com/richard> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.com/Person> .
+<http://example.com/richard> <http://example.com/name> "Richard"@en .
+<http://example.com/richard> <http://example.com/name> "Ryszard"@pl .
