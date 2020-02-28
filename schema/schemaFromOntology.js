@@ -296,7 +296,7 @@ function createMutationType(classList, inputClassList) {
       description: String(classList[className].description),
       fields: getFieldsMutation(inputClassList["Input" + className])
     });
-    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
+    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": {type: graphql.GraphQLString, description: "source description"} } };
   }
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;

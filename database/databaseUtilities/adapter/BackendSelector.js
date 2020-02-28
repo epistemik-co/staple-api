@@ -43,6 +43,8 @@ class BackendSelector {
     // tree - structure describing data
     //TODO: default source
     async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source=this.defaultDatasource) {
+        console.log("BACKENDSELECTOR")
+        console.log(source)
         if (this.backend[source]) {
             console.log("tetststtsts")
             await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree);
@@ -65,11 +67,9 @@ class BackendSelector {
     // sub = [ ... ]
     //TODO: default source
     async pushObjectToBackend(database, input, source=this.defaultDatasource) { 
-        console.log("TEST BACKEND SELECTOR")
-        console.log(source)
-        console.log(this.backend[source])
+        console.log("BACKEND SELECTOR")
+        // console.log(source)
         if (this.backend[source]) {
-            console.log("TEST BACKEND SELECTOR")
             await this.backend[source].pushObjectToBackend(database, input);
         }
     }

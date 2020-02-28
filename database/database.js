@@ -20,7 +20,7 @@ class Database {
 
         this.flatJsons = [];
         this.dbCallCounter = 0;
-
+//TODO new parameter to determin source and handle default source
         this.defaultDetasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
 
         logger.log("info", "Database is ready to use");
@@ -48,6 +48,7 @@ class Database {
     }
     //TODO: default source?
     async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource) {
+        console.log("database")
         console.log(source)
         logger.info("loadCoreQueryDataFromDB was called in database/database");
         // logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
@@ -67,7 +68,9 @@ class Database {
         }
     }
 
-    async pushObjectToBackend(input, source=this.defaultDetasource) {
+    async pushObjectToBackend(input, schemaMapping, source=this.defaultDetasource) {
+        console.log("DATABASE")
+        console.log(source)
         logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
         // console.log((util.inspect(await flatJson , false, null, true)));
