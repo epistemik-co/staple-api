@@ -75,11 +75,18 @@ class SparqlAdapter {
         }
 
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
-
         const url = this.configFile.url + "?query=" + query
+        let response = undefined;
         try {
-            const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
-            await database.insertRDF(response);
+            response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+
+        } catch (err) {
+            throw (err);
+        }
+        try {
+            if (!(response.includes('error'))) {
+                await database.insertRDF(response);
+            }
         } catch (err) {
             throw (err);
         }
