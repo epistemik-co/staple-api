@@ -9,8 +9,7 @@ const handleQueryTypeResolver = (database, tree, uri) => {
         logger.info(`Query started for ${uri}`); 
         // console.log(args)
         let data = await database.loadQueryData(info["operation"], uri, args.page, args.inferred, tree, args.source);
-        console.log("test")
-        console.log(args.source)
+        logger.debug(`resolver/queryTypeResolver: handleQueryTypeResolver was called with source: ${args.source}`)
         logger.info(
             `Finall db calls : ${database.dbCallCounter}
             \tQuads in graphy : ${database.database.size}

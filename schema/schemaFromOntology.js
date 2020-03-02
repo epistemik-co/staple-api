@@ -239,7 +239,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
       description: String(classList[className].description),
       fields: filterGetFields(filterClassList["Filter" + className])
     });
-    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] }, "source": {type: graphql.GraphQLString} } };
+    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] }, "source": {type: graphql.GraphQLList(graphql.GraphQLString)} } };
   }
   queryType = new graphql.GraphQLObjectType(queryType);
   return queryType;
@@ -285,7 +285,7 @@ function createMutationType(classList, inputClassList) {
         description: "Delete an object",
         args: {
           "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" },
-          "source": {type: graphql.GraphQLString, description: "source description"}
+          "source": {type: graphql.GraphQLList(graphql.GraphQLString), description: "source description"}
         }
       },
     }
@@ -297,7 +297,7 @@ function createMutationType(classList, inputClassList) {
       description: String(classList[className].description),
       fields: getFieldsMutation(inputClassList["Input" + className])
     });
-    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": {type: graphql.GraphQLString, description: "source description"} } };
+    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": {type: graphql.GraphQLList(graphql.GraphQLString), description: "source description"} } };
   }
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;

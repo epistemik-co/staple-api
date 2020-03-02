@@ -9,8 +9,6 @@ class MongodbAdapter {
     }
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
-        console.log("MONGODB ADAPTER")
-        console.log("yay success")
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
         subTypes = subTypes.map(s => this.removeNamespace(s));
@@ -111,8 +109,6 @@ class MongodbAdapter {
     }
 
     async pushObjectToBackend(database, input) {
-        console.log("MONGODB")
-
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
