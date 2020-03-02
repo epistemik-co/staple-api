@@ -28,7 +28,7 @@ class BackendSelector {
         }
         // else if(configObject.type === "mysql"){ ... }
 
-        logger.info("DBAdapterSelector ready");
+        // logger.info("DBAdapterSelector ready");
     }
 
     // QUERY SECTION

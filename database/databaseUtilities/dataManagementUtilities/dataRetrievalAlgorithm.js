@@ -51,11 +51,19 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             name = selection.name.value;
             let newUris = new Set();
             let type = database.schemaMapping["@context"][name];
+            
+            let sourceForArgument = undefined
+            if (selection.arguments.length > 0){
+                // let argumentName = selection.arguments[0].name.value;
+                sourceForArgument = selection.arguments[0].value.values[0].value;
+                newUris = [...uri]
+                uri = []
+            }
 
             for (let id of uri) {
                 let data = [];
 
-                data = await database.getObjectsValueArray(id, type);
+                data = await database.getObjectsValueArray(id, type, source=undefined);
                 logger.debug("Asked for ID TYPE");
                 logger.debug(util.inspect(id, false, null, true));
                 logger.debug(util.inspect(type, false, null, true));
@@ -72,7 +80,9 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             newUris = [...newUris];
 
             if (newUris.length > 0) {
-                await database.loadChildObjectsByUris(newUris, selection, tree, parentName);
+                // console.log("CALL FOR CHILDREN")
+                // console.log(sourceForArgument)
+                await database.loadChildObjectsByUris(newUris, selection, tree, parentName, sourceForArgument);
 
                 let newParentName = tree[parentName].data[name];
                 if (newParentName === undefined) {

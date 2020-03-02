@@ -26,15 +26,7 @@ class Database {
     }
 
     selectAdapter(configObject, source=this.defaultDetasource) {
-        // if (source){
-        //     if (source.length == 1){
-            console.log(source)
-                this.adapter = new BackendSelector(this.schemaMapping, configObject, source=this.defaultDetasource);
-            // } else {
-            //     logger.warn(`database: trying to use multiple dataSources at once: ${source}`)
-            //     this.adapter = new BackendSelector(this.schemaMapping, configObject, source=this.defaultDetasource);
-            // }
-        // }
+        this.adapter = new BackendSelector(this.schemaMapping, configObject, source=this.defaultDetasource);
         //TODO: case multiple backends in source
     }
 
@@ -45,8 +37,8 @@ class Database {
 
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
     //TODO: default source?
-    async loadChildObjectsByUris(sub, selection, tree, parentName, source = "mongodb") {
-        logger.info("loadChildObjectsByUris was called in database/database");
+    async loadChildObjectsByUris(sub, selection, tree, parentName, source = this.defaultDetasource) {
+        logger.info(`loadChildObjectsByUris was called in database/database with source: ${source}`);
         // logger.debug(`with arguments : sub: ${sub}  ... `);
 
         this.dbCallCounter = this.dbCallCounter + 1;

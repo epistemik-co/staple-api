@@ -158,12 +158,14 @@ function getFieldsQuery(object){
       if (graphQLScalarTypes[fieldType]){
         fields[fieldName] = {
           type: graphQLScalarTypes[fieldType],
-          description: String(object.fields[fieldName]["description"])
+          description: String(object.fields[fieldName]["description"]),
+          // args: {"source": {type: graphql.GraphQLList(graphql.GraphQLString)}}
         };
       } else {
         fields[fieldName] = {
           type: gqlObjects[fieldType],
-          description: String(object.fields[fieldName]["description"])
+          description: String(object.fields[fieldName]["description"]),
+          args: {"source": {type: graphql.GraphQLList(graphql.GraphQLString)}}
         };
       }
     }
@@ -203,7 +205,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
     name: "_CONTEXT", fields: {
       "_id": { type: graphql.GraphQLString, description: "@id" },
       "_type": { type: graphql.GraphQLString, description: "@type" },
-      "_SOURCE": {type: graphql.GraphQLString, description: "source description"} //to do
+      "_SOURCE": {type: graphql.GraphQLString, description: "data source"} //to do
     },
     description : "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
   };
