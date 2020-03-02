@@ -79,10 +79,10 @@ class Database {
         } 
     }
 
-    async removeObject(objectID){
+    async removeObject(objectID, source=this.defaultDetasource){
         logger.info("removeObject was called in database/database"); 
         if (this.adapter) {
-           return await this.adapter.removeObject(this, objectID);
+           return await this.adapter.removeObject(this, objectID, source);
         } 
     }
 
