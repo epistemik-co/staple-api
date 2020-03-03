@@ -91,6 +91,7 @@ class BackendSelector {
     async removeObject(database, objectID, source = this.defaultDatasource) {
         logger.info("removeObject was called");
         if (this.backend[source]) {
+            console.log(source)
             return await this.backend[source].removeObject(this, objectID);
         }
     }

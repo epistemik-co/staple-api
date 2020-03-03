@@ -128,7 +128,6 @@ class MongodbAdapter {
     }
 
     async removeObject(database, objectIDs) {
-
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }

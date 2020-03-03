@@ -15,18 +15,17 @@ class Database {
         this.defaultSource = configObject.dataSources
         this.database = dataset_tree();
         this.stapleDataType = "http://staple-api.org/datamodel/type";
-
         this.flatJsons = [];
         this.dbCallCounter = 0;
         //when no source argument is given in query/mutation use default dataSource
         this.defaultDetasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
 
-        logger.log("info", "Database is ready to use");
+        logger.log("info", "Data sources are ready to use");
     }
 
+    //constructs new BackendSelector object
     selectAdapter(configObject, source = this.defaultDetasource) {
         this.adapter = new BackendSelector(this.schemaMapping, configObject, source = this.defaultDetasource);
-        //TODO: case multiple backends in source
     }
 
     updateSchemaMapping(schemaMapping) {
@@ -34,7 +33,8 @@ class Database {
         databaseUtilities.createGraphMap(schemaMapping);
     }
 
-    // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
+    // Core Queries using adapter ----------------------------------------------------------------------------------------------------------------------
+    //TODO: move following methods to new dedicated file
     async loadChildObjectsByUris(sub, selection, tree, parentName, source = this.defaultDetasource) {
         logger.info(`loadChildObjectsByUris was called in database/database with source: ${source}`);
         // logger.debug(`with arguments : sub: ${sub}  ... `);
@@ -67,7 +67,6 @@ class Database {
     async pushObjectToBackend(input, schemaMapping, source = this.defaultDetasource) {
         logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
-        // console.log((util.inspect(await flatJson , false, null, true)));
         if (this.adapter) {
             await this.adapter.pushObjectToBackend(this, input, source);
         }
@@ -76,7 +75,7 @@ class Database {
     async removeObject(objectID, source) {
         logger.info("removeObject was called in database/database");
         if (this.adapter) {
-            return await this.adapter.removeObject(this, objectID, source = this.defaultDetasource);
+            return await this.adapter.removeObject(this, objectID, source);
         }
     }
 
