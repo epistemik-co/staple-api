@@ -3,8 +3,8 @@ const jsonld = require("jsonld");
 const fetch = require('node-fetch');
 
 class SparqlAdapter {
-    constructor(configFile) {
-        this.configFile = configFile.dataSources.sparql;
+    constructor(configFile, source) {
+        this.configFile = configFile;
     }
 
     /**
@@ -67,7 +67,6 @@ class SparqlAdapter {
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
 
         const url = this.configFile.url + "?query=" + query
-        console.log(url)
         try {
             const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
             await database.insertRDF(response);

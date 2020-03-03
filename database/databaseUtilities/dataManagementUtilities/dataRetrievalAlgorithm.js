@@ -52,9 +52,9 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             let newUris = new Set();
             let type = database.schemaMapping["@context"][name];
             
+            //TODO error handling
             let sourceForArgument = undefined
             if (selection.arguments.length > 0){
-                // let argumentName = selection.arguments[0].name.value;
                 sourceForArgument = selection.arguments[0].value.values[0].value;
                 newUris = [...uri]
                 uri = []

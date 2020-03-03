@@ -5,7 +5,7 @@ const util = require("util");
 
 class MongodbAdapter {
     constructor(configFile) {
-        this.configFile = configFile.dataSources.mongodb;
+        this.configFile = configFile;
     }
 
     async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
@@ -15,6 +15,7 @@ class MongodbAdapter {
 
         let query = this.preparefilters(database, selectionSet, tree);
         if (this.client === undefined) {
+            console.log(this.configFile)
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
         
