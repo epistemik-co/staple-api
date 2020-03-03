@@ -15,7 +15,6 @@ class MongodbAdapter {
 
         let query = this.preparefilters(database, selectionSet, tree);
         if (this.client === undefined) {
-            // console.log(this.configFile)
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
 
@@ -43,7 +42,6 @@ class MongodbAdapter {
                 if (_type) {
                     query["_type"] = _type;
                 }
-
                 if (page === undefined) {
                     result = await collection.find(query).toArray();
                 }
@@ -110,6 +108,7 @@ class MongodbAdapter {
     }
 
     async pushObjectToBackend(database, input) {
+
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
@@ -128,6 +127,7 @@ class MongodbAdapter {
     }
 
     async removeObject(database, objectIDs) {
+
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
