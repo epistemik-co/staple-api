@@ -17,7 +17,7 @@ class SparqlAdapter {
      * @param {tree} 
      */
 
-    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
@@ -32,7 +32,12 @@ class SparqlAdapter {
         let query = "";
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            let typeForQuery;
+            if (page !== undefined) {
+                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            } else {
+                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } }  ?x ?y ?z .`
+            }
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
@@ -48,7 +53,12 @@ class SparqlAdapter {
             }
         }
         else {
-            let typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            let typeForQuery;
+            if (page !== undefined) {
+                typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            } else {
+                typeForQuery = `?x a <${_type}> . } } ?x ?y ?z .`;
+            }
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
@@ -65,11 +75,18 @@ class SparqlAdapter {
         }
 
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
-
         const url = this.configFile.url + "?query=" + query
+        let response = undefined;
         try {
-            const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
-            await database.insertRDF(response);
+            response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+
+        } catch (err) {
+            throw (err);
+        }
+        try {
+            if (!(response.includes('error'))) {
+                await database.insertRDF(response);
+            }
         } catch (err) {
             throw (err);
         }
@@ -229,10 +246,15 @@ class SparqlAdapter {
                             filters.push(filterString)
                         } else {
                             if (value.kind === "ListValue") {
+                                let helper = value.values[0];
                                 value = value.values.map(x => (this.isURI(x.value.toString()) ?
                                     `<${x.value.toString()}>` : `"${x.value.toString()}"`));
                                 value = value.join(", ")
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
+                                if (this.isURI(helper.value.toString())){
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
+                                }else{
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value})) .`
+                                }
                                 filters.push(filterString)
                             } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
                                 filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`
@@ -241,10 +263,11 @@ class SparqlAdapter {
                                 value = [value.value.toString()];
                                 if (this.isURI(value)) {
                                     value = `<${value}>`
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value}))`
                                 } else {
                                     value = `"${value}"`
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value}))`
                                 }
-                                filterString = `?x <${uri}> ${value} .`
                                 filters.push(filterString)
                             }
                         }
