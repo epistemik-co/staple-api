@@ -8,9 +8,10 @@ class BackendSelector {
         this.defaultDatasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
 
         for (let d in configObject.dataSources){
-            if (configObject.dataSources[d].type === undefined || configObject.dataSources[d] == "memory") {
+            if (configObject.dataSources[d].type == "memory") {
                 logger.debug("You are using in memory database!");
                 adapterType = require("../backends/memory/adapter");
+                console.log(configObject.dataSources[d].id)
                 this.backend[configObject.dataSources[d].id] = new adapterType(schemaMapping);
                 // return;
             }
@@ -47,11 +48,11 @@ class BackendSelector {
     // tree - structure describing data
     async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source=this.defaultDatasource) {
         logger.debug(`BackendSelector: loadCoreQueryDataFromDB was called with source: ${source}`);
-        if (source.lenght == 1){
+        if (!(Array.isArray(source))){
             if (this.backend[source] !== undefined) {
                 await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
             }else{
-                throw Error(`Wrong data source name: ${source[sourceName]}`)
+                throw Error(`Wrong data source name: ${source}`)
             }
         }else{
             logger.warn(`Trying to use multiple datasources`)

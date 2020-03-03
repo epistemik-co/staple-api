@@ -51,7 +51,7 @@ async function Demo() {
         schema:rangeIncludes example:Organization .`},
         {
             dataSources: {
-                default: "mongodb1",
+                default: "memory",
                 mongodb1: {
                     id: "mongodb1",
                     type: "mongodb",
@@ -73,6 +73,8 @@ async function Demo() {
                     updateUrl: "http://localhost:3030/staple/update",
                 },
                 memory:{
+                    id: "memory",
+                    type: "memory"
                 }
             }
         }
