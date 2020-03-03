@@ -161,13 +161,12 @@ function getFieldsQuery(object) {
         fields[fieldName] = {
           type: graphQLScalarTypes[fieldType],
           description: String(object.fields[fieldName]["description"]),
-          // args: {"source": {type: graphql.GraphQLList(graphql.GraphQLString)}}
         };
       } else {
         fields[fieldName] = {
           type: gqlObjects[fieldType],
           description: String(object.fields[fieldName]["description"]),
-          args: { "source": { type: graphql.GraphQLList(graphql.GraphQLString) } }
+          args: { "source": { type: graphql.GraphQLList(dataSourceEnum) } }
         };
       }
     }

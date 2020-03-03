@@ -4,7 +4,6 @@ const factory = require("@graphy/core.data.factory");
 const databaseUtilities = require("./databaseUtilities/dataManagementUtilities/dataManagementUtilities");
 const dataRetrievalAlgorithm = require("./databaseUtilities/dataManagementUtilities/dataRetrievalAlgorithm");
 const logger = require("../config/winston");
-// const util = require("util");
 const BackendSelector = require("./databaseUtilities/adapter/BackendSelector");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
@@ -36,7 +35,6 @@ class Database {
     }
 
     // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
-    //TODO: default source?
     async loadChildObjectsByUris(sub, selection, tree, parentName, source = this.defaultDetasource) {
         logger.info(`loadChildObjectsByUris was called in database/database with source: ${source}`);
         // logger.debug(`with arguments : sub: ${sub}  ... `);
@@ -46,7 +44,7 @@ class Database {
             await this.adapter.loadChildObjectsByUris(this, sub, selection, tree, parentName, source);
         }
     }
-    //TODO: default source?
+
     async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource) {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
         // logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);

@@ -27,7 +27,7 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, sou
 
 async function searchForDataRecursively(database, selectionSet, uri, tree, reverse = false, parentName = undefined, source = undefined) {
 
-    logger.info("searchForDataRecursively was called");
+    logger.info("dataRetrievalAlgorithm: searchForDataRecursively was called");
     logger.debug(`Started function searchForDataRecursively with args:
         \tselectionSet: ${JSON.stringify(selectionSet)}
         \turi: ${util.inspect(uri, false, null, true /* enable colors */)}
@@ -69,7 +69,6 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                 logger.debug(util.inspect(type, false, null, true));
             
                 for (let x of data) {
-                    // eslint-disable-next-line no-useless-escape
                     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
                     if (pattern.test(x)) {
                         newUris.add(x);
@@ -80,8 +79,6 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             newUris = [...newUris];
 
             if (newUris.length > 0) {
-                // console.log("CALL FOR CHILDREN")
-                // console.log(sourceForArgument)
                 await database.loadChildObjectsByUris(newUris, selection, tree, parentName, sourceForArgument);
 
                 let newParentName = tree[parentName].data[name];

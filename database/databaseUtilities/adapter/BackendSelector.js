@@ -2,100 +2,99 @@ const logger = require("../../../config/winston");
 
 class BackendSelector {
     // this.backend contains object with methods implemented for specific backend
+
     constructor(schemaMapping, configObject) {
         let adapterType = undefined;
+        //list of all backends that can be used in app
         this.backend = {};
+        //default datasource, when no source has been provided in query
         this.defaultDatasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
 
-        for (let d in configObject.dataSources){
+        for (let d in configObject.dataSources) {
+            //if memory in type, add new memory adapter
             if (configObject.dataSources[d].type == "memory") {
-                logger.debug("You are using in memory database!");
+                logger.debug("Adding new in-memory database adapter...");
                 adapterType = require("../backends/memory/adapter");
-                console.log(configObject.dataSources[d].id)
                 this.backend[configObject.dataSources[d].id] = new adapterType(schemaMapping);
-                // return;
             }
-            //if mongodb in config, use mongodb
+            //if mongodb in type, add new mongodb adapter
             if (configObject.dataSources[d].type == "mongodb") {
-                logger.info("You are using mongodb");
+                logger.info("Adding new mongodb adapter...");
                 adapterType = require("../backends/mongodb/adapter");
                 let configObjectMongo = configObject.dataSources[d]
                 this.backend[configObjectMongo.id] = new adapterType(configObjectMongo);
             }
-            //if sparql in config, use sparql
+            //if sparql in type, add new sparql adapter
             if (configObject.dataSources[d].type == "sparql") {
-                logger.info("You are using sparql");
+                logger.info("Adding new sparql adapter...");
                 adapterType = require("../backends/sparql/adapter");
                 let configObjectSparql = configObject.dataSources[d];
                 this.backend[configObjectSparql.id] = new adapterType(configObjectSparql);
             }
         }
-        //TODO: decide how to set up in-memory db
-
-        // else if(configObject.type === "mysql"){ ... }
-
-        // logger.info("DBAdapterSelector ready");
     }
 
-    // QUERY SECTION
-    // loadCoreQueryDataFromDB
-    // Arguments :
-    // database - graphy database
-    // type - type of object ( URI )
-    // page - selected page of data
-    // selectionSet - graphql query
-    // inferred - true if inferred types are expected
-    // tree - structure describing data
-    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source=this.defaultDatasource) {
+    /**
+     * loadCoreQueryDataFromDB
+     * @param {database} graphy database
+     * @param {type} type of object - uri
+     * @param {page} pagination
+     * @param {selectionSet} graphQL query
+     * @param {inferred} boolean, true if inferred types are expected
+     * @param {tree} structure describing data
+     * @param {source} datasource that should be used for the query
+     */
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDatasource) {
         logger.debug(`BackendSelector: loadCoreQueryDataFromDB was called with source: ${source}`);
-        if (!(Array.isArray(source))){
+        if (!(Array.isArray(source))) {
             if (this.backend[source] !== undefined) {
                 await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
-            }else{
-                throw Error(`Wrong data source name: ${source}`)
+            } else {
+                throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source}`)
             }
-        }else{
-            logger.warn(`Trying to use multiple datasources`)
-            for (let sourceName in source){
-                logger.warn(`Now loading data from: ${source}`)
-                if (this.backend[source[sourceName]] !== undefined){
+        } else {
+            for (let sourceName in source) {
+                logger.debug(`BackendSelector: loadCoreQueryDataFromDB: Now loading data from: ${source[sourceName]}`)
+                if (this.backend[source[sourceName]] !== undefined) {
                     await this.backend[source[sourceName]].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
-                }else{
-                    throw Error(`Wrong data source name: ${source[sourceName]}`)
+                } else {
+                    throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source[sourceName]}`)
                 }
             }
         }
     }
-    async loadChildObjectsByUris(database, sub, selection, tree, parentName, source=this.defaultDatasource) {
+
+    //loads child object from given source by ID
+    async loadChildObjectsByUris(database, sub, selection, tree, parentName, source = this.defaultDatasource) {
         logger.debug(`BackendSelector: loadChildObjectsByUris was called with source: ${source}`);
         if (this.backend[source]) {
             await this.backend[source].loadChildObjectsByUris(database, sub, selection, tree, parentName, source);
         }
     }
 
-    // sub = [ ... ]
-    async loadObjectsByUris(database, sub, source=this.defaultDatasource) {
+    //loads objects by uri from given source
+    async loadObjectsByUris(database, sub, source = this.defaultDatasource) {
         logger.debug(`BackendSelector: loadObjectsByUris was called with source: ${source}`);
         if (this.backend[source]) {
             await this.backend[source].loadObjectsByUris(database, sub, source);
         }
     }
 
-    // sub = [ ... ]
-    async pushObjectToBackend(database, input, source=this.defaultDatasource) { 
+    //inserts object to db
+    async pushObjectToBackend(database, input, source = this.defaultDatasource) {
         if (this.backend[source]) {
             await this.backend[source].pushObjectToBackend(database, input);
         }
     }
 
-    //removes objects from db. ObjectID is a list of ids
-    async removeObject(database, objectID, source=this.defaultDatasource){
-        logger.info("removeObject was called"); 
+    //removes objects from source, ObjectID is a list of ids to be deleted
+    async removeObject(database, objectID, source = this.defaultDatasource) {
+        logger.info("removeObject was called");
         if (this.backend[source]) {
             return await this.backend[source].removeObject(this, objectID);
-        } 
+        }
     }
- 
+
 }
 
 module.exports = BackendSelector;
