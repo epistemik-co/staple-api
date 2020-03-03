@@ -48,14 +48,20 @@ class BackendSelector {
     async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source=this.defaultDatasource) {
         logger.debug(`BackendSelector: loadCoreQueryDataFromDB was called with source: ${source}`);
         if (source.lenght == 1){
-            if (this.backend[source]) {
+            if (this.backend[source] !== undefined) {
                 await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
+            }else{
+                throw Error(`Wrong data source name: ${source[sourceName]}`)
             }
         }else{
             logger.warn(`Trying to use multiple datasources`)
             for (let sourceName in source){
                 logger.warn(`Now loading data from: ${source}`)
-                await this.backend[source[sourceName]].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
+                if (this.backend[source[sourceName]] !== undefined){
+                    await this.backend[source[sourceName]].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
+                }else{
+                    throw Error(`Wrong data source name: ${source[sourceName]}`)
+                }
             }
         }
     }
