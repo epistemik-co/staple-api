@@ -299,7 +299,7 @@ function createMutationType(classList, inputClassList, dataSources) {
         description: "Delete an object",
         args: {
           "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" },
-          "source": { type: graphql.GraphQLList(graphql.GraphQLString), description: "source description" }
+          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "source description" }
         }
       },
     }
