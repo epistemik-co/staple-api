@@ -15,10 +15,10 @@ class MongodbAdapter {
 
         let query = this.preparefilters(database, selectionSet, tree);
         if (this.client === undefined) {
-            console.log(this.configFile)
+            // console.log(this.configFile)
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
-        
+
         try {
             const db = this.client.db(this.configFile.dbName);
             let collection = db.collection(this.configFile.collectionName);
@@ -40,7 +40,7 @@ class MongodbAdapter {
                     result = await collection.find(query).skip(page * 10 - 10).limit(10).toArray();
                 }
             } else {
-                if(_type){
+                if (_type) {
                     query["_type"] = _type;
                 }
 

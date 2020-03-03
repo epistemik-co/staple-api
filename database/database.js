@@ -3,7 +3,7 @@ const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
 const databaseUtilities = require("./databaseUtilities/dataManagementUtilities/dataManagementUtilities");
 const dataRetrievalAlgorithm = require("./databaseUtilities/dataManagementUtilities/dataRetrievalAlgorithm");
-const logger = require("../config/winston"); 
+const logger = require("../config/winston");
 // const util = require("util");
 const BackendSelector = require("./databaseUtilities/adapter/BackendSelector");
 
@@ -12,7 +12,7 @@ class Database {
     constructor(schemaMapping, configObject) {
         this.updateSchemaMapping(schemaMapping);
         this.schemaMapping = schemaMapping;
-        this.selectAdapter(configObject); 
+        this.selectAdapter(configObject);
         this.defaultSource = configObject.dataSources
         this.database = dataset_tree();
         this.stapleDataType = "http://staple-api.org/datamodel/type";
@@ -25,8 +25,8 @@ class Database {
         logger.log("info", "Database is ready to use");
     }
 
-    selectAdapter(configObject, source=this.defaultDetasource) {
-        this.adapter = new BackendSelector(this.schemaMapping, configObject, source=this.defaultDetasource);
+    selectAdapter(configObject, source = this.defaultDetasource) {
+        this.adapter = new BackendSelector(this.schemaMapping, configObject, source = this.defaultDetasource);
         //TODO: case multiple backends in source
     }
 
@@ -66,20 +66,20 @@ class Database {
         }
     }
 
-    async pushObjectToBackend(input, schemaMapping, source=this.defaultDetasource) {
+    async pushObjectToBackend(input, schemaMapping, source = this.defaultDetasource) {
         logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
         // console.log((util.inspect(await flatJson , false, null, true)));
         if (this.adapter) {
             await this.adapter.pushObjectToBackend(this, input, source);
-        } 
+        }
     }
 
-    async removeObject(objectID, source=this.defaultDetasource){
-        logger.info("removeObject was called in database/database"); 
+    async removeObject(objectID, source) {
+        logger.info("removeObject was called in database/database");
         if (this.adapter) {
-           return await this.adapter.removeObject(this, objectID, source);
-        } 
+            return await this.adapter.removeObject(this, objectID, source = this.defaultDetasource);
+        }
     }
 
     // Memory database operations ---------------------------------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ class Database {
         var x = itr.next();
         while (!x.done) {
             data.push(x.value.object.value);
-            
+
             x = itr.next();
         }
 
@@ -256,11 +256,11 @@ class Database {
     }
 
     countObjects() {
-        return this.getSubjects().length; 
+        return this.getSubjects().length;
     }
 
     // binding database ----------------------------------------------------------------------------------------------
- 
+
     updateInference() {
         databaseUtilities.updateInference(this);
     }
@@ -277,8 +277,8 @@ class Database {
 
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
     // return 10 ids of the core objects
-    async loadQueryData(queryInfo, uri, page, inferred, tree, filter, source=this.defaultDetasource) {
-        if (source === undefined){
+    async loadQueryData(queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource) {
+        if (source === undefined) {
             source = this.defaultDetasource;
         }
         return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource);
