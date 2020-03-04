@@ -103,7 +103,6 @@ class SparqlAdapter {
      */
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
-        console.log("CHILD OBJECTS IN SPARQL")
         const headers = {
             "Content-Type": "application/sparql-query",
             "Accept": "application/n-triples"
@@ -251,9 +250,9 @@ class SparqlAdapter {
                                 value = value.values.map(x => (this.isURI(x.value.toString()) ?
                                     `<${x.value.toString()}>` : `"${x.value.toString()}"`));
                                 value = value.join(", ")
-                                if (this.isURI(helper.value.toString())){
+                                if (this.isURI(helper.value.toString())) {
                                     filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
-                                }else{
+                                } else {
                                     filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value})) .`
                                 }
                                 filters.push(filterString)

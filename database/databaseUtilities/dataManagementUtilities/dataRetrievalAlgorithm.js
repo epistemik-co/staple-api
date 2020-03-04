@@ -96,7 +96,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                     newParentName = {};
                 }
                 newParentName = newParentName.name;
-
+                //FIXME: in nested queries this part is runnning slow
                 await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName, source);
             }
 
