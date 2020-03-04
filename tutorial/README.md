@@ -1,44 +1,3 @@
-## Playground
-
-Try querying our [live playground](http://playground.staple-api.org) first, for instance with:  
-
-```
-{
-  _CONTEXT {
-      _id
-      _type
-      Person
-      Organization
-      name
-      age
-      isMarried
-      customerOf
-      revenue
-      employee
-  }
-  Person {
-    _id
-    _type
-    name
-    age
-    isMarried
-    customerOf {
-      _id
-      _type
-      name
-      revenue
-      employee {
-        _id
-      }
-    }
-  }
-}
-```
-
-
-You can also start the dafault [playground on Repl](/tutorial/?id=playground-on-repl).
-
-
 ## Running Staple API
 
 Staple API is built in Node.js. You can ensure Node.js is installed by executing the following command:
@@ -100,10 +59,13 @@ let ontology = {
 
 async function StapleDemo() {
     let stapleApi = await staple(ontology);  
+    
+    await stapleApi.graphql('mutation { Person(input: { _id: "http://example.com/john" name: "John Smith" } ) }').then((response) => {
+      });
 
-    stapleApi.graphql('{ _CONTEXT { _id _type Person employee } }').then((response) => {
+    await stapleApi.graphql('{ Person { _id name } }').then((response) => {
         console.log(JSON.stringify(response))
-        });
+      });
 }
 
 StapleDemo()
@@ -304,6 +266,42 @@ Run the demo:
 node demo.js
 ```
 
+## Playground
+
+Try querying our [live playground](http://playground.staple-api.org), for instance with:  
+
+```
+{
+  _CONTEXT {
+      _id
+      _type
+      Person
+      Organization
+      name
+      age
+      isMarried
+      customerOf
+      revenue
+      employee
+  }
+  Person {
+    _id
+    _type
+    name
+    age
+    isMarried
+    customerOf {
+      _id
+      _type
+      name
+      revenue
+      employee {
+        _id
+      }
+    }
+  }
+}
+```
 
 ## Playground on Repl
 

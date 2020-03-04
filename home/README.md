@@ -5,6 +5,12 @@
 
 ## What is for?
 
+
+<p align="center">
+  <img src="staple-api-architecture1.png">
+</p>
+
+
 A **knowledge graph** is an abstraction of data that views it as a collection of entities (represented as _graph nodes_) connected with relationships (represented as _graph edges_) whose meaning and structure is described via a consistent set of semantic rules and constraints. 
 
 Modern knowledge graph-based applications often need to manage their data across different back-ends in order to support diverse functionalities, e.g.: 
@@ -18,9 +24,7 @@ While data in such storages constitutes pieces of the same knowledge graph, it i
 
 <br>
 
-<p align="center">
-  <img src="staple-api-architecture1.png">
-</p>
+
 
 
 ## Key features

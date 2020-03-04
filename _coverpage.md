@@ -4,7 +4,8 @@
 
 > A GraphQL API for easy management of <br> knowledge graphs
 
-[Docs](/home/) 
+[Documentation](/home/) 
 [Playground](http://playground.staple-api.org)
+[Demo](http://demo.staple-api.org)
 [GitHub](https://github.com/epistemik-co/staple-api) 
 [NPM](https://www.npmjs.com/package/staple-api)
