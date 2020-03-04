@@ -103,6 +103,7 @@ class SparqlAdapter {
      */
 
     async loadChildObjectsByUris(database, sub, selection, tree, parentName) {
+        console.log("CHILD OBJECTS IN SPARQL")
         const headers = {
             "Content-Type": "application/sparql-query",
             "Accept": "application/n-triples"

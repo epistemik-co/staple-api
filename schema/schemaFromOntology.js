@@ -108,36 +108,58 @@ async function createClassList(ontology /*example file*/) {
     }
   }
 
-  //inheritance
+//inheritance
 
-  for (var subClass of classesURIs) {
-    var superClass = database.getObjs(subClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
-    var inheritedProperties = {};
-    var inputInheritedProperties = {};
-    var filterInheritedProperties = {};
-    for (var superClassName of superClass) {
-      inheritedProperties = classList[removeNamespace(superClassName)].fields;
-      inputInheritedProperties = inputClassList["Input" + removeNamespace(superClassName)].fields;
-      filterInheritedProperties = filterClassList["Filter" + removeNamespace(superClassName)].fields;
+for (var subClass of classesURIs) {
+  var superClass = database.getObjs(subClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
+  var inheritedProperties = {};
+  var inputInheritedProperties = {};
+  var filterInheritedProperties = {};
+  for (var superClassName of superClass) {
+    inheritedProperties = classList[removeNamespace(superClassName)].fields;
+    inputInheritedProperties = inputClassList["Input" + removeNamespace(superClassName)].fields;
+    filterInheritedProperties = filterClassList["Filter" + removeNamespace(superClassName)].fields;
 
+    if (classList[removeNamespace(subClass)]) {
       classList[removeNamespace(subClass)].fields = {
         ...classList[removeNamespace(subClass)].fields,
         ...inheritedProperties
       };
+    } else {
+      classList[removeNamespace(subClass)] = {}
+      classList[removeNamespace(subClass)]["fields"] = {
+        ...inheritedProperties
+      };
+    }
 
+
+    if (inputClassList["Input" + removeNamespace(subClass)]) {
       inputClassList["Input" + removeNamespace(subClass)].fields = {
         ...inputClassList["Input" + removeNamespace(subClass)].fields,
         ...inputInheritedProperties
       };
-
+    } else {
+      inputClassList["Input" + removeNamespace(subClass)] = {};
+      inputClassList["Input" + removeNamespace(subClass)].fields = {
+        ...inputClassList["Input" + removeNamespace(subClass)].fields,
+        ...inputInheritedProperties
+      }
+    }
+    if (filterClassList["Filter" + removeNamespace(subClass)]) {
+      filterClassList["Filter" + removeNamespace(subClass)].fields = {
+        ...filterClassList["Filter" + removeNamespace(subClass)].fields,
+        ...filterInheritedProperties
+      };
+    } else {
+      filterClassList["Filter" + removeNamespace(subClass)] = {};
       filterClassList["Filter" + removeNamespace(subClass)].fields = {
         ...filterClassList["Filter" + removeNamespace(subClass)].fields,
         ...filterInheritedProperties
       };
     }
   }
-
-  return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
+}
+return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
 }
 
 /**

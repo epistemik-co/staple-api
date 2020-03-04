@@ -278,7 +278,8 @@ class Database {
         if (source === undefined) {
             source = this.defaultDetasource;
         }
-        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource);
+        console.log(`DATABASE: ${source}`)
+        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource, source);
     }
 
 }
