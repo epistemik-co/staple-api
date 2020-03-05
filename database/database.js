@@ -12,7 +12,7 @@ class Database {
         this.updateSchemaMapping(schemaMapping);
         this.schemaMapping = schemaMapping;
         this.selectAdapter(configObject);
-        this.defaultSource = configObject.dataSources
+        this.defaultSource = configObject.dataSources;
         this.database = dataset_tree();
         this.stapleDataType = "http://staple-api.org/datamodel/type";
         this.flatJsons = [];
@@ -25,7 +25,7 @@ class Database {
 
     //constructs new BackendSelector object
     selectAdapter(configObject, source = this.defaultDetasource) {
-        this.adapter = new BackendSelector(this.schemaMapping, configObject, source = this.defaultDetasource);
+        this.adapter = new BackendSelector(this.schemaMapping, configObject, source);
     }
 
     updateSchemaMapping(schemaMapping) {
@@ -278,7 +278,6 @@ class Database {
         if (source === undefined) {
             source = this.defaultDetasource;
         }
-        console.log(`DATABASE: ${source}`)
         return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource, source);
     }
 

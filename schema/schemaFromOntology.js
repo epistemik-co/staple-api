@@ -126,7 +126,7 @@ for (var subClass of classesURIs) {
         ...inheritedProperties
       };
     } else {
-      classList[removeNamespace(subClass)] = {}
+      classList[removeNamespace(subClass)] = {};
       classList[removeNamespace(subClass)]["fields"] = {
         ...inheritedProperties
       };
@@ -143,7 +143,7 @@ for (var subClass of classesURIs) {
       inputClassList["Input" + removeNamespace(subClass)].fields = {
         ...inputClassList["Input" + removeNamespace(subClass)].fields,
         ...inputInheritedProperties
-      }
+      };
     }
     if (filterClassList["Filter" + removeNamespace(subClass)]) {
       filterClassList["Filter" + removeNamespace(subClass)].fields = {
@@ -248,7 +248,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   dataSourceEnum = {
     name: 'DataSources',
     values: {}
-  }
+  };
 
   for (let iter in dataSources) {
     dataSourceEnum["values"][dataSources[iter]] = { value: dataSources[iter] };
@@ -356,7 +356,7 @@ function listOfDataSourcesFromConfigObject(configObject) {
 async function generateSchema(ontology, configObject) {
   database = new DatabaseInterface();
   var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(ontology);
-  const listOfDataSources = listOfDataSourcesFromConfigObject(configObject)
+  const listOfDataSources = listOfDataSourcesFromConfigObject(configObject);
   var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs, listOfDataSources);
   var mutationType = createMutationType(classList, inputClassList, listOfDataSources);
   return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });

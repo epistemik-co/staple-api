@@ -1,7 +1,6 @@
 const logger = require("../../../config/winston");
 
 class BackendSelector {
-    // this.backend contains object with methods implemented for specific backend
 
     constructor(schemaMapping, configObject) {
         let adapterType = undefined;
@@ -21,7 +20,7 @@ class BackendSelector {
             if (configObject.dataSources[d].type == "mongodb") {
                 logger.info("Adding new mongodb adapter...");
                 adapterType = require("../backends/mongodb/adapter");
-                let configObjectMongo = configObject.dataSources[d]
+                let configObjectMongo = configObject.dataSources[d];
                 this.backend[configObjectMongo.id] = new adapterType(configObjectMongo);
             }
             //if sparql in type, add new sparql adapter
@@ -44,21 +43,22 @@ class BackendSelector {
      * @param {tree} structure describing data
      * @param {source} datasource that should be used for the query
      */
+
     async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDatasource) {
         logger.debug(`BackendSelector: loadCoreQueryDataFromDB was called with source: ${source}`);
         if (!(Array.isArray(source))) {
             if (this.backend[source] !== undefined) {
                 await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
             } else {
-                throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source}`)
+                throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source}`);
             }
         } else {
             for (let sourceName in source) {
-                logger.debug(`BackendSelector: loadCoreQueryDataFromDB: Now loading data from: ${source[sourceName]}`)
+                logger.debug(`BackendSelector: loadCoreQueryDataFromDB: Now loading data from: ${source[sourceName]}`);
                 if (this.backend[source[sourceName]] !== undefined) {
                     await this.backend[source[sourceName]].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
                 } else {
-                    throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source[sourceName]}`)
+                    throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source[sourceName]}`);
                 }
             }
         }
@@ -91,7 +91,6 @@ class BackendSelector {
     async removeObject(database, objectID, source = this.defaultDatasource) {
         logger.info("removeObject was called");
         if (this.backend[source]) {
-            console.log(source)
             return await this.backend[source].removeObject(this, objectID);
         }
     }

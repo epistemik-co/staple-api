@@ -1,4 +1,4 @@
-const logger = require(`../../../config/winston`);
+const logger = require("../../../config/winston");
 const util = require("util");
 
 async function loadQueryData(database, queryInfo, uri, page, inferred, tree, source) {
@@ -18,7 +18,7 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, sou
         if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
             await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree, source);
             coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-            await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName,/*source*/ undefined, /*parent Query Source*/source);
+            await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, resolverName,/*source*/ undefined, /*parent Query Source*/source);
         }
     }
 
@@ -27,7 +27,7 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, sou
 
 //@param {source} argument source
 //@param {parentQuerySource} 
-async function searchForDataRecursively(database, selectionSet, uri, tree, reverse = false, parentName = undefined, source = undefined, parentQuerySource=undefined) {
+async function searchForDataRecursively(database, selectionSet, uri, tree, parentName = undefined, source = undefined, parentQuerySource = undefined) {
     logger.info("dataRetrievalAlgorithm: searchForDataRecursively was called");
     // logger.debug(`Started function searchForDataRecursively with args:
     //     \tselectionSet: ${JSON.stringify(selectionSet)}
@@ -47,7 +47,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
     let name = undefined;
     for (let selection of selectionSet["selections"]) {
         if (selection.kind === "InlineFragment") {
-            await searchForDataRecursively(database, selection["selectionSet"], uri, tree, false, parentName, source);
+            await searchForDataRecursively(database, selection["selectionSet"], uri, tree, parentName, source);
         }
         //if there is any selection
         else if (selection["selectionSet"] !== undefined && selection.name !== undefined) {
@@ -60,20 +60,20 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             let type = database.schemaMapping["@context"][name];
 
             //TODO error handling
-        //if no source, 
-            if (source == undefined){
-                if (selection.arguments.length > 0){
-                    if (selection.arguments[0].value.values !== undefined) {
-                        source = selection.arguments[0].value.values[0].value;
-                    } else {
-                        source = selection.arguments[0].value.value;
-                    }
-                }else{
-                    source = parentQuerySource
+            //if arguments in selection
+            if (selection.arguments.length > 0) {
+                //read source from argument
+                if (selection.arguments[0].value.values !== undefined) {
+                    source = selection.arguments[0].value.values[0].value;
+                } else {
+                    source = selection.arguments[0].value.value;
                 }
-                //if there s no arguments for selection set then source should be the same as parent query source
-                //else if there is an argument source, then source should be switched for argument
+            //else read source from parentQuerySource
+            } else {
+                source = parentQuerySource;
             }
+            //if there s no arguments for selection set then source should be the same as parent query source
+            //else if there is an argument source, then source should be switched for argument
 
             logger.debug(`After reading args:
             \tsource : ${source}
@@ -108,7 +108,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                 }
                 newParentName = newParentName.name;
                 //FIXME: in nested queries this part is runnning slow
-                await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName, undefined, source);
+                await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, newParentName, undefined, source);
             }
 
         }
