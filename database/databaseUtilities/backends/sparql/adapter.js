@@ -122,6 +122,7 @@ class SparqlAdapter {
         logger.debug(`url for fetch: ${url}`);
         try {
             const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+            logger.debug("fetch finished")
             await database.insertRDF(response);
         } catch (err) {
             throw (err);

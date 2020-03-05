@@ -18,7 +18,7 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, sou
         if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
             await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree, source);
             coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-            await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName, undefined, source);
+            await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, false, resolverName,/*source*/ undefined, /*parent Query Source*/source);
         }
     }
 
@@ -26,17 +26,23 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, sou
 }
 
 //@param {source} argument source
+//@param {parentQuerySource} 
 async function searchForDataRecursively(database, selectionSet, uri, tree, reverse = false, parentName = undefined, source = undefined, parentQuerySource=undefined) {
     logger.info("dataRetrievalAlgorithm: searchForDataRecursively was called");
+    // logger.debug(`Started function searchForDataRecursively with args:
+    //     \tselectionSet: ${JSON.stringify(selectionSet)}
+    //     \turi: ${util.inspect(uri, false, null, true /* enable colors */)}
+    //     \ttree: ${tree}
+    //     \treverse: ${reverse}
+    //     \tQUADS : ${database.database.size}
+    //     \tObjects : ${database.countObjects()}
+    //     \tsource : ${source}
+    //     \tparentQuerySource: ${parentQuerySource}
+    //     `);
     logger.debug(`Started function searchForDataRecursively with args:
-        \tselectionSet: ${JSON.stringify(selectionSet)}
-        \turi: ${util.inspect(uri, false, null, true /* enable colors */)}
-        \ttree: ${tree}
-        \treverse: ${reverse}
-        \tQUADS : ${database.database.size}
-        \tObjects : ${database.countObjects()}
-        \tsource : ${source}
-        `);
+    \tsource : ${source}
+    \tparentQuerySource: ${parentQuerySource}
+    `);
 
     let name = undefined;
     for (let selection of selectionSet["selections"]) {
@@ -54,7 +60,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
             let type = database.schemaMapping["@context"][name];
 
             //TODO error handling
-
+        //if no source, 
             if (source == undefined){
                 if (selection.arguments.length > 0){
                     if (selection.arguments[0].value.values !== undefined) {
@@ -68,6 +74,11 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                 //if there s no arguments for selection set then source should be the same as parent query source
                 //else if there is an argument source, then source should be switched for argument
             }
+
+            logger.debug(`After reading args:
+            \tsource : ${source}
+            \tparentQuerySource: ${parentQuerySource}
+            `);
 
             //gets data for already existing 
             for (let id of uri) {
@@ -97,7 +108,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, rever
                 }
                 newParentName = newParentName.name;
                 //FIXME: in nested queries this part is runnning slow
-                await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName, source);
+                await searchForDataRecursively(database, selection["selectionSet"], newUris, tree, false, newParentName, undefined, source);
             }
 
         }

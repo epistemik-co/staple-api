@@ -149,7 +149,7 @@ async function Demo() {
             schema:rangeIncludes xsd:string .`},
         {
             dataSources: {
-                default: "memory",
+                default: "sparql",
                 mongodb: {
                     id: "mongodb",
                     type: "mongodb",
@@ -170,10 +170,6 @@ async function Demo() {
                     url: "http://localhost:3030/staple/sparql", 
                     updateUrl: "http://localhost:3030/staple/update",
 
-                },
-                memory:{
-                    id: "memory",
-                    type: "memory"
                 }
             }
         }
