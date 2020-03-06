@@ -183,12 +183,12 @@ class SparqlAdapter {
         }
         logger.debug(`removeObject: deleteQuery: ${deleteQuery}`);
         const url = this.configFile.updateUrl;
-        try {
-            await fetch(url, { method: 'POST', headers: headers, body: deleteQuery }).then(res => res.text());
-            return true
-        } catch (err) {
-            throw (err);
-        }
+        // try {
+            await fetch(url, { method: "POST", headers: headers, body: deleteQuery }).then(res => res.text());
+            return true;
+        // } catch (err) {
+        //     throw (err);
+        // }
     }
 
     /**

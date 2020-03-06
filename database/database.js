@@ -68,6 +68,8 @@ class Database {
         logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
         if (this.adapter) {
+            console.log("DB SOURCE");
+            console.log(source);
             await this.adapter.pushObjectToBackend(this, input, source);
         }
     }

@@ -82,16 +82,34 @@ class BackendSelector {
 
     //inserts object to db
     async pushObjectToBackend(database, input, source = this.defaultDatasource) {
-        if (this.backend[source]) {
-            await this.backend[source].pushObjectToBackend(database, input);
+        if (Array.isArray(source)){
+            for (let s of source){
+                if (this.backend[s]) {
+                    await this.backend[s].pushObjectToBackend(database, input);
+                }
+            }
+        }else{
+            if (this.backend[source]) {
+                await this.backend[source].pushObjectToBackend(database, input);
+            }
         }
     }
 
     //removes objects from source, ObjectID is a list of ids to be deleted
     async removeObject(database, objectID, source = this.defaultDatasource) {
         logger.info("removeObject was called");
-        if (this.backend[source]) {
-            return await this.backend[source].removeObject(this, objectID);
+
+        if (Array.isArray(source)){
+            for (let s of source){
+                if (this.backend[s]) {
+                    await this.backend[s].removeObject(this, objectID);
+                }
+            }
+            return true
+        }else{
+            if (this.backend[source]) {
+                return await this.backend[source].removeObject(this, objectID);
+            }
         }
     }
 
