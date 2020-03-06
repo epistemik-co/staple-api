@@ -8,14 +8,12 @@ class MongodbAdapter {
         this.configFile = configFile;
     }
 
-    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
-        console.log("-------------->SELECTON SET")
-        console.log(JSON.stringify(selectionSet));
+    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
         subTypes = subTypes.map(s => this.removeNamespace(s));
 
-        let query = this.preparefilters(database, selectionSet, tree);
+        let query = this.preparefilters(database, selectionSet, tree, filter);
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
@@ -150,7 +148,7 @@ class MongodbAdapter {
         }
     }
 
-    preparefilters(database, selection, tree) {
+    preparefilters(database, selection, tree, filter) {
 
         let query = {};
         let fieldName = selection.name.value;
@@ -162,7 +160,6 @@ class MongodbAdapter {
 
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
-                console.log(JSON.stringify(argument));
                 if (argument.value.fields) {
                     for (let filterField of argument.value.fields) {
                         if (fieldData.data[filterField.name.value] !== undefined) {
@@ -198,6 +195,17 @@ class MongodbAdapter {
                         }
                         else {
                             logger.debug("SKIP");
+                        }
+                    }
+                }else{
+                    let filterKeys = Object.keys(filter);
+                    for (let key of filterKeys){
+                        if (query[key]){
+                            query[key]["$in"] = filter[key];
+                        }else{
+                            query[key] = {"$in": []}
+                            query[key]["$in"] = filter[key];
+
                         }
                     }
                 }

@@ -17,12 +17,12 @@ class SparqlAdapter {
      * @param {tree} 
      */
 
-    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
         subTypes = subTypes.map(t => ("<" + t + ">")).join(", ");
-        const filters = this.preparefilters(database, selectionSet, tree)
+        const filters = this.preparefilters(database, selectionSet, tree, filter)
         const headers = {
             "Content-Type": "application/sparql-query",
             "Accept": "application/n-triples"
@@ -253,6 +253,17 @@ class SparqlAdapter {
                         else {
                             logger.debug("SKIP");
                         }
+                    }
+                }
+            }else{
+                let filterKeys = Object.keys(filter);
+                for (let key of filterKeys){
+                    if (query[key]){
+                        query[key]["$in"] = filter[key];
+                    }else{
+                        query[key] = {"$in": []}
+                        query[key]["$in"] = filter[key];
+
                     }
                 }
             }
