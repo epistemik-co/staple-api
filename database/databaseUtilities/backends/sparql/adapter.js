@@ -211,46 +211,48 @@ class SparqlAdapter {
 
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
-                for (let filterField of argument.value.fields) {
-                    if (fieldData.data[filterField.name.value] !== undefined) {
-                        let uri = fieldData.data[filterField.name.value].uri;
-                        let variableForQuery = filterField.name.value;
-                        let value = filterField.value;
-                        let filterString = "";
-                        if (uri === "@id") {
-                            value = value.value.toString()
-                            if (this.isURI(value)) {
-                                value.replace("\"", "")
-                                value = `<${value}>`
-                            } else {
-                                value = `"${value}"`
-                            }
-                            filterString = `values ?x {${value}}`
-                            filters.push(filterString)
-                        } else {
-                            if (value.kind === "ListValue") {
-                                value = value.values.map(x => (this.isURI(x.value.toString()) ?
-                                    `<${x.value.toString()}>` : `"${x.value.toString()}"`));
-                                value = value.join(", ")
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
-                                filters.push(filterString)
-                            } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`
-                                filters.push(filterString)
-                            } else {
-                                value = [value.value.toString()];
+                if (argument.value.fields) {
+                    for (let filterField of argument.value.fields) {
+                        if (fieldData.data[filterField.name.value] !== undefined) {
+                            let uri = fieldData.data[filterField.name.value].uri;
+                            let variableForQuery = filterField.name.value;
+                            let value = filterField.value;
+                            let filterString = "";
+                            if (uri === "@id") {
+                                value = value.value.toString()
                                 if (this.isURI(value)) {
+                                    value.replace("\"", "")
                                     value = `<${value}>`
                                 } else {
                                     value = `"${value}"`
                                 }
-                                filterString = `?x <${uri}> ${value} .`
+                                filterString = `values ?x {${value}}`
                                 filters.push(filterString)
+                            } else {
+                                if (value.kind === "ListValue") {
+                                    value = value.values.map(x => (this.isURI(x.value.toString()) ?
+                                        `<${x.value.toString()}>` : `"${x.value.toString()}"`));
+                                    value = value.join(", ")
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
+                                    filters.push(filterString)
+                                } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`
+                                    filters.push(filterString)
+                                } else {
+                                    value = [value.value.toString()];
+                                    if (this.isURI(value)) {
+                                        value = `<${value}>`
+                                    } else {
+                                        value = `"${value}"`
+                                    }
+                                    filterString = `?x <${uri}> ${value} .`
+                                    filters.push(filterString)
+                                }
                             }
                         }
-                    }
-                    else {
-                        logger.debug("SKIP");
+                        else {
+                            logger.debug("SKIP");
+                        }
                     }
                 }
             }
