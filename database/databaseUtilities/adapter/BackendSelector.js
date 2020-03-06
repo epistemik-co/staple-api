@@ -8,27 +8,27 @@ class BackendSelector {
         this.backend = {};
         //default datasource, when no source has been provided in query
         this.defaultDatasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
-
-        for (let d in configObject.dataSources) {
+        let dataSourcesKeys = Object.keys(configObject.dataSources);
+        for (let d of dataSourcesKeys) {
             //if memory in type, add new memory adapter
             if (configObject.dataSources[d].type == "memory") {
                 logger.debug("Adding new in-memory database adapter...");
                 adapterType = require("../backends/memory/adapter");
-                this.backend[configObject.dataSources[d].id] = new adapterType(schemaMapping);
+                this.backend[d] = new adapterType(schemaMapping);
             }
             //if mongodb in type, add new mongodb adapter
             if (configObject.dataSources[d].type == "mongodb") {
                 logger.info("Adding new mongodb adapter...");
                 adapterType = require("../backends/mongodb/adapter");
                 let configObjectMongo = configObject.dataSources[d];
-                this.backend[configObjectMongo.id] = new adapterType(configObjectMongo);
+                this.backend[d] = new adapterType(configObjectMongo);
             }
             //if sparql in type, add new sparql adapter
-            if (configObject.dataSources[d].type == "sparql") {
+            if (configObject.dataSources[d].type == "sparql")  {
                 logger.info("Adding new sparql adapter...");
                 adapterType = require("../backends/sparql/adapter");
                 let configObjectSparql = configObject.dataSources[d];
-                this.backend[configObjectSparql.id] = new adapterType(configObjectSparql);
+                this.backend[d] = new adapterType(configObjectSparql);
             }
         }
     }

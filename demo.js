@@ -52,21 +52,18 @@ async function Demo() {
             dataSources: {
                 default: "sparql",
                 mongodb1: {
-                    id: "mongodb1",
                     type: "mongodb",
                     url: "mongodb://127.0.0.1:27017",
                     dbName: "staple",
                     collectionName: "quads3",
                 },
                 mongodb2: {
-                    id: "mongodb2",
                     type: "mongodb",
                     url: "mongodb://127.0.0.1:27017",
                     dbName: "staple",
                     collectionName: "quads3",
                 },
                 sparql: {
-                    id: "sparql",
                     type: "sparql",
                     url: "http://localhost:3030/staple/sparql", 
                     updateUrl: "http://localhost:3030/staple/update",

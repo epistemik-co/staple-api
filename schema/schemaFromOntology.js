@@ -340,13 +340,7 @@ function createMutationType(classList, inputClassList, dataSources) {
 }
 
 function listOfDataSourcesFromConfigObject(configObject) {
-  let listOfDatasources = [];
-  for (let d in configObject.dataSources) {
-    if (configObject.dataSources[d].id) {
-      listOfDatasources.push(configObject.dataSources[d].id);
-    }
-  }
-  return listOfDatasources;
+  return Object.keys(configObject.dataSources).filter(function(x){return x != "default";});
 }
 
 /**

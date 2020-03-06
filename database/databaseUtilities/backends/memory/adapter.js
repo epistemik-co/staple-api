@@ -33,7 +33,7 @@ class MemoryDatabase {
         }
 
         // all ids
-        const subTypes = tree[fieldName]['subTypes']
+        const subTypes = tree[fieldName]["subTypes"];
         let ids = await this.getSubjectsByType(type, subTypes, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
 
         // filter
