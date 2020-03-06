@@ -105,7 +105,7 @@ class BackendSelector {
                     await this.backend[s].removeObject(this, objectID);
                 }
             }
-            return true
+            return true;
         }else{
             if (this.backend[source]) {
                 return await this.backend[source].removeObject(this, objectID);
