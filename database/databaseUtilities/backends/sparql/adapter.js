@@ -32,7 +32,12 @@ class SparqlAdapter {
         let query = "";
         let graphName = this.configFile.graphName
         if (inferred) {
-            let typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            let typeForQuery;
+            if (page !== undefined) {
+                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`
+            } else {
+                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } }  ?x ?y ?z .`
+            }
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
@@ -48,7 +53,12 @@ class SparqlAdapter {
             }
         }
         else {
-            let typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            let typeForQuery;
+            if (page !== undefined) {
+                typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+            } else {
+                typeForQuery = `?x a <${_type}> . } } ?x ?y ?z .`;
+            }
             if (filters) {
                 if (graphName) {
                     query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
@@ -65,11 +75,18 @@ class SparqlAdapter {
         }
 
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
-
         const url = this.configFile.url + "?query=" + query
+        let response = undefined;
         try {
-            const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
-            await database.insertRDF(response);
+            response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+
+        } catch (err) {
+            throw (err);
+        }
+        try {
+            if (!(response.includes('error'))) {
+                await database.insertRDF(response);
+            }
         } catch (err) {
             throw (err);
         }
@@ -223,8 +240,10 @@ class SparqlAdapter {
                                 if (this.isURI(value)) {
                                     value.replace("\"", "")
                                     value = `<${value}>`
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value}))`
                                 } else {
                                     value = `"${value}"`
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value}))`
                                 }
                                 filterString = `values ?x {${value}}`
                                 filters.push(filterString)

@@ -1,5 +1,5 @@
 const DatabaseInterface = require("./database/database");
-let database = new DatabaseInterface(); 
+let database = new DatabaseInterface();
 const logger = require("../config/winston");
 var graphql = require("graphql");
 
@@ -8,14 +8,14 @@ var graphql = require("graphql");
 var gqlObjects = {};
 
 var graphQLScalarTypes = {
-  "Boolean" : graphql.GraphQLBoolean,
-  "String" : graphql.GraphQLString,
-  "Float" : graphql.GraphQLFloat,
-  "Int" : graphql.GraphQLInt,
-  "boolean" : graphql.GraphQLBoolean,
-  "string" : graphql.GraphQLString,
-  "decimal" : graphql.GraphQLFloat,
-  "integer" : graphql.GraphQLInt
+  "Boolean": graphql.GraphQLBoolean,
+  "String": graphql.GraphQLString,
+  "Float": graphql.GraphQLFloat,
+  "Int": graphql.GraphQLInt,
+  "boolean": graphql.GraphQLBoolean,
+  "string": graphql.GraphQLString,
+  "decimal": graphql.GraphQLFloat,
+  "integer": graphql.GraphQLInt
 };
 
 /**
@@ -41,10 +41,10 @@ function removeNamespace(nameWithNamesapace) {
 
 async function createClassList(ontology /*example file*/) {
   //load ontology to in-memory graphy.js database 
-  if (ontology.string){
+  if (ontology.string) {
     await database.readFromString(ontology.string);
     logger.info("Schema generated from string");
-  }else if (ontology.file){
+  } else if (ontology.file) {
     await database.readFromFile(ontology.file);
     logger.info("Schema generated from file");
   }
@@ -93,15 +93,15 @@ async function createClassList(ontology /*example file*/) {
       var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
 
       for (var r in ranges) {
-        if (graphQLScalarTypes[ranges[r]]){
+        if (graphQLScalarTypes[ranges[r]]) {
           ranges[r] = graphQLScalarTypes[ranges[r]];
           inputRanges[r] = graphQLScalarTypes[ranges[r]];
         }
       }
       var classComment = database.getObjs(domains[domainIter], "http://www.w3.org/2000/01/rdf-schema#comment");
-      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments};
+      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments };
       classList[[domainName]]["description"] = classComment;
-      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges,"description": comments };
+      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments };
       filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
     }
   }
@@ -118,23 +118,45 @@ async function createClassList(ontology /*example file*/) {
       inputInheritedProperties = inputClassList["Input" + removeNamespace(superClassName)].fields;
       filterInheritedProperties = filterClassList["Filter" + removeNamespace(superClassName)].fields;
 
-      classList[removeNamespace(subClass)].fields = {
-        ...classList[removeNamespace(subClass)].fields,
-        ...inheritedProperties
-      };
+      if (classList[removeNamespace(subClass)]) {
+        classList[removeNamespace(subClass)].fields = {
+          ...classList[removeNamespace(subClass)].fields,
+          ...inheritedProperties
+        };
+      } else {
+        classList[removeNamespace(subClass)] = {}
+        classList[removeNamespace(subClass)]["fields"] = {
+          ...inheritedProperties
+        };
+      }
 
-      inputClassList["Input" + removeNamespace(subClass)].fields = {
-        ...inputClassList["Input" + removeNamespace(subClass)].fields,
-        ...inputInheritedProperties
-      };
 
-      filterClassList["Filter" + removeNamespace(subClass)].fields = {
-        ...filterClassList["Filter" + removeNamespace(subClass)].fields,
-        ...filterInheritedProperties
-      };
+      if (inputClassList["Input" + removeNamespace(subClass)]) {
+        inputClassList["Input" + removeNamespace(subClass)].fields = {
+          ...inputClassList["Input" + removeNamespace(subClass)].fields,
+          ...inputInheritedProperties
+        };
+      } else {
+        inputClassList["Input" + removeNamespace(subClass)] = {};
+        inputClassList["Input" + removeNamespace(subClass)].fields = {
+          ...inputClassList["Input" + removeNamespace(subClass)].fields,
+          ...inputInheritedProperties
+        }
+      }
+      if (filterClassList["Filter" + removeNamespace(subClass)]) {
+        filterClassList["Filter" + removeNamespace(subClass)].fields = {
+          ...filterClassList["Filter" + removeNamespace(subClass)].fields,
+          ...filterInheritedProperties
+        };
+      } else {
+        filterClassList["Filter" + removeNamespace(subClass)] = {};
+        filterClassList["Filter" + removeNamespace(subClass)].fields = {
+          ...filterClassList["Filter" + removeNamespace(subClass)].fields,
+          ...filterInheritedProperties
+        };
+      }
     }
   }
-
   return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
 }
 
@@ -146,7 +168,7 @@ async function createClassList(ontology /*example file*/) {
  * @param {properties} 
  */
 
-function getFieldsQuery(object){
+function getFieldsQuery(object) {
   return () => {
     let fields = {
       "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
@@ -155,7 +177,7 @@ function getFieldsQuery(object){
 
     for (let fieldName in object.fields) {
       let fieldType = object.fields[fieldName]["type"];
-      if (graphQLScalarTypes[fieldType]){
+      if (graphQLScalarTypes[fieldType]) {
         fields[fieldName] = {
           type: graphQLScalarTypes[fieldType],
           description: String(object.fields[fieldName]["description"])
@@ -171,7 +193,7 @@ function getFieldsQuery(object){
   };
 }
 
-function filterGetFields(object){
+function filterGetFields(object) {
   return () => {
     let fields = {
       "_id": { type: graphql.GraphQLList(graphql.GraphQLID), description: "The unique identifier of the object" },
@@ -179,7 +201,7 @@ function filterGetFields(object){
 
     for (let fieldName in object.fields) {
       let fieldType = object.fields[fieldName]["type"];
-      if (graphQLScalarTypes[fieldType]){
+      if (graphQLScalarTypes[fieldType]) {
         fields[fieldName] = {
           type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
           description: String(object.fields[fieldName]["description"])
@@ -197,14 +219,14 @@ function filterGetFields(object){
 
 function createQueryType(classList, filterClassList, classesURIs, propertiesURIs) {
 
-//context query
+  //context query
 
   var contextType = {
     name: "_CONTEXT", fields: {
       "_id": { type: graphql.GraphQLString, description: "@id" },
       "_type": { type: graphql.GraphQLString, description: "@type" }
     },
-    description : "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
+    description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
   };
 
   for (var property of propertiesURIs) {
@@ -217,7 +239,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
 
   contextType = new graphql.GraphQLObjectType(contextType);
 
-//the rest of the queries
+  //the rest of the queries
 
   var queryType = {
     name: "Query",
@@ -245,14 +267,14 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   return queryType;
 }
 
-function getFieldsMutation(object){
+function getFieldsMutation(object) {
   return () => {
     let fields = {
       "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
     };
     for (let fieldName in object.fields) {
       let fieldType = object.fields[fieldName]["type"];
-      if (graphQLScalarTypes[fieldType]){
+      if (graphQLScalarTypes[fieldType]) {
         fields[fieldName] = {
           type: graphQLScalarTypes[fieldType],
           description: String(object.fields[fieldName]["description"])
