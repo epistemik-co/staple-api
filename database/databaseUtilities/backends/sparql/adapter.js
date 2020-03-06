@@ -17,12 +17,12 @@ class SparqlAdapter {
      * @param {tree} 
      */
 
-    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         logger.info("loadCoreQueryDataFromDB in sparql was called")
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
         subTypes = subTypes.map(t => ("<" + t + ">")).join(", ");
-        const filters = this.preparefilters(database, selectionSet, tree)
+        const filters = this.preparefilters(database, selectionSet, tree, filter)
         const headers = {
             "Content-Type": "application/sparql-query",
             "Accept": "application/n-triples"
@@ -228,52 +228,61 @@ class SparqlAdapter {
 
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
-                for (let filterField of argument.value.fields) {
-                    if (fieldData.data[filterField.name.value] !== undefined) {
-                        let uri = fieldData.data[filterField.name.value].uri;
-                        let variableForQuery = filterField.name.value;
-                        let value = filterField.value;
-                        let filterString = "";
-                        if (uri === "@id") {
-                            value = value.value.toString()
-                            if (this.isURI(value)) {
-                                value.replace("\"", "")
-                                value = `<${value}>`
-                            } else {
-                                value = `"${value}"`
-                            }
-                            filterString = `values ?x {${value}}`
-                            filters.push(filterString)
-                        } else {
-                            if (value.kind === "ListValue") {
-                                let helper = value.values[0];
-                                value = value.values.map(x => (this.isURI(x.value.toString()) ?
-                                    `<${x.value.toString()}>` : `"${x.value.toString()}"`));
-                                value = value.join(", ")
-                                if (this.isURI(helper.value.toString())){
-                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
-                                }else{
-                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value})) .`
-                                }
-                                filters.push(filterString)
-                            } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`
-                                filters.push(filterString)
-                            } else {
-                                value = [value.value.toString()];
+                if (argument.value.fields) {
+                    for (let filterField of argument.value.fields) {
+                        if (fieldData.data[filterField.name.value] !== undefined) {
+                            let uri = fieldData.data[filterField.name.value].uri;
+                            let variableForQuery = filterField.name.value;
+                            let value = filterField.value;
+                            let filterString = "";
+                            if (uri === "@id") {
+                                value = value.value.toString()
                                 if (this.isURI(value)) {
+                                    value.replace("\"", "")
                                     value = `<${value}>`
                                     filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value}))`
                                 } else {
                                     value = `"${value}"`
                                     filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value}))`
                                 }
+                                filterString = `values ?x {${value}}`
                                 filters.push(filterString)
+                            } else {
+                                if (value.kind === "ListValue") {
+                                    value = value.values.map(x => (this.isURI(x.value.toString()) ?
+                                        `<${x.value.toString()}>` : `"${x.value.toString()}"`));
+                                    value = value.join(", ")
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`
+                                    filters.push(filterString)
+                                } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
+                                    filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`
+                                    filters.push(filterString)
+                                } else {
+                                    value = [value.value.toString()];
+                                    if (this.isURI(value)) {
+                                        value = `<${value}>`
+                                    } else {
+                                        value = `"${value}"`
+                                    }
+                                    filterString = `?x <${uri}> ${value} .`
+                                    filters.push(filterString)
+                                }
                             }
                         }
+                        else {
+                            logger.debug("SKIP");
+                        }
                     }
-                    else {
-                        logger.debug("SKIP");
+                }
+            }else{
+                let filterKeys = Object.keys(filter);
+                for (let key of filterKeys){
+                    if (query[key]){
+                        query[key]["$in"] = filter[key];
+                    }else{
+                        query[key] = {"$in": []}
+                        query[key]["$in"] = filter[key];
+
                     }
                 }
             }

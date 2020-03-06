@@ -8,12 +8,12 @@ class MongodbAdapter {
         this.configFile = configFile;
     }
 
-    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
         subTypes = subTypes.map(s => this.removeNamespace(s));
 
-        let query = this.preparefilters(database, selectionSet, tree);
+        let query = this.preparefilters(database, selectionSet, tree, filter);
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
         }
@@ -148,7 +148,7 @@ class MongodbAdapter {
         }
     }
 
-    preparefilters(database, selection, tree) {
+    preparefilters(database, selection, tree, filter) {
 
         let query = {};
         let fieldName = selection.name.value;
@@ -160,40 +160,53 @@ class MongodbAdapter {
 
         for (let argument of selection.arguments) {
             if (argument.name.value === "filter") {
-                for (let filterField of argument.value.fields) {
-                    if (fieldData.data[filterField.name.value] !== undefined) {
-                        if (filterField.value.kind === "ListValue") {
-                            let objectFilterName = filterField.name.value;
+                if (argument.value.fields) {
+                    for (let filterField of argument.value.fields) {
+                        if (fieldData.data[filterField.name.value] !== undefined) {
+                            if (filterField.value.kind === "ListValue") {
+                                let objectFilterName = filterField.name.value;
 
-                            query[objectFilterName] = {};
-                            query[objectFilterName]["$in"] = [];
+                                query[objectFilterName] = {};
+                                query[objectFilterName]["$in"] = [];
 
-                            for (let elem of filterField.value.values) {
-                                if (elem.kind === "IntValue") {
-                                    query[objectFilterName]["$in"].push(parseInt(elem.value));
+                                for (let elem of filterField.value.values) {
+                                    if (elem.kind === "IntValue") {
+                                        query[objectFilterName]["$in"].push(parseInt(elem.value));
+                                    }
+                                    else if (elem.kind === "FloatValue") {
+                                        query[objectFilterName]["$in"].push(parseFloat(elem.value));
+                                    }
+                                    else {
+                                        query[objectFilterName]["$in"].push(elem.value);
+                                    }
                                 }
-                                else if (elem.kind === "FloatValue") {
-                                    query[objectFilterName]["$in"].push(parseFloat(elem.value));
+                            }
+                            else {
+                                if (filterField.value.kind === "IntValue") {
+                                    query[filterField.name.value] = parseInt(filterField.value.value);
+                                }
+                                else if (filterField.value.kind === "FloatValue") {
+                                    query[filterField.name.value] = parseFloat(filterField.value.value);
                                 }
                                 else {
-                                    query[objectFilterName]["$in"].push(elem.value);
+                                    query[filterField.name.value] = filterField.value.value;
                                 }
                             }
                         }
                         else {
-                            if (filterField.value.kind === "IntValue") {
-                                query[filterField.name.value] = parseInt(filterField.value.value);
-                            }
-                            else if (filterField.value.kind === "FloatValue") {
-                                query[filterField.name.value] = parseFloat(filterField.value.value);
-                            }
-                            else {
-                                query[filterField.name.value] = filterField.value.value;
-                            }
+                            logger.debug("SKIP");
                         }
                     }
-                    else {
-                        logger.debug("SKIP");
+                }else{
+                    let filterKeys = Object.keys(filter);
+                    for (let key of filterKeys){
+                        if (query[key]){
+                            query[key]["$in"] = filter[key];
+                        }else{
+                            query[key] = {"$in": []}
+                            query[key]["$in"] = filter[key];
+
+                        }
                     }
                 }
             }

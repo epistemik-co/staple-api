@@ -44,13 +44,12 @@ class Database {
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
         logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
-
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree);
+            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, filter);
         }
 
     }

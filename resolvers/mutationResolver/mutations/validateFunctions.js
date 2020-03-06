@@ -43,7 +43,6 @@ const validateURI = (uri, name) => {
     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     if (!pattern.test(uri)) {
         // throw new ApolloError("message", "code", "code");
-        console.log(uri);
         throw new GraphQLError({ key: "ERROR", message: `The value of ${name} keys in the object are not valid URIs` });
     }
 };
