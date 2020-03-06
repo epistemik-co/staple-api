@@ -222,7 +222,7 @@ By applying JSON-LD context, assumed by every instance of Staple API, the respon
 Install packages:
 
 ```bash
-npm i staple-api express express-graphql
+npm i staple-api jsonld
 ```
 
 Create file `demo.js`:
