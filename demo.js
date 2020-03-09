@@ -61,7 +61,11 @@ async function Demo() {
                     type: "sparql",
                     url: "http://localhost:3030/staple/sparql", 
                     updateUrl: "http://localhost:3030/staple/update",
+                },
+                memory: {
+                    type: "memory"
                 }
+
             }
         }
     );//, require(appRoot + "/config/database.js"));
