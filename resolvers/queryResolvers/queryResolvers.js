@@ -1,5 +1,5 @@
 let schemaMapping = undefined; // require('../../schema/schema-mapping');
-const logger = require(`../../config/winston`);
+const logger = require("../../config/winston");
 const handleClassTypeResolver = require("./querys/classTypeResolver");
 const handleQueryTypeResolver = require("./querys/queryTypeResolver");
 

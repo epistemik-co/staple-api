@@ -1,6 +1,6 @@
 const { buildSchemaFromTypeDefinitions } = require("graphql-tools");
 let schemaMapping = undefined;
-const logger = require(`../../config/winston`);
+const logger = require("../../config/winston");
 const classMutations = require("./mutations/classMutations");
 const deleteMutation = require("./mutations/deleteMutation");
 // const util = require("util");

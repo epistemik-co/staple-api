@@ -1,5 +1,5 @@
 
-const logger = require(`../../../config/winston`);
+const logger = require("../../../config/winston");
 
 
 let handleClassTypeResolver = (tree, object, database, schemaMapping) => {
