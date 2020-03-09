@@ -1,7 +1,8 @@
 const logger = require("../../../config/winston");
 const util = require("util");
 
-async function loadQueryData(database, queryInfo, uri, page, inferred, tree, source, filter) {
+
+async function loadQueryData(database, queryInfo, uri, page, inferred, tree,filter, source) {
     database.dbCallCounter = 0; // debug only
     database.drop(); // clear db before new query.
 

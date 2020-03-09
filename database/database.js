@@ -274,7 +274,8 @@ class Database {
 
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
     // return 10 ids of the core objects
-    async loadQueryData(queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource) {
+
+    async loadQueryData(queryInfo, uri, page, inferred, tree, source = this.defaultDetasource, filter) {
         if (source === undefined) {
             source = this.defaultDetasource;
         }
