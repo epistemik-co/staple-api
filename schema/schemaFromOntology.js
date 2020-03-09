@@ -18,7 +18,7 @@ var graphQLScalarTypes = {
   "integer": graphql.GraphQLInt
 };
 
-let dataSources = {};
+let dataSourceEnum = {};
 
 /**
  * Remove namespace removes namespace prefixes
@@ -249,7 +249,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   // datasources enum
 
   dataSourceEnum = {
-    name: 'DataSources',
+    name: "DataSources",
     values: {}
   };
 
@@ -313,7 +313,7 @@ function getFieldsMutation(object) {
  * @param {inputClassList} inputClassList is a helper object for accessing input types
  */
 
-function createMutationType(classList, inputClassList, dataSources) {
+function createMutationType(classList, inputClassList) {
   var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", description: "Put the item into the database. If already exists - overwrite it.", values: { "PUT": { value: 0 } } });
   var mutationType = {
     name: "Mutation",
