@@ -108,58 +108,58 @@ async function createClassList(ontology /*example file*/) {
     }
   }
 
-//inheritance
+  //inheritance
 
-for (var subClass of classesURIs) {
-  var superClass = database.getObjs(subClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
-  var inheritedProperties = {};
-  var inputInheritedProperties = {};
-  var filterInheritedProperties = {};
-  for (var superClassName of superClass) {
-    inheritedProperties = classList[removeNamespace(superClassName)].fields;
-    inputInheritedProperties = inputClassList["Input" + removeNamespace(superClassName)].fields;
-    filterInheritedProperties = filterClassList["Filter" + removeNamespace(superClassName)].fields;
+  for (var subClass of classesURIs) {
+    var superClass = database.getObjs(subClass, "http://www.w3.org/2000/01/rdf-schema#subClassOf");
+    var inheritedProperties = {};
+    var inputInheritedProperties = {};
+    var filterInheritedProperties = {};
+    for (var superClassName of superClass) {
+      inheritedProperties = classList[removeNamespace(superClassName)].fields;
+      inputInheritedProperties = inputClassList["Input" + removeNamespace(superClassName)].fields;
+      filterInheritedProperties = filterClassList["Filter" + removeNamespace(superClassName)].fields;
 
-    if (classList[removeNamespace(subClass)]) {
-      classList[removeNamespace(subClass)].fields = {
-        ...classList[removeNamespace(subClass)].fields,
-        ...inheritedProperties
-      };
-    } else {
-      classList[removeNamespace(subClass)] = {};
-      classList[removeNamespace(subClass)]["fields"] = {
-        ...inheritedProperties
-      };
-    }
+      if (classList[removeNamespace(subClass)]) {
+        classList[removeNamespace(subClass)].fields = {
+          ...classList[removeNamespace(subClass)].fields,
+          ...inheritedProperties
+        };
+      } else {
+        classList[removeNamespace(subClass)] = {};
+        classList[removeNamespace(subClass)]["fields"] = {
+          ...inheritedProperties
+        };
+      }
 
 
-    if (inputClassList["Input" + removeNamespace(subClass)]) {
-      inputClassList["Input" + removeNamespace(subClass)].fields = {
-        ...inputClassList["Input" + removeNamespace(subClass)].fields,
-        ...inputInheritedProperties
-      };
-    } else {
-      inputClassList["Input" + removeNamespace(subClass)] = {};
-      inputClassList["Input" + removeNamespace(subClass)].fields = {
-        ...inputClassList["Input" + removeNamespace(subClass)].fields,
-        ...inputInheritedProperties
-      };
-    }
-    if (filterClassList["Filter" + removeNamespace(subClass)]) {
-      filterClassList["Filter" + removeNamespace(subClass)].fields = {
-        ...filterClassList["Filter" + removeNamespace(subClass)].fields,
-        ...filterInheritedProperties
-      };
-    } else {
-      filterClassList["Filter" + removeNamespace(subClass)] = {};
-      filterClassList["Filter" + removeNamespace(subClass)].fields = {
-        ...filterClassList["Filter" + removeNamespace(subClass)].fields,
-        ...filterInheritedProperties
-      };
+      if (inputClassList["Input" + removeNamespace(subClass)]) {
+        inputClassList["Input" + removeNamespace(subClass)].fields = {
+          ...inputClassList["Input" + removeNamespace(subClass)].fields,
+          ...inputInheritedProperties
+        };
+      } else {
+        inputClassList["Input" + removeNamespace(subClass)] = {};
+        inputClassList["Input" + removeNamespace(subClass)].fields = {
+          ...inputClassList["Input" + removeNamespace(subClass)].fields,
+          ...inputInheritedProperties
+        };
+      }
+      if (filterClassList["Filter" + removeNamespace(subClass)]) {
+        filterClassList["Filter" + removeNamespace(subClass)].fields = {
+          ...filterClassList["Filter" + removeNamespace(subClass)].fields,
+          ...filterInheritedProperties
+        };
+      } else {
+        filterClassList["Filter" + removeNamespace(subClass)] = {};
+        filterClassList["Filter" + removeNamespace(subClass)].fields = {
+          ...filterClassList["Filter" + removeNamespace(subClass)].fields,
+          ...filterInheritedProperties
+        };
+      }
     }
   }
-}
-return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
+  return { classList: classList, inputClassList: inputClassList, filterClassList: filterClassList, classesURIs: classesURIs, propertiesURIs: propertiesURIs };
 }
 
 /**
@@ -228,17 +228,20 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
     name: "_CONTEXT", fields: {
       "_id": { type: graphql.GraphQLString, description: "@id" },
       "_type": { type: graphql.GraphQLString, description: "@type" },
-      "_SOURCE": { type: graphql.GraphQLString, description: "data source" } //to do
     },
     description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
   };
 
   for (var property of propertiesURIs) {
-    contextType.fields[removeNamespace(property)] = { type: graphql.GraphQLString, description: property };
+    if (!(removeNamespace(property) in graphQLScalarTypes)) {
+      contextType.fields[removeNamespace(property)] = { type: graphql.GraphQLString, description: property };
+    }
   }
 
   for (var classURI of classesURIs) {
-    contextType.fields[removeNamespace(classURI)] = { type: graphql.GraphQLString, description: classURI };
+    if (!(removeNamespace(classURI) in graphQLScalarTypes)) {
+      contextType.fields[removeNamespace(classURI)] = { type: graphql.GraphQLString, description: classURI };
+    }
   }
 
   contextType = new graphql.GraphQLObjectType(contextType);
@@ -340,7 +343,7 @@ function createMutationType(classList, inputClassList, dataSources) {
 }
 
 function listOfDataSourcesFromConfigObject(configObject) {
-  return Object.keys(configObject.dataSources).filter(function(x){return x != "default";});
+  return Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
 }
 
 /**
