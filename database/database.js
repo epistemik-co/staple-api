@@ -279,7 +279,7 @@ class Database {
         if (source === undefined) {
             source = this.defaultDetasource;
         }
-        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source = this.defaultDetasource, source);
+        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source, source);
     }
 
 }
