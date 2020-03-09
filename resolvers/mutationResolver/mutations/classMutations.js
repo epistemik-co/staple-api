@@ -1,6 +1,5 @@
 const validators = require("./validateFunctions");
 const logger = require("../../../config/winston");
-// const util = require("util");
 
 // function classMutations(database, mutation, field, schemaMapping, objectsFromSchemaObjectTree) {
 function classMutations(database, schemaMapping, tree, field) {

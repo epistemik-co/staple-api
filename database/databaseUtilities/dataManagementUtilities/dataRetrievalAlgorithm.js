@@ -36,16 +36,6 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree,filt
 
 async function searchForDataRecursively(database, selectionSet, uri, tree, parentName = undefined, source = undefined, parentQuerySource = undefined) {
     logger.info("dataRetrievalAlgorithm: searchForDataRecursively was called");
-    // logger.debug(`Started function searchForDataRecursively with args:
-    //     \tselectionSet: ${JSON.stringify(selectionSet)}
-    //     \turi: ${util.inspect(uri, false, null, true /* enable colors */)}
-    //     \ttree: ${tree}
-    //     \treverse: ${reverse}
-    //     \tQUADS : ${database.database.size}
-    //     \tObjects : ${database.countObjects()}
-    //     \tsource : ${source}
-    //     \tparentQuerySource: ${parentQuerySource}
-    //     `);
     logger.debug(`Started function searchForDataRecursively with args:
     \tsource : ${source}
     \tparentQuerySource: ${parentQuerySource}

@@ -27,13 +27,6 @@ const validate = (req, schemaMapping, tree, field) => {
     return true;
 };
 
-// const validateIsIterable = (obj) => {
-//     // checks for null and undefined
-//     if (obj == null) {
-//         return false;
-//     }
-//     return typeof obj[Symbol.iterator] === "function";
-// };
 
 const validateURI = (uri, name) => {
     if (uri === undefined) {
