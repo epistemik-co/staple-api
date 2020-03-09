@@ -3,7 +3,7 @@ const jsonld = require("jsonld");
 const fetch = require("node-fetch");
 
 class SparqlAdapter {
-    constructor(configFile, source) {
+    constructor(configFile) {
         this.configFile = configFile;
     }
 
@@ -17,7 +17,7 @@ class SparqlAdapter {
      * @param {tree} 
      */
 
-    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, source = undefined, filter) {
+    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         logger.info("loadCoreQueryDataFromDB in sparql was called");
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
@@ -78,17 +78,17 @@ class SparqlAdapter {
         const url = this.configFile.url + "?query=" + query;
         let response = undefined;
         try {
-            response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+            response = await fetch(url, { method: "GET", headers: headers }).then(res => res.text());
 
         } catch (err) {
-            throw (err);
+            throw Error("Could not fetch data from SPARQL");
         }
         try {
-            if (!(response.includes('error'))) {
+            if (!(response.includes("error"))) {
                 await database.insertRDF(response);
             }
         } catch (err) {
-            throw (err);
+            throw Error("Could not insert RDF into graphy");
         }
 
     }
@@ -120,10 +120,10 @@ class SparqlAdapter {
         const url = this.configFile.url + "?query=" + query;
         logger.debug(`url for fetch: ${url}`);
         try {
-            const response = await fetch(url, { method: 'GET', headers: headers }).then(res => res.text());
+            const response = await fetch(url, { method: "GET", headers: headers }).then(res => res.text());
             await database.insertRDF(response);
         } catch (err) {
-            throw (err);
+            throw Error("Could not insert RDF in graphy");
         }
     }
 
@@ -152,9 +152,9 @@ class SparqlAdapter {
         }
 
         try {
-            await fetch(this.configFile.updateUrl, { method: 'POST', headers: headers, body: insert }).then(res => res.text());
+            await fetch(this.configFile.updateUrl, { method: "POST", headers: headers, body: insert }).then(res => res.text());
         } catch (err) {
-            throw (err);
+            throw Error("Could not push object to SPARQL");
         }
     }
 
@@ -186,7 +186,7 @@ class SparqlAdapter {
             await fetch(url, { method: "POST", headers: headers, body: deleteQuery }).then(res => res.text());
             return true;
         } catch (err) {
-            throw (err);
+            throw Error("Could not remove object from SPARQL");
         }
     }
 
@@ -210,7 +210,7 @@ class SparqlAdapter {
      * @returns {query}
      */
 
-    preparefilters(database, selection, tree, filter) {
+    preparefilters(database, selection, tree) {
         logger.debug(JSON.stringify(selection));
         let fieldName = selection.name.value;
         logger.debug(`preparefilters: ${fieldName}`);

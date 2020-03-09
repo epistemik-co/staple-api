@@ -26,9 +26,15 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree,filt
     return coreIds;
 }
 
-//@param {source} argument source
-//@param {parentQuerySource} 
-async function searchForDataRecursively(database, selectionSet, uri, tree, parentName = undefined, source = undefined, parentQuerySource = undefined, filter) {
+
+/**
+ * remove Object is called when DELETE muattion is called
+ * @param {source} argument source
+ * @param {parentQuerySource} 
+ */
+
+
+async function searchForDataRecursively(database, selectionSet, uri, tree, parentName = undefined, source = undefined, parentQuerySource = undefined) {
     logger.info("dataRetrievalAlgorithm: searchForDataRecursively was called");
     // logger.debug(`Started function searchForDataRecursively with args:
     //     \tselectionSet: ${JSON.stringify(selectionSet)}
@@ -91,6 +97,7 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, paren
                 logger.debug(util.inspect(type, false, null, true));
 
                 for (let x of data) {
+                    // eslint-disable-next-line no-useless-escape
                     var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
                     if (pattern.test(x)) {
                         newUris.add(x);

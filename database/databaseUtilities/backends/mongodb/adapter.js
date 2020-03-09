@@ -8,11 +8,10 @@ class MongodbAdapter {
         this.configFile = configFile;
     }
 
-    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, source=undefined, filter) {
+    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
         subTypes = subTypes.map(s => this.removeNamespace(s));
-        console.log(filter)
         let query = this.preparefilters(database, selectionSet, tree, filter);
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
