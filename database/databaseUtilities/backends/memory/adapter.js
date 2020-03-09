@@ -187,7 +187,7 @@ class MemoryDatabase {
 
         if (inferred) {
             for (let subType of subTypes) {
-                type.value = subType
+                type.value = subType;
                 let temp = this.database.match(null, predicate, type);
                 var itr = temp.quads();
                 var x = itr.next();
