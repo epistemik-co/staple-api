@@ -6,7 +6,7 @@ const handleQueryTypeResolver = (database, tree, uri) => {
 
         // logger.debug(util.inspect(info["operation"], false, null, true /* enable colors */));
         logger.info(`Query started for ${uri}`);
-        let data = await database.loadQueryData(info["operation"], uri, args.page /* undefined*/, args.inferred, tree, args.source);
+        let data = await database.loadQueryData(info["operation"], uri, args.page /* undefined*/, args.inferred, tree, args.source, args.filter);
 
         if (args.source != undefined) {
             if (args.source.length > 1) {

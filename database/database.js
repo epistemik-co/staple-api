@@ -45,12 +45,12 @@ class Database {
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource) {
+    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource, filter) {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
         // logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, source);
+            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, source, filter);
         }
 
     }
@@ -68,8 +68,6 @@ class Database {
         logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
         if (this.adapter) {
-            console.log("DB SOURCE");
-            console.log(source);
             await this.adapter.pushObjectToBackend(this, input, source);
         }
     }

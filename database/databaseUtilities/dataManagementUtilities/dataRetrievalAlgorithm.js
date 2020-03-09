@@ -1,7 +1,7 @@
 const logger = require("../../../config/winston");
 const util = require("util");
 
-async function loadQueryData(database, queryInfo, uri, page, inferred, tree, source) {
+async function loadQueryData(database, queryInfo, uri, page, inferred, tree, source, filter) {
     database.dbCallCounter = 0; // debug only
     database.drop(); // clear db before new query.
 
@@ -16,9 +16,9 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, sou
     for (let coreSelection in coreSelectionSet["selections"]) {
         let selectionSet = coreSelectionSet["selections"][coreSelection];
         if (resolverName == coreSelectionSet["selections"][coreSelection].name.value) {
-            await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree, source);
+            await database.loadCoreQueryDataFromDB(uri, page, selectionSet, inferred, tree, source, filter);
             coreIds = await database.getSubjectsByType(uri, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
-            await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, resolverName,/*source*/ undefined, /*parent Query Source*/source);
+            await searchForDataRecursively(database, coreSelectionSet["selections"][coreSelection]["selectionSet"], coreIds, tree, resolverName,/*source*/ undefined, /*parent Query Source*/source, filter);
         }
     }
 
@@ -27,7 +27,7 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree, sou
 
 //@param {source} argument source
 //@param {parentQuerySource} 
-async function searchForDataRecursively(database, selectionSet, uri, tree, parentName = undefined, source = undefined, parentQuerySource = undefined) {
+async function searchForDataRecursively(database, selectionSet, uri, tree, parentName = undefined, source = undefined, parentQuerySource = undefined, filter) {
     logger.info("dataRetrievalAlgorithm: searchForDataRecursively was called");
     // logger.debug(`Started function searchForDataRecursively with args:
     //     \tselectionSet: ${JSON.stringify(selectionSet)}

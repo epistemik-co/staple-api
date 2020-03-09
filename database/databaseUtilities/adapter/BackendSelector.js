@@ -44,11 +44,11 @@ class BackendSelector {
      * @param {source} datasource that should be used for the query
      */
 
-    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDatasource) {
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDatasource, filter) {
         logger.debug(`BackendSelector: loadCoreQueryDataFromDB was called with source: ${source}`);
         if (!(Array.isArray(source))) {
             if (this.backend[source] !== undefined) {
-                await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
+                await this.backend[source].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source, filter);
             } else {
                 throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source}`);
             }
@@ -56,7 +56,7 @@ class BackendSelector {
             for (let sourceName in source) {
                 logger.debug(`BackendSelector: loadCoreQueryDataFromDB: Now loading data from: ${source[sourceName]}`);
                 if (this.backend[source[sourceName]] !== undefined) {
-                    await this.backend[source[sourceName]].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source);
+                    await this.backend[source[sourceName]].loadCoreQueryDataFromDB(database, type, page, selectionSet, inferred, tree, source, filter);
                 } else {
                     throw Error(`BackendSelector: loadCoreQueryDataFromDB: Wrong data source name: ${source[sourceName]}`);
                 }
