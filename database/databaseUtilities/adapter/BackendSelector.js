@@ -66,17 +66,40 @@ class BackendSelector {
 
     //loads child object from given source by ID
     async loadChildObjectsByUris(database, sub, selection, tree, parentName, source = this.defaultDatasource) {
+
         logger.debug(`BackendSelector: loadChildObjectsByUris was called with source: ${source}`);
-        if (this.backend[source]) {
-            await this.backend[source].loadChildObjectsByUris(database, sub, selection, tree, parentName, source);
+        if (Array.isArray(source)){
+            for (let s of source){
+                if (this.backend[s]) {
+                    await this.backend[s].loadChildObjectsByUris(database, sub, selection, tree, parentName, source);
+                }
+            }
+            return true;
+        }else{
+            if (this.backend[source]) {
+                await this.backend[source].loadChildObjectsByUris(database, sub, selection, tree, parentName, source);
+            }
         }
     }
 
     //loads objects by uri from given source
     async loadObjectsByUris(database, sub, source = this.defaultDatasource) {
         logger.debug(`BackendSelector: loadObjectsByUris was called with source: ${source}`);
-        if (this.backend[source]) {
-            await this.backend[source].loadObjectsByUris(database, sub, source);
+        // if (this.backend[source]) {
+        //     await this.backend[source].loadObjectsByUris(database, sub, source);
+        // }
+
+        if (Array.isArray(source)){
+            for (let s of source){
+                if (this.backend[s]) {
+                    await this.backend[s].loadObjectsByUris(database, sub, source);
+                }
+            }
+            return true;
+        }else{
+            if (this.backend[source]) {
+                await this.backend[source].loadObjectsByUris(database, sub, source);
+            }
         }
     }
 
