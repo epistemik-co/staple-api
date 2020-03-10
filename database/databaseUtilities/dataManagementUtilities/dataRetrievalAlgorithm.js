@@ -1,6 +1,18 @@
 const logger = require("../../../config/winston");
 const util = require("util");
 
+/**
+ * 
+ * Loads data for queries -> calls searchForDataRecursively
+ * 
+ * @param {graphy} database
+ * @param {} queryInfo
+ * @param {} uri
+ * @param {int} page
+ * @param {boolean} inferred
+ * @param {JSOM} tree
+ * @param {string} source
+ */
 
 async function loadQueryData(database, queryInfo, uri, page, inferred, tree,filter, source) {
     database.dbCallCounter = 0; // debug only
@@ -28,9 +40,16 @@ async function loadQueryData(database, queryInfo, uri, page, inferred, tree,filt
 
 
 /**
- * remove Object is called when DELETE muattion is called
- * @param {source} argument source
- * @param {parentQuerySource} 
+ * 
+ * Searches for data recursively within cache db, if not found then fetches data from data source
+ * 
+ * @param {graphy} database
+ * @param {JSON} selectionSet
+ * @param {string} uri
+ * @param {JSON} tree
+ * @param {string} parentName
+ * @param {string} source source
+ * @param {string} parentQuerySource
  */
 
 

@@ -3,6 +3,15 @@ const logger = require("../../config/winston");
 const handleClassTypeResolver = require("./querys/classTypeResolver");
 const handleQueryTypeResolver = require("./querys/queryTypeResolver");
 
+/**
+ * 
+ * Creates query resolvers
+ * 
+ * @param {graphy} database
+ * @param {} tree
+ * @param {} Warnings
+ * @param {schema} schemaMappingArg
+ */
 
 let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {
     // -------------------------------------------------- RENDER SCHEMA + SCHEMA-MAPPING TREE

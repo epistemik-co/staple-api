@@ -1,6 +1,15 @@
 
 const logger = require("../../../config/winston");
 
+/**
+ * 
+ * Resolver for queries
+ * 
+ * @param {graphy} database
+ * @param {JSON} tree
+ * @param {string} uri
+ */
+
 const handleQueryTypeResolver = (database, tree, uri) => {
     return async (parent, args, context, info) => {
 

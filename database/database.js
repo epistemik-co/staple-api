@@ -35,6 +35,18 @@ class Database {
 
     // Core Queries using adapter ----------------------------------------------------------------------------------------------------------------------
     //TODO: move following methods to new dedicated file
+
+    /**
+     * 
+     * Loads query-child objects
+     * 
+     * @param {} sub
+     * @param {} selection
+     * @param {} tree
+     * @param {} parentName
+     * @param {string} source
+     */
+
     async loadChildObjectsByUris(sub, selection, tree, parentName, source = this.defaultDetasource) {
         logger.info(`loadChildObjectsByUris was called in database/database with source: ${source}`);
         // logger.debug(`with arguments : sub: ${sub}  ... `);
@@ -44,6 +56,19 @@ class Database {
             await this.adapter.loadChildObjectsByUris(this, sub, selection, tree, parentName, source);
         }
     }
+
+    /**
+     * 
+     * Loads core query data
+     * 
+     * @param {} type
+     * @param {int} page
+     * @param {JSON} selectionSet
+     * @param {boolean} inferred
+     * @param {JSON} tree
+     * @param {string} source
+     * @param {JSON} filter 
+     */
 
     async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource, filter) {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
@@ -55,6 +80,13 @@ class Database {
 
     }
 
+    /**
+     * 
+     * Loads objects by URIS from cache
+     * 
+     * @param {} sub
+     */
+
     async loadObjectsByUris(sub) {
         logger.info("loadObjectsByUris was called in database/database");
         // logger.debug(`with arguments : sub: ${sub}`);
@@ -63,6 +95,15 @@ class Database {
             await this.adapter.loadObjectsByUris(this, sub);
         }
     }
+
+    /**
+     * 
+     * PUT
+     * 
+     * @param {JSON} input
+     * @param {} schemaMapping
+     * @param {string} source
+     */
 
     async pushObjectToBackend(input, schemaMapping, source = this.defaultDetasource) {
         logger.info("pushObjectToBackend was called in database/database");

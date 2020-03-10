@@ -343,7 +343,22 @@ function createMutationType(classList, inputClassList) {
 }
 
 function listOfDataSourcesFromConfigObject(configObject) {
-  return Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
+  const dataSources = Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
+  if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default) >= 0)){
+    throw Error("invalid default datasource!");
+  }
+
+  let memoryCounter = 0;
+  for(let d in configObject.dataSources){
+    if (configObject.dataSources[d].type == "memory"){
+      memoryCounter += 1;
+    }
+    if (memoryCounter > 1){
+      throw Error("Cannot use more than one data source of type memory!");
+    }
+  }
+
+  return dataSources;
 }
 
 /**

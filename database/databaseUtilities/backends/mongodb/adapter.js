@@ -8,6 +8,19 @@ class MongodbAdapter {
         this.configFile = configFile;
     }
 
+    /**
+     * 
+     * Load Core Query Data From DB
+     * 
+     * @param {graphy} database - in-memory cache for results - graphy
+     * @param {string} type uri
+     * @param {int} page
+     * @param {JSON} selectionSet
+     * @param {boolean} inferred
+     * @param {JSON} tree
+     * @param {JSON} filter
+     */
+
     async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];

@@ -8,13 +8,15 @@ class SparqlAdapter {
     }
 
     /**
+     * 
      * Load Core Query Data From DB
-     * @param  {database} in-memory cache for results - graphy
-     * @param {type} type uri
-     * @param {page} 
-     * @param {selectionSet}
-     * @param {inferred} DONE
-     * @param {tree} 
+     * 
+     * @param {graphy} database - in-memory cache for results - graphy
+     * @param {string} type uri
+     * @param {int} page
+     * @param {JSON} selectionSet
+     * @param {boolean} inferred
+     * @param {JSON} tree
      */
 
     async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, filter) {
@@ -95,11 +97,11 @@ class SparqlAdapter {
 
     /**
      * Load child objects by URIs
-     * @param  {database} cache for results - graphy
-     * @param {sub} list of child uris
-     * @param {selection} TODO - filters
-     * @param {tree}
-     * @param {parentName} type of parent
+     * @param {graphy} database - cache for results - graphy
+     * @param {string[]} sub - list of child uris
+     * @param {} selection
+     * @param {JSON} tree
+     * @param {} parentName type of parent
      */
 
     async loadChildObjectsByUris(database, sub, /*selection, tree, parentName*/) {
@@ -128,9 +130,11 @@ class SparqlAdapter {
     }
 
     /**
+     * 
      * push Object to backend is used when PUT mutation is called
-     * @param  {database} cache for results - graphy
-     * @param {input} JSON of object to be PUT
+     * 
+     * @param  {graphy} database - cache for results
+     * @param {JSON} input -  object to be PUT
      */
 
     async pushObjectToBackend(database, input) {
@@ -155,6 +159,7 @@ class SparqlAdapter {
 
         try {
             await fetch(this.configFile.updateUrl, { method: "POST", headers: headers, body: insert }).then(res => res.text());
+            return true;
         } catch (err) {
             throw Error("Could not push object to SPARQL");
         }
