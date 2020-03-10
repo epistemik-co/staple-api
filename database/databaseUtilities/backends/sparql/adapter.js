@@ -134,6 +134,8 @@ class SparqlAdapter {
      */
 
     async pushObjectToBackend(database, input) {
+        let ID = input._id;
+        this.removeObject(database, [ID]);
         let graphName = this.configFile.graphName;
         const headers = {
             "Content-Type": "application/sparql-update",
