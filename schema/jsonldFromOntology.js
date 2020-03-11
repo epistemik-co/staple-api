@@ -1,6 +1,7 @@
 const DatabaseInterface = require("./database/database");
 let database = new DatabaseInterface();
 // var fs = require("fs");
+var request = require("request");
 
 function processTypes(classes, data, enums, schema_spec) {
     for (var cla in classes) {
@@ -148,8 +149,18 @@ async function process(ontology) {
     database = new DatabaseInterface();
     if (ontology.string) {
         await database.readFromString(ontology.string);
+    } else if (ontology.url) {
+        //read from url
+        const doRequest = new Promise((resolve, reject) => request.get({ url: ontology.url }, function (error, response) {
+            if (error) {
+              reject(error);
+            }
+            resolve(response);
+          }));
+          const response = await doRequest;
+          await database.readFromString(response.body);
     } else {
-        await database.readFromFile(ontology.file);
+        throw Error("Wrong ontology format!");
     }
     let schema_spec = {
         "classes": {},

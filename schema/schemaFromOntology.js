@@ -2,6 +2,7 @@ const DatabaseInterface = require("./database/database");
 let database = new DatabaseInterface();
 const logger = require("../config/winston");
 var graphql = require("graphql");
+var request = require("request");
 
 //map of GraphQLObjectTypes and GraphQLInputObjectTypes
 
@@ -49,6 +50,19 @@ async function createClassList(ontology /*example file*/) {
   } else if (ontology.file) {
     await database.readFromFile(ontology.file);
     logger.info("Schema generated from file");
+  } else if (ontology.url) {
+    //read from
+    const doRequest = new Promise((resolve, reject) => request.get({ url: ontology.url }, function (error, response) {
+      if (error) {
+        reject(error);
+      }
+      resolve(response);
+    }));
+    const response = await doRequest;
+    await database.readFromString(response.body);
+    logger.info("Schema generated from url");
+  } else {
+    throw Error("Wrong ontology format");
   }
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
   const subClasses = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
@@ -344,16 +358,16 @@ function createMutationType(classList, inputClassList) {
 
 function listOfDataSourcesFromConfigObject(configObject) {
   const dataSources = Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
-  if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default) >= 0)){
+  if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default) >= 0)) {
     throw Error("invalid default datasource!");
   }
 
   let memoryCounter = 0;
-  for(let d in configObject.dataSources){
-    if (configObject.dataSources[d].type == "memory"){
+  for (let d in configObject.dataSources) {
+    if (configObject.dataSources[d].type == "memory") {
       memoryCounter += 1;
     }
-    if (memoryCounter > 1){
+    if (memoryCounter > 1) {
       throw Error("Cannot use more than one data source of type memory!");
     }
   }
