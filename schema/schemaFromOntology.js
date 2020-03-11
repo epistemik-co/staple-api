@@ -263,7 +263,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   // datasources enum
 
   dataSourceEnum = {
-    name: "DataSources",
+    name: "DataSource",
     values: {}
   };
 
