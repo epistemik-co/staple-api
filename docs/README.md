@@ -1,8 +1,8 @@
 ## Introduction
 
 **Staple API** is a lightweight GraphQL-based API enabling easy management of **knowledge graphs**, virtualized as linked data and structured by an RDF ontology. The two driving principles behind the design of the API are:
-1. The core GraphQL service with its schema and resolvers is **induced fully automatically from a simple RDF ontology** and is coupled with a selected backend (currently only MongoDB or an in-memory graph databse). This makes configuring and starting the API possible in mere minutes. 
-2. All CRUD operations are done entirely via **the standard GraphQL interface and based exlusively on JSON** objects. This makes data management simple and intuitive for majority of developers. The semantic knowledge graph is an abstraction of the data and is virtulized as linked data via the optional JSON-LD JSON-to-graph mapping mechanism. 
+1. the GraphQL service, with its schema and resolvers, is **generated fully automatically from a simple RDF ontology** and is coupled with selected back-ends. This makes starting the API possible in mere minutes. 
+2. all CRUD operations are done via **GraphQL interface and based exlusively on JSON** objects. This makes data management simple and intuitive for majority of developers. The knowledge graph abstraction (as linked data) is available via an **optional** JSON-LD "JSON-to-graph" mapping mechanism. 
 
 <br> 
 
@@ -266,18 +266,21 @@ type Query {
     page: Int
     filter: FilterAgent
     inferred: Boolean = false
+    source: [DataSource]
   ): [Agent]
 
   Organization(
     page: Int
     filter: FilterOrganization
     inferred: Boolean = false
+    source: [DataSource]
   ): [Organization]
 
   Person(
     page: Int
     filter: FilterPerson
     inferred: Boolean = false
+    source: [DataSource]
   ): [Person]
 }
 
@@ -306,27 +309,31 @@ input FilterPerson {
 type Mutation {
   DELETE(
     _id: [ID]
+    source: [DataSource]
   ): Boolean
 
   Agent(
     type: MutationType = PUT
     input: InputAgent!
+    source: [DataSource]
   ): Boolean
 
   Organization(
     type: MutationType = PUT
     input: InputOrganization!
+    source: [DataSource]
   ): Boolean
 
   Person(
     type: MutationType = PUT
     input: InputPerson!
+    source: [DataSource]
   ): Boolean
 }
 
 input InputAgent {
-    _id: ID!
-    name: String
+  _id: ID!
+  name: String
   customerOf: [ID]
 }
 
@@ -348,6 +355,11 @@ input InputPerson {
 
 enum MutationType {
   PUT
+}
+
+enum DataSource {
+  source1
+  ...
 }
 
 ```
@@ -458,6 +470,8 @@ type Query {
     filter: FilterAgent
     """Include indirect instances of this type"""
     inferred: Boolean = false
+    """Selected data sources"""
+    source: [DataSource]
   ): [Agent]
 
 
@@ -471,6 +485,8 @@ type Query {
     filter: FilterOrganization
     """Include indirect instances of this type"""
     inferred: Boolean = false
+    """Selected data sources"""
+    source: [DataSource]
   ): [Organization]
 
 
@@ -531,6 +547,8 @@ type Mutation {
   DELETE(
     """An id of the object to be deleted"""
     _id: [ID]
+    """Selected data sources"""
+    source: [DataSource]
   ): Boolean
 
   """Perform mutation over an object of type: Agent"""
@@ -539,6 +557,8 @@ type Mutation {
     type: MutationType = PUT
     """The input object of the mutation"""
     input: InputAgent!
+    """Selected data sources"""
+    source: [DataSource]
   ): Boolean
 
   """Perform mutation over an object of type: Organization"""
@@ -547,6 +567,8 @@ type Mutation {
     type: MutationType = PUT
     """The input object of the mutation"""
     input: InputOrganization!
+    """Selected data sources"""
+    source: [DataSource]
   ): Boolean
 
   """Perform mutation over an object of type: Person"""
@@ -555,6 +577,8 @@ type Mutation {
     type: MutationType = PUT
     """The input object of the mutation"""
     input: InputPerson!
+    """Selected data sources"""
+    source: [DataSource]
   ): Boolean
 }
 
@@ -601,6 +625,12 @@ enum MutationType {
   Put the item into the database. If already exists - overwrite it. 
   """
   PUT
+}
+
+"""Available data sources"""
+enum DataSource {
+  source1
+  ...
 }
 ```
 
@@ -718,6 +748,7 @@ type Query {
     page: Int
     filter: FilterType
     inferred: Boolean = false
+    source: [DataSource]
   ): [Type]
   
 }
@@ -743,6 +774,7 @@ type Mutation {
   Type(
     type: MutationType = PUT
     input: InputType!
+    source: [DataSource]
   ): Boolean
 
 }
@@ -791,6 +823,7 @@ type Query {
     page: Int
     filter: FilterPerson
     inferred: Boolean = false
+    source: [DataSource]
   ): [Person]
   
 }
@@ -817,6 +850,7 @@ type Mutation {
   Person(
     type: MutationType = PUT
     input: InputPerson!
+    source: [DataSource]
   ): Boolean
 
 }
@@ -951,6 +985,7 @@ type Mutation {
   
   DELETE(
     _id: [ID]
+    source: [DataSource]
   ): Boolean
 
 }
@@ -1709,5 +1744,6 @@ For more background reading and documentation see the references below.
 * [JSON-LD playground](https://json-ld.org/playground/)
 
 #### GraphQL + JSON-LD
+* [Knowledge Graph App in 15min](https://medium.com/p/knowledge-graph-app-in-15min-c76b94bb53b3?source=email-38bb887e3940--writer.postDistributed&sk=9d8595e35e3948e6ed939879d4852543), Szymon Klarman
 * [What Can the Semantic Web Do for GraphQL?](https://medium.com/@sklarman/what-the-semantic-web-can-do-for-graphql-8cfb39971714), Szymon Klarman
 * [Linked Open Statistical Data, Served Simply](https://medium.com/@sklarman/linked-open-statistical-data-served-simply-ead245bf715), Szymon Klarman
