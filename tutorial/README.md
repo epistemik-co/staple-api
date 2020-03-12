@@ -59,9 +59,10 @@ let ontology = {
 
 let config = {
         dataSources: {
-            default: "source1",
-            source1: {
-                type: "memory"
+            default: "source",
+            source: {
+                type: "memory",
+                description: "In-memory DB"
             }
         }
     }
@@ -107,9 +108,10 @@ let ontology = {
 
 let config = {
     dataSources: {
-        default: "source1",
-        source1: {
-            type: "memory"
+        default: "source",
+        source: {
+            type: "memory",
+            description: "In-memory DB"
         }
     }
 }
@@ -158,12 +160,13 @@ let ontology = {
 
 let config = {
         dataSources: {
-            default: "source1",
-            source1: {
+            default: "source",
+            source: {
                 type: "mongodb",
                 url: "mongodb://127.0.0.1:27017", 
                 dbName: "staple",
                 collectionName: "staple",
+                description: "MongoDB (DB: staple, Collection: staple)"
             }
         }
     }
@@ -212,12 +215,13 @@ let ontology = {
 
 let config = {
         dataSources: {
-            default: "source1",
-            source1: {
+            default: "source",
+            source: {
                 type: "sparql",
                 url: "http://localhost:3030/staple/sparql", 
                 updateUrl: "http://localhost:3030/staple/update",
-                graphName: "http://example.com/test"
+                graphName: "http://example.com/test",
+                description: "SPARQL endpoint (graph: http://example.com/test)"
             }
         }
     }
@@ -270,19 +274,22 @@ let config = {
                 type: "sparql",
                 url: "http://localhost:3030/staple/sparql", 
                 updateUrl: "http://localhost:3030/staple/update",
-                graphName: "http://example.com/test1"
+                graphName: "http://example.com/test1",
+                description: "SPARQL endpoint (graph: http://example.com/test1)"
             },
             sparql2: {
                 type: "sparql",
                 url: "http://localhost:3030/staple/sparql", 
                 updateUrl: "http://localhost:3030/staple/update",
-                graphName: "http://example.com/test2"
+                graphName: "http://example.com/test2",
+                description: "SPARQL endpoint (graph: http://example.com/test2)"
             },
             mongodb: {
                 type: "mongodb",
                 url: "mongodb://127.0.0.1:27017", 
                 dbName: "staple",
                 collectionName: "staple",
+                description: "MongoDB (DB: staple, Collection: staple)"
             }
         }
     }
@@ -330,8 +337,8 @@ let ontology = {
 
 let config = {
         dataSources: {
-            default: "source1",
-            source1: {
+            default: "source",
+            source: {
                 type: "memory"
             }
         }
@@ -466,11 +473,11 @@ const ontology = `
             schema:domainIncludes example:Agent ;
             schema:rangeIncludes example:Organization .
     `
-    
+
 let config = {
         dataSources: {
-            default: "source1",
-            source1: {
+            default: "source",
+            source: {
                 type: "memory"
             }
         }

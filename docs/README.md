@@ -1574,7 +1574,8 @@ let config = {
   dataSources: {
     default: "sourceName",
     sourceName: {
-      type: "memory"
+      type: "memory",
+      description: "Optional source description"
     }
   }
 ```
@@ -1589,7 +1590,8 @@ let config = {
       type: "mongodb",
       url: "mongodb://127.0.0.1:27017", 
       dbName: "dbName",
-      collectionName: "collectionName"
+      collectionName: "collectionName",
+      description: "Optional source description"
     }
   }
 ```
@@ -1609,7 +1611,8 @@ let config = {
       type: "sparql",
       url: "http://sparql-query-uri", 
       updateUrl: "http://sparql-update-uri",
-      graphName: "http://graph-name"
+      graphName: "http://graph-name",
+      description: "Optional source description"
     }
   }
 ```
@@ -1651,7 +1654,7 @@ Similarly to the ontology parameter, the configuration can be passed in three di
 #### **Config file path**
 
 ```javascript
-let ontology = {
+let config = {
     file: "./config.json"
   }
 ```
@@ -1659,7 +1662,7 @@ let ontology = {
 #### **Config URL**
 
 ```javascript
-let ontology = {
+let config = {
     url: "http://example.com/config.json"
   }
 ```
