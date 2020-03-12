@@ -72,7 +72,7 @@ class Database {
 
     async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource, filter) {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
-        // logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
+        logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
             await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, source, filter);
@@ -103,6 +103,7 @@ class Database {
      * @param {JSON} input
      * @param {} schemaMapping
      * @param {string} source
+     * @returns {boolean}
      */
 
     async pushObjectToBackend(input, schemaMapping, source = this.defaultDetasource) {
@@ -112,6 +113,15 @@ class Database {
             await this.adapter.pushObjectToBackend(this, input, source);
         }
     }
+
+    /**
+     * 
+     * Deletes object by uri
+     * 
+     * @param {string[]} objectID - list of uris to be deleted
+     * @param {string} source
+     * @returns {boolean}
+     */
 
     async removeObject(objectID, source) {
         logger.info("removeObject was called in database/database");

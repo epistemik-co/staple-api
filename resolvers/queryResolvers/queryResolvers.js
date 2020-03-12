@@ -1,4 +1,4 @@
-let schemaMapping = undefined; // require('../../schema/schema-mapping');
+let schemaMapping = undefined;
 const logger = require("../../config/winston");
 const handleClassTypeResolver = require("./querys/classTypeResolver");
 const handleQueryTypeResolver = require("./querys/queryTypeResolver");
@@ -8,9 +8,9 @@ const handleQueryTypeResolver = require("./querys/queryTypeResolver");
  * Creates query resolvers
  * 
  * @param {graphy} database
- * @param {} tree
+ * @param {JSON} tree
  * @param {} Warnings
- * @param {schema} schemaMappingArg
+ * @param {} schemaMappingArg
  */
 
 let createQueryResolvers = (database, tree, Warnings, schemaMappingArg) => {

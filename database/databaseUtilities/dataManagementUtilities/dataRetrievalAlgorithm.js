@@ -118,8 +118,6 @@ async function searchForDataRecursively(database, selectionSet, uri, tree, paren
             newUris = [...newUris];
 
             if (newUris.length > 0) {
-                console.log("DATA RETRIEVAL ALGO")
-                console.log(source)
                 await database.loadChildObjectsByUris(newUris, selection, tree, parentName, /*source needs to be specified here or it will use default*/source);
 
                 let newParentName = tree[parentName].data[name];
