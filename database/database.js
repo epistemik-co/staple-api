@@ -3,8 +3,7 @@ const dataset_tree = require("graphy").util.dataset.tree;
 const factory = require("@graphy/core.data.factory");
 const databaseUtilities = require("./databaseUtilities/dataManagementUtilities/dataManagementUtilities");
 const dataRetrievalAlgorithm = require("./databaseUtilities/dataManagementUtilities/dataRetrievalAlgorithm");
-const logger = require("../config/winston"); 
-// const util = require("util");
+const logger = require("../config/winston");
 const BackendSelector = require("./databaseUtilities/adapter/BackendSelector");
 
 // IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
@@ -12,20 +11,21 @@ class Database {
     constructor(schemaMapping, configObject) {
         this.updateSchemaMapping(schemaMapping);
         this.schemaMapping = schemaMapping;
-
         this.selectAdapter(configObject);
-
+        this.defaultSource = configObject.dataSources;
         this.database = dataset_tree();
         this.stapleDataType = "http://staple-api.org/datamodel/type";
-
         this.flatJsons = [];
         this.dbCallCounter = 0;
+        //when no source argument is given in query/mutation use default dataSource
+        this.defaultDetasource = configObject.dataSources.default ? configObject.dataSources.default : "memory";
 
-        logger.log("info", "Database is ready to use");
+        logger.log("info", "Data sources are ready to use");
     }
 
-    selectAdapter(configObject) {
-        this.adapter = new BackendSelector(this.schemaMapping, configObject);
+    //constructs new BackendSelector object
+    selectAdapter(configObject, source = this.defaultDetasource) {
+        this.adapter = new BackendSelector(this.schemaMapping, configObject, source);
     }
 
     updateSchemaMapping(schemaMapping) {
@@ -33,26 +33,59 @@ class Database {
         databaseUtilities.createGraphMap(schemaMapping);
     }
 
-    // Core Querys using adapter ----------------------------------------------------------------------------------------------------------------------
-    async loadChildObjectsByUris(sub, selection, tree, parentName) {
-        logger.info("loadChildObjectsByUris was called in database/database");
+    // Core Queries using adapter ----------------------------------------------------------------------------------------------------------------------
+    //TODO: move following methods to new dedicated file
+
+    /**
+     * 
+     * Loads query-child objects
+     * 
+     * @param {} sub
+     * @param {} selection
+     * @param {} tree
+     * @param {} parentName
+     * @param {string} source
+     */
+
+    async loadChildObjectsByUris(sub, selection, tree, parentName, source = this.defaultDetasource) {
+        logger.info(`loadChildObjectsByUris was called in database/database with source: ${source}`);
         // logger.debug(`with arguments : sub: ${sub}  ... `);
 
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadChildObjectsByUris(this, sub, selection, tree, parentName);
+            await this.adapter.loadChildObjectsByUris(this, sub, selection, tree, parentName, source);
         }
     }
 
-    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, filter) {
+    /**
+     * 
+     * Loads core query data
+     * 
+     * @param {} type
+     * @param {int} page
+     * @param {JSON} selectionSet
+     * @param {boolean} inferred
+     * @param {JSON} tree
+     * @param {string} source
+     * @param {JSON} filter 
+     */
+
+    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource, filter) {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
         logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, filter);
+            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, source, filter);
         }
 
     }
+
+    /**
+     * 
+     * Loads objects by URIS from cache
+     * 
+     * @param {} sub
+     */
 
     async loadObjectsByUris(sub) {
         logger.info("loadObjectsByUris was called in database/database");
@@ -63,20 +96,38 @@ class Database {
         }
     }
 
-    async pushObjectToBackend(input) {
+    /**
+     * 
+     * PUT
+     * 
+     * @param {JSON} input
+     * @param {} schemaMapping
+     * @param {string} source
+     * @returns {boolean}
+     */
+
+    async pushObjectToBackend(input, schemaMapping, source = this.defaultDetasource) {
         logger.info("pushObjectToBackend was called in database/database");
         // logger.debug(`with arguments : ${input}`);
-        // console.log((util.inspect(await flatJson , false, null, true)));
         if (this.adapter) {
-            await this.adapter.pushObjectToBackend(this, input);
-        } 
+            await this.adapter.pushObjectToBackend(this, input, source);
+        }
     }
 
-    async removeObject(objectID){
-        logger.info("removeObject was called in database/database"); 
+    /**
+     * 
+     * Deletes object by uri
+     * 
+     * @param {string[]} objectID - list of uris to be deleted
+     * @param {string} source
+     * @returns {boolean}
+     */
+
+    async removeObject(objectID, source) {
+        logger.info("removeObject was called in database/database");
         if (this.adapter) {
-           return await this.adapter.removeObject(this, objectID);
-        } 
+            return await this.adapter.removeObject(this, objectID, source);
+        }
     }
 
     // Memory database operations ---------------------------------------------------------------------------------------------------------
@@ -154,7 +205,7 @@ class Database {
         var x = itr.next();
         while (!x.done) {
             data.push(x.value.object.value);
-            
+
             x = itr.next();
         }
 
@@ -253,11 +304,11 @@ class Database {
     }
 
     countObjects() {
-        return this.getSubjects().length; 
+        return this.getSubjects().length;
     }
 
     // binding database ----------------------------------------------------------------------------------------------
- 
+
     updateInference() {
         databaseUtilities.updateInference(this);
     }
@@ -274,8 +325,12 @@ class Database {
 
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
     // return 10 ids of the core objects
-    async loadQueryData(queryInfo, uri, page, inferred, tree, filter) {
-        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter);
+
+    async loadQueryData(queryInfo, uri, page, inferred, tree, source = this.defaultDetasource, filter) {
+        if (source === undefined) {
+            source = this.defaultDetasource;
+        }
+        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source, source);
     }
 
 }

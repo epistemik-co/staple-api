@@ -2,6 +2,7 @@ const DatabaseInterface = require("./database/database");
 let database = new DatabaseInterface();
 const logger = require("../config/winston");
 var graphql = require("graphql");
+var request = require("request");
 
 //map of GraphQLObjectTypes and GraphQLInputObjectTypes
 
@@ -17,6 +18,9 @@ var graphQLScalarTypes = {
   "decimal": graphql.GraphQLFloat,
   "integer": graphql.GraphQLInt
 };
+
+let dataSourceEnum = {};
+let defaultDataSource = "";
 
 /**
  * Remove namespace removes namespace prefixes
@@ -41,12 +45,27 @@ function removeNamespace(nameWithNamesapace) {
 
 async function createClassList(ontology /*example file*/) {
   //load ontology to in-memory graphy.js database 
-  if (ontology.string) {
-    await database.readFromString(ontology.string);
-    logger.info("Schema generated from string");
-  } else if (ontology.file) {
+  if (ontology.file) {
     await database.readFromFile(ontology.file);
     logger.info("Schema generated from file");
+  } else if (ontology.url) {
+    //read from
+    const doRequest = new Promise((resolve, reject) => request.get({ url: ontology.url }, function (error, response) {
+      if (error) {
+        reject(error);
+      }
+      resolve(response);
+    }));
+    const response = await doRequest;
+    await database.readFromString(response.body);
+    logger.info("Schema generated from url");
+  } else {
+    try{
+      await database.readFromString(ontology);
+      logger.info("Schema generated from string");
+    } catch (error){
+      throw Error("Wrong ontology format");
+    }
   }
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
   const subClasses = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
@@ -124,7 +143,7 @@ async function createClassList(ontology /*example file*/) {
           ...inheritedProperties
         };
       } else {
-        classList[removeNamespace(subClass)] = {}
+        classList[removeNamespace(subClass)] = {};
         classList[removeNamespace(subClass)]["fields"] = {
           ...inheritedProperties
         };
@@ -141,7 +160,7 @@ async function createClassList(ontology /*example file*/) {
         inputClassList["Input" + removeNamespace(subClass)].fields = {
           ...inputClassList["Input" + removeNamespace(subClass)].fields,
           ...inputInheritedProperties
-        }
+        };
       }
       if (filterClassList["Filter" + removeNamespace(subClass)]) {
         filterClassList["Filter" + removeNamespace(subClass)].fields = {
@@ -180,12 +199,13 @@ function getFieldsQuery(object) {
       if (graphQLScalarTypes[fieldType]) {
         fields[fieldName] = {
           type: graphQLScalarTypes[fieldType],
-          description: String(object.fields[fieldName]["description"])
+          description: String(object.fields[fieldName]["description"]),
         };
       } else {
         fields[fieldName] = {
           type: gqlObjects[fieldType],
-          description: String(object.fields[fieldName]["description"])
+          description: String(object.fields[fieldName]["description"]),
+          args: { "source": { type: graphql.GraphQLList(dataSourceEnum) } }
         };
       }
     }
@@ -217,37 +237,61 @@ function filterGetFields(object) {
   };
 }
 
-function createQueryType(classList, filterClassList, classesURIs, propertiesURIs) {
+function createQueryType(classList, filterClassList, classesURIs, propertiesURIs, dataSources, dataSourcesDescriptions) {
 
   //context query
 
   var contextType = {
     name: "_CONTEXT", fields: {
       "_id": { type: graphql.GraphQLString, description: "@id" },
-      "_type": { type: graphql.GraphQLString, description: "@type" }
+      "_type": { type: graphql.GraphQLString, description: "@type" },
     },
     description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema."
   };
 
   for (var property of propertiesURIs) {
-    contextType.fields[removeNamespace(property)] = { type: graphql.GraphQLString, description: property };
+    if (!(removeNamespace(property) in graphQLScalarTypes)) {
+      contextType.fields[removeNamespace(property)] = { type: graphql.GraphQLString, description: property };
+    }
   }
 
   for (var classURI of classesURIs) {
-    contextType.fields[removeNamespace(classURI)] = { type: graphql.GraphQLString, description: classURI };
+    if (!(removeNamespace(classURI) in graphQLScalarTypes)) {
+      contextType.fields[removeNamespace(classURI)] = { type: graphql.GraphQLString, description: classURI };
+    }
   }
 
   contextType = new graphql.GraphQLObjectType(contextType);
 
+  // datasources enum
+
+  dataSourceEnum = {
+    name: "DataSource",
+    description: "Available data sources",
+    values: {}
+  };
+
+  for (let iter in dataSources) {
+    dataSourceEnum["values"][dataSources[iter]] = { value: dataSources[iter], description: dataSourcesDescriptions[dataSources[iter]] };
+  }
+  dataSourceEnum = new graphql.GraphQLEnumType(dataSourceEnum);
   //the rest of the queries
 
   var queryType = {
     name: "Query",
     description: "Get objects of specific types",
     fields: {
-      "_CONTEXT": { type: contextType, description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema." }
+      "_CONTEXT": { type: contextType, description: "Get elements of the _CONTEXT object" }
     }
   };
+
+  //default data source
+  let defaultSourceValue;
+  if (Array.isArray(defaultDataSource)){
+    defaultSourceValue = defaultDataSource.map(d => dataSourceEnum.getValue(d).value);
+  } else{
+    defaultSourceValue = defaultDataSource;
+  }
 
   for (var className in classList) {
     gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
@@ -260,9 +304,9 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
       description: String(classList[className].description),
       fields: filterGetFields(filterClassList["Filter" + className])
     });
-    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] } } };
+    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt, description: "The number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned." }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false, description: "Include indirect instances of this type" }, "filter": { type: gqlObjects["Filter" + className], description: "Filters the selected results based on specified field values"}, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: defaultSourceValue,
+    } } };
   }
-
   queryType = new graphql.GraphQLObjectType(queryType);
   return queryType;
 }
@@ -297,6 +341,13 @@ function getFieldsMutation(object) {
  */
 
 function createMutationType(classList, inputClassList) {
+  let defaultSourceValue;
+  if (Array.isArray(defaultDataSource)){
+    defaultSourceValue = (defaultDataSource.map(d => dataSourceEnum.getValue(d).value));
+  } else{
+    defaultSourceValue = defaultDataSource;
+  }
+
   var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", description: "Put the item into the database. If already exists - overwrite it.", values: { "PUT": { value: 0 } } });
   var mutationType = {
     name: "Mutation",
@@ -306,7 +357,8 @@ function createMutationType(classList, inputClassList) {
         type: graphql.GraphQLBoolean,
         description: "Delete an object",
         args: {
-          "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" }
+          "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" },
+          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Available data sources", defaultValue: defaultSourceValue }
         }
       },
     }
@@ -318,22 +370,49 @@ function createMutationType(classList, inputClassList) {
       description: String(classList[className].description),
       fields: getFieldsMutation(inputClassList["Input" + className])
     });
-    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" } } };
+    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: defaultSourceValue } } };
   }
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;
+}
+
+function listOfDataSourcesFromConfigObject(configObject) {
+  let dataSources = Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
+  if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default[0]) >= 0)) {
+    throw Error("invalid default datasource!");
+  }
+
+  let memoryCounter = 0;
+  for (let d in configObject.dataSources) {
+    if (configObject.dataSources[d].type == "memory") {
+      memoryCounter += 1;
+    }
+    if (memoryCounter > 1) {
+      throw Error("Cannot use more than one data source of type memory!");
+    }
+  }
+
+  defaultDataSource = (configObject.dataSources.default);
+
+  let dataSourcesDescriptions = {};
+  for (let d of dataSources){
+    dataSourcesDescriptions[d] = configObject.dataSources[d].description;
+  }
+  return {dataSources: dataSources, dataSourcesDescriptions: dataSourcesDescriptions};
 }
 
 /**
  * Generate schema
  * @param  {file} file containing ontology
  */
-
-async function generateSchema(ontology) {
+async function generateSchema(ontology, configObject) {
   database = new DatabaseInterface();
   var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(ontology);
-  var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs);
-  var mutationType = createMutationType(classList, inputClassList);
+  const values = listOfDataSourcesFromConfigObject(configObject);
+  const listOfDataSources = values.dataSources;
+  const dataSourcesDescriptions = values.dataSourcesDescriptions;
+  var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs, listOfDataSources, dataSourcesDescriptions);
+  var mutationType = createMutationType(classList, inputClassList, listOfDataSources, dataSourcesDescriptions);
   return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
 }
 

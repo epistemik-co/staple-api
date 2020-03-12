@@ -14,13 +14,17 @@
   ],
   "main": "index.js",
   "dependencies": {
+    "apollo-server-express": "^2.10.1",
+    "express": "^4.17.1",
     "graphql": "^14.6.0",
     "graphql-tools": "^4.0.7",
     "graphy": "^3.2.2",
+    "jsdoc": "^3.6.3",
     "jsonld": "^1.6.2",
     "mongodb": "^3.3.0-beta2",
     "morgan": "^1.9.1",
     "node-fetch": "^2.6.0",
+    "request": "^2.88.2",
     "uuid": "^3.3.2",
     "winston": "^3.2.1"
   },

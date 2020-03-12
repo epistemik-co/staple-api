@@ -1,6 +1,7 @@
 const DatabaseInterface = require("./database/database");
 let database = new DatabaseInterface();
-var fs = require("fs");
+// var fs = require("fs");
+var request = require("request");
 
 function processTypes(classes, data, enums, schema_spec) {
     for (var cla in classes) {
@@ -108,11 +109,8 @@ function processProperties(properties, functionalProperties, schema_spec) {
                 var domainclass = domain[d];
                 schema_spec.properties[property].domain.push(schema_spec.classes[domainclass].name);
 
-                // eslint-disable-next-line no-redeclare
                 var inherited = schema_spec.classes[domainclass].sub;
-                // eslint-disable-next-line no-redeclare
                 for (var i in inherited) {
-                    // eslint-disable-next-line no-redeclare
                     var inheritclass = inherited[i];
                     schema_spec.classes[inheritclass].props.push(property);
                 }
@@ -137,7 +135,6 @@ function union(set1, set2) {
         }
     }
 
-    // eslint-disable-next-line no-redeclare
     for (var x in set2) {
         if (!set.includes(set2[x])) {
             set.push(set2[x]);
@@ -150,10 +147,21 @@ function union(set1, set2) {
 
 async function process(ontology) {
     database = new DatabaseInterface();
-    if (ontology.string) {
-        await database.readFromString(ontology.string);
+    if (ontology.url) {
+        const doRequest = new Promise((resolve, reject) => request.get({ url: ontology.url }, function (error, response) {
+            if (error) {
+              reject(error);
+            }
+            resolve(response);
+          }));
+          const response = await doRequest;
+          await database.readFromString(response.body);
     } else {
-        await database.readFromFile(ontology.file);
+        try{
+            await database.readFromString(ontology);
+        }catch(error){
+            throw Error("Wrong ontology format!");
+        }
     }
     let schema_spec = {
         "classes": {},

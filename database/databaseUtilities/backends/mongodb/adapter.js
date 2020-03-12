@@ -8,11 +8,23 @@ class MongodbAdapter {
         this.configFile = configFile;
     }
 
-    async loadCoreQueryDataFromDB(database, type, page = 1, selectionSet = undefined, inferred = false, tree = undefined, filter) {
+    /**
+     * 
+     * Load Core Query Data From DB
+     * 
+     * @param {graphy} database - in-memory cache for results - graphy
+     * @param {string} type uri
+     * @param {int} page
+     * @param {JSON} selectionSet
+     * @param {boolean} inferred
+     * @param {JSON} tree
+     * @param {JSON} filter
+     */
+
+    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, filter) {
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
         subTypes = subTypes.map(s => this.removeNamespace(s));
-
         let query = this.preparefilters(database, selectionSet, tree, filter);
         if (this.client === undefined) {
             this.client = await MongoClient.connect(this.configFile.url, { useNewUrlParser: true, useUnifiedTopology: true }).catch(err => { logger.error(err); });
@@ -203,7 +215,7 @@ class MongodbAdapter {
                         if (query[key]){
                             query[key]["$in"] = filter[key];
                         }else{
-                            query[key] = {"$in": []}
+                            query[key] = {"$in": []};
                             query[key]["$in"] = filter[key];
 
                         }

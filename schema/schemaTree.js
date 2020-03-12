@@ -68,8 +68,8 @@ const handleObjectType = (newNode, newNodeData, schema, schemaTypeName, listOfUn
         }
         else {
             newNode["type"] = tempNewNodeType["@type"];
-            newNode["superTypes"] = tempNewNodeType['http://www.w3.org/2000/01/rdf-schema#subClassOf'].map(t => t["@id"])
-            newNode["subTypes"] = tempNewNodeType['subClasses'].map(t => t["@id"])
+            newNode["superTypes"] = tempNewNodeType["http://www.w3.org/2000/01/rdf-schema#subClassOf"].map(t => t["@id"]);
+            newNode["subTypes"] = tempNewNodeType["subClasses"].map(t => t["@id"]);
         }
     }
 

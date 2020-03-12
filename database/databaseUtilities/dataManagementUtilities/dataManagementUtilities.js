@@ -1,6 +1,6 @@
 const read_graphy = require("graphy").content.nq.read;
 const factory = require("@graphy/core.data.factory");
-const logger = require(`../../../config/winston`);
+const logger = require("../../../config/winston");
 
 function createReverseContext(schemaMapping) {
     schemaMapping["@revContext"] = {};
@@ -58,7 +58,7 @@ function insertRDFPromise(tree, rdf) {
                 y_quad.graph = factory.namedNode(null);
 
                 // double to string
-                if(y_quad.object.datatype && y_quad.object.datatype.value === 'http://www.w3.org/2001/XMLSchema#double' ){
+                if(y_quad.object.datatype && y_quad.object.datatype.value === "http://www.w3.org/2001/XMLSchema#double" ){
                     y_quad.object.value = parseFloat(y_quad.object.value).toString();
                 }
                 tree.add(y_quad);
