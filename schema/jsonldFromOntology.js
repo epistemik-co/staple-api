@@ -147,22 +147,25 @@ function union(set1, set2) {
 
 async function process(ontology) {
     database = new DatabaseInterface();
-    if (ontology.url) {
+    if (ontology.file) {
+        await database.readFromFile(ontology.file);
+      } else if (ontology.url) {
+        //read from
         const doRequest = new Promise((resolve, reject) => request.get({ url: ontology.url }, function (error, response) {
-            if (error) {
-              reject(error);
-            }
-            resolve(response);
-          }));
-          const response = await doRequest;
-          await database.readFromString(response.body);
-    } else {
+          if (error) {
+            reject(error);
+          }
+          resolve(response);
+        }));
+        const response = await doRequest;
+        await database.readFromString(response.body);
+      } else {
         try{
-            await database.readFromString(ontology);
-        }catch(error){
-            throw Error("Wrong ontology format!");
+          await database.readFromString(ontology);
+        } catch (error){
+          throw Error("Wrong ontology format");
         }
-    }
+      }
     let schema_spec = {
         "classes": {},
         "properties": {}

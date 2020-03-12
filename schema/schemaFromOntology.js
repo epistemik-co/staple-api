@@ -378,9 +378,20 @@ function createMutationType(classList, inputClassList) {
 
 function listOfDataSourcesFromConfigObject(configObject) {
   let dataSources = Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
-  if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default[0]) >= 0)) {
-    throw Error("invalid default datasource!");
+
+  if (Array.isArray(configObject.dataSources.default)){
+    for (let i in configObject.dataSources.default){
+      if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default[i]) >= 0)) {
+        throw Error("invalid default datasource!");
+      }
+    }
+  }else{
+    if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default) >= 0)) {
+      throw Error("invalid default datasource!");
+    }
   }
+
+
 
   let memoryCounter = 0;
   for (let d in configObject.dataSources) {
