@@ -20,6 +20,7 @@ var graphQLScalarTypes = {
 };
 
 let dataSourceEnum = {};
+let defaultDataSource = "";
 
 /**
  * Remove namespace removes namespace prefixes
@@ -264,6 +265,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
 
   dataSourceEnum = {
     name: "DataSource",
+    description: "Available data sources",
     values: {}
   };
 
@@ -277,7 +279,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
     name: "Query",
     description: "Get objects of specific types",
     fields: {
-      "_CONTEXT": { type: contextType, description: "The mapping from types and properties of the GraphQL schema to the corresponding URIs of the structured data schema." }
+      "_CONTEXT": { type: contextType, description: "Get elements of the _CONTEXT object" }
     }
   };
 
@@ -292,7 +294,8 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
       description: String(classList[className].description),
       fields: filterGetFields(filterClassList["Filter" + className])
     });
-    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false }, "filter": { type: gqlObjects["Filter" + className] }, "source": { type: graphql.GraphQLList(dataSourceEnum) } } };
+    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt, description: "The number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned." }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false, description: "Include indirect instances of this type" }, "filter": { type: gqlObjects["Filter" + className], description: "Filters the selected results based on specified field values"}, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: dataSourceEnum.getValue(defaultDataSource).value,
+    } } };
   }
   queryType = new graphql.GraphQLObjectType(queryType);
   return queryType;
@@ -338,7 +341,7 @@ function createMutationType(classList, inputClassList) {
         description: "Delete an object",
         args: {
           "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" },
-          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "source description" }
+          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Available data sources" }
         }
       },
     }
@@ -350,7 +353,7 @@ function createMutationType(classList, inputClassList) {
       description: String(classList[className].description),
       fields: getFieldsMutation(inputClassList["Input" + className])
     });
-    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "source description" } } };
+    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: dataSourceEnum.getValue(defaultDataSource).value } } };
   }
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;
@@ -371,6 +374,8 @@ function listOfDataSourcesFromConfigObject(configObject) {
       throw Error("Cannot use more than one data source of type memory!");
     }
   }
+
+  defaultDataSource = (configObject.dataSources.default);
 
   return dataSources;
 }

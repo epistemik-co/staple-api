@@ -8,13 +8,98 @@ const staple = require("./index");
 
 async function Demo() {
     let stapleApi = await staple({
-        url: "https://raw.githubusercontent.com/epistemik-co/staple-api/playground/ontology.ttl"
+        string:  `@prefix ds: <http://demo.staple-api.org/ontology.ttl#> .
+        @prefix dbo: <http://dbpedia.org/ontology/> .
+        @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+        @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+        @prefix owl: <http://www.w3.org/2002/07/owl#> .
+        @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+        @prefix dct: <http://purl.org/dc/terms/> .
+        @prefix schema: <http://schema.org/> .
+        # classes (-> GraphQL types )
+        owl:Thing a rdfs:Class ;
+            rdfs:comment "Anything" .
+        dbo:Country a rdfs:Class ;
+            rdfs:comment "A country" ;
+            rdfs:subClassOf owl:Thing .
+        dbo:Person a rdfs:Class ;
+            rdfs:comment "A person" ;
+            rdfs:subClassOf owl:Thing .
+        # properties ( -> GraphQL fields )
+        rdfs:label a rdf:Property, owl:FunctionalProperty ;
+            rdfs:comment "Name of the entity" ;
+            schema:domainIncludes owl:Thing ;
+            schema:rangeIncludes xsd:string .
+        dct:description a rdf:Property, owl:FunctionalProperty ;
+            rdfs:comment "Description of an entity" ;
+            schema:domainIncludes owl:Thing ;
+            schema:rangeIncludes xsd:string .
+        dbo:thumbnail a rdf:Property, owl:FunctionalProperty ;
+            rdfs:comment "Thumbnail URL" ;
+            schema:domainIncludes owl:Thing ;
+            schema:rangeIncludes xsd:string .
+        dbo:birthYear a rdf:Property, owl:FunctionalProperty ;
+            rdfs:comment "The year of birth" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes xsd:integer .
+        dbo:deathYear a rdf:Property, owl:FunctionalProperty ;
+            rdfs:comment "The year of death" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes xsd:integer .
+        dbo:spouse a rdf:Property ;
+            rdfs:comment "A spouse of a person" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes dbo:Person .
+        dbo:child a rdf:Property ;
+            rdfs:comment "A child of a person" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes dbo:Person .
+        dbo:parent a rdf:Property ;
+            rdfs:comment "A parent of a person" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes dbo:Person .
+  dbo:successor a rdf:Property ;
+            rdfs:comment "A successor of a person" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes dbo:Person .
+        ds:birthCountry a rdf:Property ;
+            rdfs:comment "The country of birth" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes dbo:Country .
+        ds:deathCountry a rdf:Property ;
+            rdfs:comment "The country of death" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes dbo:Country .
+        foaf:gender a rdf:Property, owl:FunctionalProperty ;
+            rdfs:comment "Gender of a person" ;
+            schema:domainIncludes dbo:Person ;
+            schema:rangeIncludes xsd:string .`
     }, {
-        url: "https://api.myjson.com/bins/9j4am"
+        json: {
+            dataSources: {
+                default: "mongodb",
+                mongodb: {
+                    id: "mongodb",
+                    type: "mongodb",
+                    url: "mongodb+srv://guest:guest@cluster0-ek2ca.mongodb.net/test", 
+                    dbName: "staple",
+                    collectionName: "staple",
+                },
+                sparql: {
+                    id: "sparql",
+                    type: "sparql",
+                    url: "http://dbpedia.org/sparql", 
+                    updateUrl: "http://dbpedia.org/sparql",
+                    graphName: "http://dbpedia.org"
+                }
+            }
+        }
     }
     );//, require(appRoot + "/config/database.js"));
     //     let stapleApi = await staple({
-    //         string: `@prefix ds: <http://demo.staple-api.org/ontology.ttl#> .
+    //         string: 
+    //         `@prefix ds: <http://demo.staple-api.org/ontology.ttl#> .
     //         @prefix dbo: <http://dbpedia.org/ontology/> .
     //         @prefix foaf: <http://xmlns.com/foaf/0.1/> .
     //         @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -81,25 +166,25 @@ async function Demo() {
     //             rdfs:comment "Gender of a person" ;
     //             schema:domainIncludes dbo:Person ;
     //             schema:rangeIncludes xsd:string .`},
-    //         {
-    //             dataSources: {
-    //                 default: "sparql",
-    //                 mongodb: {
-    //                     id: "mongodb",
-    //                     type: "mongodb",
-    //                     url: "mongodb+srv://guest:guest@cluster0-ek2ca.mongodb.net/test", 
-    //                     dbName: "staple",
-    //                     collectionName: "staple",
-    //                 },
-    //                 sparql: {
-    //                     id: "sparql",
-    //                     type: "sparql",
-    //                     url: "http://dbpedia.org/sparql", 
-    //                     updateUrl: "http://dbpedia.org/sparql",
-    //                     graphName: "http://dbpedia.org"
-    //                 }
-    //             }
-    //         }
+            // {
+            //     dataSources: {
+            //         default: "sparql",
+            //         mongodb: {
+            //             id: "mongodb",
+            //             type: "mongodb",
+            //             url: "mongodb+srv://guest:guest@cluster0-ek2ca.mongodb.net/test", 
+            //             dbName: "staple",
+            //             collectionName: "staple",
+            //         },
+            //         sparql: {
+            //             id: "sparql",
+            //             type: "sparql",
+            //             url: "http://dbpedia.org/sparql", 
+            //             updateUrl: "http://dbpedia.org/sparql",
+            //             graphName: "http://dbpedia.org"
+            //         }
+            //     }
+            // }
     //     );//, require(appRoot + "/config/database.js"));
     let demo = {};
     demo.database = stapleApi.database;
