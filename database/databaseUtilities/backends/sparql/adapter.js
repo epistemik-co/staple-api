@@ -139,12 +139,12 @@ class SparqlAdapter {
 
     async pushObjectToBackend(database, input) {
         let ID = input._id;
-        this.removeObject(database, [ID]);
+        const removeRes = await this.removeObject(database, [ID]);
         let graphName = this.configFile.graphName;
         const headers = {
             "Content-Type": "application/sparql-update",
         };
-
+        if (removeRes){
         logger.info("pushObjectToBackend in sparql was called");
 
         input["@context"] = database.schemaMapping["@context2"];
@@ -162,13 +162,13 @@ class SparqlAdapter {
             return true;
         } catch (err) {
             throw Error("Could not push object to SPARQL");
-        }
+        }}
     }
 
     /**
      * remove Object is called when DELETE muattion is called
-     * @param  {database} cache for results - graphy
-     * @param {objectIDs} list of uris to be deleted
+     * @param {graphy} database - cache for results
+     * @param {string[]} list of uris to be deleted
      */
 
     async removeObject(database, objectIDs) {
@@ -199,7 +199,7 @@ class SparqlAdapter {
 
     /**
      * is Uri
-     * @param  {str} string to check if matches URI regex
+     * @param  {string} str - stringto check if matches URI regex
      * @returns boolean
      */
 
@@ -211,10 +211,10 @@ class SparqlAdapter {
 
     /**
      * Prepare filters
-     * @param  {database} cache for results - graphy
-     * @param {selection} 
-     * @param {tree} 
-     * @returns {query}
+     * @param  {graphy} database - cache for results
+     * @param {} selection
+     * @param {JSON} tree
+     * @returns {string} filters
      */
 
     preparefilters(database, selection, tree) {

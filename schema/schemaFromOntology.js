@@ -285,6 +285,14 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
     }
   };
 
+  //default data source
+  let defaultSourceValue;
+  if (Array.isArray(defaultDataSource)){
+    defaultSourceValue = defaultDataSource.map(d => dataSourceEnum.getValue(d).value);
+  } else{
+    defaultSourceValue = defaultDataSource;
+  }
+
   for (var className in classList) {
     gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
       name: className,
@@ -296,7 +304,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
       description: String(classList[className].description),
       fields: filterGetFields(filterClassList["Filter" + className])
     });
-    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt, description: "The number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned." }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false, description: "Include indirect instances of this type" }, "filter": { type: gqlObjects["Filter" + className], description: "Filters the selected results based on specified field values"}, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: dataSourceEnum.getValue(defaultDataSource).value,
+    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt, description: "The number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned." }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false, description: "Include indirect instances of this type" }, "filter": { type: gqlObjects["Filter" + className], description: "Filters the selected results based on specified field values"}, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: defaultSourceValue,
     } } };
   }
   queryType = new graphql.GraphQLObjectType(queryType);
@@ -333,6 +341,13 @@ function getFieldsMutation(object) {
  */
 
 function createMutationType(classList, inputClassList) {
+  let defaultSourceValue;
+  if (Array.isArray(defaultDataSource)){
+    defaultSourceValue = (defaultDataSource.map(d => dataSourceEnum.getValue(d).value));
+  } else{
+    defaultSourceValue = defaultDataSource;
+  }
+
   var inputEnum = new graphql.GraphQLEnumType({ name: "MutationType", description: "Put the item into the database. If already exists - overwrite it.", values: { "PUT": { value: 0 } } });
   var mutationType = {
     name: "Mutation",
@@ -343,7 +358,7 @@ function createMutationType(classList, inputClassList) {
         description: "Delete an object",
         args: {
           "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" },
-          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Available data sources", defaultValue: dataSourceEnum.getValue(defaultDataSource).value }
+          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Available data sources", defaultValue: defaultSourceValue }
         }
       },
     }
@@ -355,7 +370,7 @@ function createMutationType(classList, inputClassList) {
       description: String(classList[className].description),
       fields: getFieldsMutation(inputClassList["Input" + className])
     });
-    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: dataSourceEnum.getValue(defaultDataSource).value } } };
+    mutationType.fields[className] = { type: graphql.GraphQLBoolean, description: "Perform mutation over an object of type: Input" + className, args: { input: { type: graphql.GraphQLNonNull(gqlObjects["Input" + className]), description: "The input object of the mutation" }, type: { type: inputEnum, defaultValue: 0, description: "The type of the mutation to be applied" }, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: defaultSourceValue } } };
   }
   mutationType = new graphql.GraphQLObjectType(mutationType);
   return mutationType;
@@ -363,7 +378,7 @@ function createMutationType(classList, inputClassList) {
 
 function listOfDataSourcesFromConfigObject(configObject) {
   let dataSources = Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
-  if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default) >= 0)) {
+  if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default[0]) >= 0)) {
     throw Error("invalid default datasource!");
   }
 

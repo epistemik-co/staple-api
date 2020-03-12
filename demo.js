@@ -49,7 +49,7 @@ async function Demo() {
         schema:rangeIncludes example:Organization .`,
         {
             dataSources: {
-                default: "sparql",
+                default: ["sparql", "mongodb"],
                 mongodb: {
                     type: "mongodb",
                     url: "mongodb://127.0.0.1:27017",
