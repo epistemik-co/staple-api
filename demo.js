@@ -7,8 +7,7 @@ const logger = require("./config/winston");
 const staple = require("./index");
 
 async function Demo() {
-    let stapleApi = await staple({
-        string: `@prefix schema: <http://schema.org/> .
+    let stapleApi = await staple(`@prefix schema: <http://schema.org/> .
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
     @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -47,8 +46,7 @@ async function Demo() {
     example:customerOf a rdf:Property ;
         rdfs:comment "An organization this agent is a customer of" ;
         schema:domainIncludes example:Agent ;
-        schema:rangeIncludes example:Organization .`},
-        {json: 
+        schema:rangeIncludes example:Organization .`,
         {
             dataSources: {
                 default: "sparql",
@@ -68,7 +66,7 @@ async function Demo() {
                 }
 
             }
-        }}
+        }
     );//, require(appRoot + "/config/database.js"));
     //     let stapleApi = await staple({
     //         string: 

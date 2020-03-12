@@ -9,11 +9,9 @@ var request = require("request");
 
 
 async function init(ontology, configObject){
-
+    
     //handle config object
-    if (configObject.json){
-        configObject = configObject.json;
-    } else if (configObject.file){
+    if (configObject.file){
         configObject = JSON.parse(fs.readFileSync(configObject.file));
     } else if (configObject.url){
         const doRequest = new Promise((resolve, reject) => request.get({ url: configObject.url }, function (error, response, body) {
@@ -24,7 +22,7 @@ async function init(ontology, configObject){
           }));
           const response = await doRequest;
           configObject = JSON.parse(response.body);
-    } else {
+    } if (!(configObject.dataSources)){
         throw Error("Wrong config object!");
     }
 

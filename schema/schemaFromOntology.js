@@ -45,10 +45,7 @@ function removeNamespace(nameWithNamesapace) {
 
 async function createClassList(ontology /*example file*/) {
   //load ontology to in-memory graphy.js database 
-  if (ontology.string) {
-    await database.readFromString(ontology.string);
-    logger.info("Schema generated from string");
-  } else if (ontology.file) {
+  if (ontology.file) {
     await database.readFromFile(ontology.file);
     logger.info("Schema generated from file");
   } else if (ontology.url) {
@@ -63,7 +60,12 @@ async function createClassList(ontology /*example file*/) {
     await database.readFromString(response.body);
     logger.info("Schema generated from url");
   } else {
-    throw Error("Wrong ontology format");
+    try{
+      await database.readFromString(ontology);
+      logger.info("Schema generated from string");
+    } catch (error){
+      throw Error("Wrong ontology format");
+    }
   }
   const classes = database.getInstances("http://www.w3.org/2000/01/rdf-schema#Class");
   const subClasses = database.getAllSubs("http://www.w3.org/2000/01/rdf-schema#subClassOf");
