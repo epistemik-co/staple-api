@@ -1627,7 +1627,7 @@ where:
 ```javascript
 let config = {
   dataSources: {
-    default: "sourceX",
+    default: ["sourceX","sourceY", ... ]
     source1: {
       ...
     },
