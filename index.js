@@ -35,7 +35,7 @@ setInterval(function () {
 }, 5000);
 
 async function init(app, index) {
-    let stapleApi = await staple({file: "./ontology.ttl"});
+    let stapleApi = await staple({file: "./ontology.ttl"}, {dataSources: {default: "memory",  memory: {type: "memory"}}});
     let schema = stapleApi.schema;
     let database = stapleApi.database;
     let exampleObjects = require("./database/exampleObjects");
