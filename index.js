@@ -14,7 +14,7 @@ async function init(ontology, configObject){
     if (configObject.file){
         configObject = JSON.parse(fs.readFileSync(configObject.file));
     } else if (configObject.url){
-        const doRequest = new Promise((resolve, reject) => request.get({ url: configObject.url }, function (error, response, body) {
+        const doRequest = new Promise((resolve, reject) => request.get({ url: configObject.url }, function (error, response) {
             if (error) {
               reject(error);
             }
