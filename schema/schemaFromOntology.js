@@ -77,6 +77,9 @@ async function createClassList(ontology /*example file*/) {
   const propertiesRangeIncludes = database.getAllSubs("http://schema.org/rangeIncludes");
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
 
+  const singleProperties = functionalProperties.map(f => removeNamespace(f));
+  //if functional property then single
+
   //list of all classes as uris
 
   let classesURIs = [...new Set([...classes, ...subClasses, ...superClasses, ...domainIncludes, ...rangeIncludes, ...rangeIncludes])];
@@ -99,6 +102,7 @@ async function createClassList(ontology /*example file*/) {
     var domains = database.getObjs(propertiesURIs[propertyIter], "http://schema.org/domainIncludes");
     var ranges = database.getObjs(propertiesURIs[propertyIter], "http://schema.org/rangeIncludes");
     var comments = database.getObjs(propertiesURIs[propertyIter], "http://www.w3.org/2000/01/rdf-schema#comment");
+
     for (var domainIter in domains) {
       var domainName = removeNamespace(domains[domainIter]);
       if (!(domainName in classList
@@ -112,16 +116,39 @@ async function createClassList(ontology /*example file*/) {
       var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
 
       for (var r in ranges) {
-        if (graphQLScalarTypes[ranges[r]]) {
-          ranges[r] = graphQLScalarTypes[ranges[r]];
-          inputRanges[r] = graphQLScalarTypes[ranges[r]];
+        if (singleProperties.indexOf(nameOfProperty) < 0){
+          if (graphQLScalarTypes[ranges[r]]) {
+            //here shold be list types
+            let orig = ranges[r]
+            ranges[r] = graphQLScalarTypes[ranges[r]];
+            inputRanges[r] = graphQLScalarTypes[orig]
+          }
+        }else{
+          if (graphQLScalarTypes[ranges[r]]) {
+            ranges[r] = graphQLScalarTypes[ranges[r]];
+            // console.log(ranges[r])
+
+            inputRanges[r] = graphQLScalarTypes[ranges[r]];
+            // console.log(inputRanges[r])
+
+          }
         }
       }
       var classComment = database.getObjs(domains[domainIter], "http://www.w3.org/2000/01/rdf-schema#comment");
-      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments };
-      classList[[domainName]]["description"] = classComment;
-      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments };
-      filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
+
+      if (singleProperties.indexOf(nameOfProperty) < 0){
+        //here list types
+        classList[[domainName]]["fields"][nameOfProperty] = { "type": [ranges], "description": comments };
+        classList[[domainName]]["description"] = classComment;
+        inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
+        filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
+      }else{
+        //here single values
+        classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments };
+        classList[[domainName]]["description"] = classComment;
+        inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments };
+        filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
+      }
     }
   }
 
