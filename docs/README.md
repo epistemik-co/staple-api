@@ -873,10 +873,11 @@ input InputPerson {
 
 #### Queries and filters
 
-An object query returns instances of the type with the same name (e.g., query `Person` returns instances of type `Person`). It supports three arguments:
-- `page: Int`: specifies the number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned. 
-- `filter: FilterType`: filters the results based on lists of acceptable values specified for each field
-- `inferred: Boolean = false`: specifies whether the indirect instances of this type should also be included in the results
+An object query returns instances of the type with the same name (e.g., query `Person` returns instances of type `Person`). It supports the following arguments:
+- `page: Int`: specifies the number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned.
+- `filter: FilterType`: filters the results based on lists of acceptable values specified for each field.
+- `inferred: Boolean = false`: specifies whether the indirect instances of this type should also be included in the results.
+- `source: [DataSource]`: specifies which of the available data sources should be effectively queried. If none is selected, the default one, declared in the configuration, is used.
 
 For instance, the following query returns the first page of instances of type `Person`, whose names are "John Smith" and who are customers of either `http://example.com/org1` or `http://example.com/org2`:
 
@@ -900,9 +901,10 @@ For instance, the following query returns the first page of instances of type `P
 
 #### Mutations and inputs
 
-An object mutation enables creation and updates of instances of the type with the same name (e.g., mutation `Person` creates/updates instances of type `Person`). It supports two arguments:
+An object mutation enables creation and updates of instances of the type with the same name (e.g., mutation `Person` creates/updates instances of type `Person`). It supports the following arguments:
 - `type: MutationType = PUT`: defines the type of mutation to be performed. THe default and currently the only acceptable mutation type is PUT, which either creates a new object with a given identifer or overwrites an existing one. 
 - `input: InputType!`: specifies the object of a given type to be inserted into the database. 
+- `source: [DataSource]`: specifies which of the available data sources should be addressed with the requested mutation. If none is selected, the default one, declared in the configuration, is used:
 
 The input object includes the exact same fields as the associated object type, except for `_type` which is inserted automatically using the associated type as the default value. For instance, the following mutation generates an instance of `Person` with the specified attributes, which can be retrived back with the approporiate `Person` query:
 
@@ -978,7 +980,7 @@ mutation {
 
 
 
-Finally, GraphQL exposes also a unique `DELETE` mutation which deletes an object by its identifier specified in the `_id` argument:
+Finally, GraphQL exposes also a unique `DELETE` mutation which deletes an object by its identifier, specified in the `_id` argument, from the selected data sources, specified in the `source` argument. If none is selected, the default one, declared in the configuration, is used:
 
 ```graphql
 type Mutation {
@@ -1473,6 +1475,9 @@ Staple API can be imported as an [npm package](https://www.npmjs.com/package/sta
 ```javascript
 import staple-api
 
+let ontology = ...
+let config = ...
+
 async function StapleDemo() {
     let stapleApi = await staple(ontology, config);
 }
@@ -1482,10 +1487,11 @@ StapleDemo()
 
 ### Ontology parameter
 
-The `ontology` parameter points to the source RDF ontology and it can be specified in two ways:
+The `ontology` parameter points to the source RDF ontology and it can be passed in three ways:
 
 1. via the local path to the ontology file,
-2. or via a string with the ontology.
+2. via the URL to the remote ontology file,
+3. or via a string with the ontology.
 
 <!-- tabs:start -->
 
@@ -1493,7 +1499,15 @@ The `ontology` parameter points to the source RDF ontology and it can be specifi
 
 ```javascript
 let ontology = {
-  file: "./ontology.ttl"
+    file: "./ontology.ttl"
+  }
+```
+
+#### **Ontology URL**
+
+```javascript
+let ontology = {
+    url: "http://demo.staple-api.org/ontology.ttl"
   }
 ```
 
@@ -1501,8 +1515,7 @@ let ontology = {
 
 
 ```javascript
-let ontology = {
-  string: `
+let ontology =  `
     @prefix schema: <http://schema.org/> .
     @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
     @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -1531,7 +1544,6 @@ let ontology = {
         schema:domainIncludes example:Organization ;
         schema:rangeIncludes example:Person .
   `
-  }
 ```
 
 <!-- tabs:end -->
@@ -1544,7 +1556,7 @@ Currently the following back-end storage connectors are supported (more to be ad
 2. [MongoDB](https://www.mongodb.com/)
 3. [SPARQL endpoint](https://www.w3.org/TR/sparql11-protocol/)
 
-**graphy.js** is a lightweight in memory quad store (graph database for RDF). It is enabled by default and no additional configuration is required to initiate it. It is well-suitted for rapid testing and prototyping. Note that all data inserted to this storage during the runtime is lost on closing the service. 
+**graphy.js** is a lightweight in memory quad store (graph database for RDF) that is well-suited for rapid testing and prototyping. Note that all data inserted to this storage during the runtime is lost on closing the service. 
 
 
 **MongoDB** is a popular JSON document store available as a stand-alone server or a cloud service ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas)). In order to use Staple API on top of MongoDB a corresponding configuration needs to be passed when initiating the service.
@@ -1558,40 +1570,28 @@ Currently the following back-end storage connectors are supported (more to be ad
 
 
 ```javascript
-import staple-api
-
-let ontology = {
-  file: "./ontology.ttl"
+let config = {
+  dataSources: {
+    default: "sourceName",
+    sourceName: {
+      type: "memory"
+    }
   }
-
-async function StapleDemo() {
-    let stapleApi = await staple(ontology);
-}
-
-StapleDemo()
 ```
 
 #### **MongoDB**
 
 ```javascript
-import staple-api
-
-let ontology = {
-  file: "./ontology.ttl"
-  }
-
 let config = {
-    type: "mongodb",
-    url: "mongodb://127.0.0.1:27017", 
-    dbName: "dbName",
-    collectionName: "collectionName",
-};
-
-async function StapleDemo() {
-    let stapleApi = await staple(ontology, config);
-}
-
-StapleDemo()
+  dataSources: {
+    default: "sourceName",
+    sourceName: {
+      type: "mongodb",
+      url: "mongodb://127.0.0.1:27017", 
+      dbName: "dbName",
+      collectionName: "collectionName"
+    }
+  }
 ```
 where:
 * `type: "mongodb"` is a constant attribute for this connector
@@ -1602,30 +1602,84 @@ where:
 #### **SPARQL**
 
 ```javascript
-import staple-api
-
-let ontology = {
-  file: "./ontology.ttl"
-  }
-
 let config = {
-    type: "sparql",
-    url: "http://sparql-query-uri", 
-    updateUrl: "http://sparql-update-uri",
-    graphName: "http://graph-name"
-};
-
-async function StapleDemo() {
-    let stapleApi = await staple(ontology, config);
-}
-
-StapleDemo()
+  dataSources: {
+    default: "sourceName",
+    sourceName: {
+      type: "sparql",
+      url: "http://sparql-query-uri", 
+      updateUrl: "http://sparql-update-uri",
+      graphName: "http://graph-name"
+    }
+  }
 ```
 where:
 * `type: "sparql"` is a constant attribute for this connector
 * `http://sparql-query-uri` is the URL of the SPARQL query endpoint
 * `http://sparql-update-uri` is the URL of the SPARQL update query endpoint (usually the same as the one above, but not always)
 * `http://graph-name` (optional parameter) name of the target graph in the triple store
+
+#### **Multiple sources**
+
+```javascript
+let config = {
+  dataSources: {
+    default: "sourceX",
+    source1: {
+      ...
+    },
+    source2: {
+      ...
+    },
+    ...
+  }
+```
+note that the source of type `memory` can be used at most once in the configuration. 
+
+<!-- tabs:end -->
+
+Similarly to the ontology parameter, the configuration can be passed in three different ways: 
+
+
+1. via the local path to the configuration file,
+2. via the URL to the remote configuration file,
+3. or directly as an object in the code.
+
+
+<!-- tabs:start -->
+
+#### **Config file path**
+
+```javascript
+let ontology = {
+    file: "./config.json"
+  }
+```
+
+#### **Config URL**
+
+```javascript
+let ontology = {
+    url: "http://example.com/config.json"
+  }
+```
+
+#### **Config object**
+
+
+```javascript
+let config = {
+  dataSources: {
+    default: "sourceX",
+    source1: {
+      ...
+    },
+    source2: {
+      ...
+    },
+    ...
+  }
+```
 
 <!-- tabs:end -->
 
@@ -1643,11 +1697,19 @@ The main property accessible in the constructed Staple API object is `schema`, w
 const staple = require("staple-api");
 
 let ontology = {
-  file: "./ontology.ttl"
+    file: "./ontology.ttl"
+  }
+
+let config = {
+  dataSources: {
+    default: "source",
+    source: {
+      type: "memory"
+    }
   }
 
 async function StapleDemo() {
-    let stapleApi = await staple(ontology);  
+    let stapleApi = await staple(ontology, config);  
 
     stapleApi.graphql('{ _CONTEXT { _id _type Person employee } }').then((response) => {
         console.log(JSON.stringify(response));
@@ -1665,11 +1727,19 @@ var graphqlHTTP = require('express-graphql');
 const staple = require("staple-api");
 
 let ontology = {
-  file: "./ontology.ttl"
+    file: "./ontology.ttl"
+  }
+
+let config = {
+  dataSources: {
+    default: "source",
+    source: {
+      type: "memory"
+    }
   }
 
 async function StapleDemo() {
-    let stapleApi = await staple(ontology);
+    let stapleApi = await staple(ontology, config);
 
     var app = express();
     app.use('/graphql', graphqlHTTP({
@@ -1693,11 +1763,19 @@ const staple = require("staple-api");
 const jsonld = require("jsonld")
 
 let ontology = {
-  file: "./ontology.ttl"
+    file: "./ontology.ttl"
+  }
+
+let config = {
+  dataSources: {
+    default: "source",
+    source: {
+      type: "memory"
+    }
   }
 
 async function StapleDemo() {
-    let stapleApi = await staple(ontology);  
+    let stapleApi = await staple(ontology, config);  
     let context = stapleApi.context
     let data = {}
 
