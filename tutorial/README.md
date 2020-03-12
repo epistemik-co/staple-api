@@ -54,11 +54,21 @@ Create `demo.js` file:
 const staple = require("staple-api");
 
 let ontology = {
-  file: "./ontology.ttl"
-  }
+        file: "./ontology.ttl"
+    }
+
+let config = {
+        dataSources: {
+            default: "source",
+            source: {
+                type: "memory",
+                description: "In-memory DB"
+            }
+        }
+    }
 
 async function StapleDemo() {
-    let stapleApi = await staple(ontology);  
+    let stapleApi = await staple(ontology, config);
     
     await stapleApi.graphql('mutation { Person(input: { _id: "http://example.com/john" name: "John Smith" } ) }').then((response) => {
       });
@@ -93,11 +103,21 @@ var graphqlHTTP = require('express-graphql');
 const staple = require("staple-api");
 
 let ontology = {
-  file: "./ontology.ttl"
-  }
+        file: "./ontology.ttl"
+    }
+
+let config = {
+    dataSources: {
+        default: "source",
+        source: {
+            type: "memory",
+            description: "In-memory DB"
+        }
+    }
+}
 
 async function StapleDemo() {
-    let stapleApi = await staple(ontology);
+    let stapleApi = await staple(ontology, config);
 
     var app = express();
     app.use('/graphql', graphqlHTTP({
@@ -135,15 +155,21 @@ var graphqlHTTP = require('express-graphql');
 const staple = require("staple-api");
 
 let ontology = {
-  file: "./ontology.ttl"
-  }
+        file: "./ontology.ttl"
+    }
 
 let config = {
-    type: "mongodb",
-    url: "mongodb://127.0.0.1:27017", 
-    dbName: "staple",
-    collectionName: "staple",
-};
+        dataSources: {
+            default: "source",
+            source: {
+                type: "mongodb",
+                url: "mongodb://127.0.0.1:27017", 
+                dbName: "staple",
+                collectionName: "staple",
+                description: "MongoDB (DB: staple, Collection: staple)"
+            }
+        }
+    }
 
 async function StapleDemo() {
     let stapleApi = await staple(ontology, config);
@@ -188,12 +214,85 @@ let ontology = {
   }
 
 let config = {
-    type: "sparql",
-    url: "http://localhost:3030/staple/sparql", 
-    updateUrl: "http://localhost:3030/staple/update",
-    graphName: "http://example.com/test"
-};
+        dataSources: {
+            default: "source",
+            source: {
+                type: "sparql",
+                url: "http://localhost:3030/staple/sparql", 
+                updateUrl: "http://localhost:3030/staple/update",
+                graphName: "http://example.com/test",
+                description: "SPARQL endpoint (graph: http://example.com/test)"
+            }
+        }
+    }
+async function StapleDemo() {
+    let stapleApi = await staple(ontology, config);
 
+    var app = express();
+    app.use('/graphql', graphqlHTTP({
+        schema: stapleApi.schema,
+        graphiql: true
+    }));
+    
+    app.listen(4000);
+    console.log('Running a GraphQL API server at localhost:4000/graphql');
+}
+
+StapleDemo()
+```
+
+Run the demo:
+```bash
+node demo.js
+```
+
+### Run over multiple sources
+
+To enable federation across multiple back-ends it's enough to specify them all in the configuration object. They will consequently appear as an enumeration argument on all mutations and queries to specify where the data should be fetched from and put and deleted.
+
+Install packages:
+
+```bash
+npm i staple-api express express-graphql
+```
+
+Create file `demo.js`:
+
+```javascript
+var express = require('express');
+var graphqlHTTP = require('express-graphql');
+const staple = require("staple-api");
+
+let ontology = {
+  file: "./ontology.ttl"
+  }
+
+let config = {
+        dataSources: {
+            default: "sparql1",
+            sparql1: {
+                type: "sparql",
+                url: "http://localhost:3030/staple/sparql", 
+                updateUrl: "http://localhost:3030/staple/update",
+                graphName: "http://example.com/test1",
+                description: "SPARQL endpoint (graph: http://example.com/test1)"
+            },
+            sparql2: {
+                type: "sparql",
+                url: "http://localhost:3030/staple/sparql", 
+                updateUrl: "http://localhost:3030/staple/update",
+                graphName: "http://example.com/test2",
+                description: "SPARQL endpoint (graph: http://example.com/test2)"
+            },
+            mongodb: {
+                type: "mongodb",
+                url: "mongodb://127.0.0.1:27017", 
+                dbName: "staple",
+                collectionName: "staple",
+                description: "MongoDB (DB: staple, Collection: staple)"
+            }
+        }
+    }
 async function StapleDemo() {
     let stapleApi = await staple(ontology, config);
 
@@ -233,11 +332,20 @@ const staple = require("staple-api");
 const jsonld = require("jsonld")
 
 let ontology = {
-  file: "./ontology.ttl"
-  }
+        file: "./ontology.ttl"
+    }
+
+let config = {
+        dataSources: {
+            default: "source",
+            source: {
+                type: "memory"
+            }
+        }
+    }
 
 async function StapleDemo() {
-    let stapleApi = await staple(ontology);  
+    let stapleApi = await staple(ontology, config);  
     let context = stapleApi.context
     let data = {}
 
@@ -312,8 +420,7 @@ const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const staple = require("staple-api");
 
-const ontology = {
-    string: `
+const ontology = `
         @prefix schema: <http://schema.org/> .
         @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
         @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -366,11 +473,19 @@ const ontology = {
             schema:domainIncludes example:Agent ;
             schema:rangeIncludes example:Organization .
     `
+
+let config = {
+        dataSources: {
+            default: "source",
+            source: {
+                type: "memory"
+            }
+        }
     }
   
 async function StapleDemo() {
     const app = express();
-    const stapleApi = await staple(ontology);
+    const stapleApi = await staple(ontology, config);
     const schema = stapleApi.schema
 
     stapleApi.graphql(`mutation { Person(input: { _id: "http://example.com/john" name: "John Smith" age: 35 isMarried: true customerOf: [ "http://example.com/bank" "http://example.com/mobile" ]})}`)
@@ -383,7 +498,7 @@ async function StapleDemo() {
         schema
     });
 
-    app.listen({ port: 8080 }, () =>
+    app.listen({ port: 5000 }, () =>
         console.log("🚀 Server ready")
     );
 

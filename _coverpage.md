@@ -2,7 +2,7 @@
   <img src="staple-api-black-text.svg" style="max-width:100%">
 </p>
 
-> A GraphQL API for easy management of <br> knowledge graphs
+> A GraphQL API for easy management and federation of <br> knowledge graphs
 
 [Documentation](/home/) 
 [Playground](http://playground.staple-api.org)

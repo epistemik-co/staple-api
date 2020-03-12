@@ -1,11 +1,8 @@
 ## What is it?
 
-**Staple API** is a lightweight GraphQL-based API for a uniform management of **knowledge graphs**, virtualized as linked data via JSON-LD, on top of different data storage back-ends.
-
+**Staple API** is a lightweight GraphQL-based API for a uniform management and federation of **knowledge graphs** (virtualized as linked data) on top of different data storage back-ends.
 
 <br>
-
-
 
 <p align="center">
   <img src="staple-api-architecture1.png">
@@ -20,9 +17,9 @@ Modern knowledge graph-based applications often need to manage their data across
 2. a graph database for analytical insights into complex relationships between them
 3. a search engine for efficient search and retrieval purposes
 
-While data in such storages constitutes pieces of the same knowledge graph, it is often difficult to manage it as such, due to discrepancies between their native data models. This leads to increasing problems with the semantic alignment of data, its uniform structuring, querying and synchronisation across the back-ends. 
+While data in such storages constitutes pieces of the same knowledge graph, it is often difficult to manage it as such, due to discrepancies between their native data models and the complexity of federation across sources. This leads to increasing problems with the semantic alignment of data, its uniform structuring, querying and synchronisation. 
 
-**Staple API** is a flexible **semantic abstraction middleware**, which allows for decoupling data storage back-ends from the application to facilitate uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface and a common ontology model. 
+**Staple API** is a flexible **semantic abstraction middleware**, which allows for decoupling data storage back-ends from the application to facilitate uniform view and access to data **as consistent fragments of the same knowledge graph** via a standard GraphQL interface and a unifying ontology model. 
 
 
 
@@ -39,6 +36,8 @@ While data in such storages constitutes pieces of the same knowledge graph, it i
 :heavy_check_mark: Connectors to MongoDB and SPARQL endpoints (other back-ends coming soon!).
 
 :heavy_check_mark: An in-memory graph database for rapid testing and prototyping.
+
+:heavy_check_mark: Federated queries and mutations across multiple back-end sources.
 
 <br>
 
