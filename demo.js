@@ -55,11 +55,13 @@ async function Demo() {
                     url: "mongodb://127.0.0.1:27017",
                     dbName: "staple",
                     collectionName: "quads3",
+                    description: "test"
                 },
                 sparql: {
                     type: "sparql",
                     url: "http://localhost:3030/staple/sparql", 
                     updateUrl: "http://localhost:3030/staple/update",
+                    description: "test"
                 },
                 memory: {
                     type: "memory"

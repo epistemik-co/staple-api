@@ -237,7 +237,7 @@ function filterGetFields(object) {
   };
 }
 
-function createQueryType(classList, filterClassList, classesURIs, propertiesURIs, dataSources) {
+function createQueryType(classList, filterClassList, classesURIs, propertiesURIs, dataSources, dataSourcesDescriptions) {
 
   //context query
 
@@ -272,7 +272,7 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   };
 
   for (let iter in dataSources) {
-    dataSourceEnum["values"][dataSources[iter]] = { value: dataSources[iter] };
+    dataSourceEnum["values"][dataSources[iter]] = { value: dataSources[iter], description: dataSourcesDescriptions[dataSources[iter]] };
   }
   dataSourceEnum = new graphql.GraphQLEnumType(dataSourceEnum);
   //the rest of the queries
@@ -343,7 +343,7 @@ function createMutationType(classList, inputClassList) {
         description: "Delete an object",
         args: {
           "id": { type: graphql.GraphQLList(graphql.GraphQLNonNull(graphql.GraphQLID)), description: "An id of the object to be deleted" },
-          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Available data sources" }
+          "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Available data sources", defaultValue: dataSourceEnum.getValue(defaultDataSource).value }
         }
       },
     }
@@ -362,7 +362,7 @@ function createMutationType(classList, inputClassList) {
 }
 
 function listOfDataSourcesFromConfigObject(configObject) {
-  const dataSources = Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
+  let dataSources = Object.keys(configObject.dataSources).filter(function (x) { return x != "default"; });
   if (!(configObject.dataSources.default) || !(dataSources.indexOf(configObject.dataSources.default) >= 0)) {
     throw Error("invalid default datasource!");
   }
@@ -379,7 +379,11 @@ function listOfDataSourcesFromConfigObject(configObject) {
 
   defaultDataSource = (configObject.dataSources.default);
 
-  return dataSources;
+  let dataSourcesDescriptions = {};
+  for (let d of dataSources){
+    dataSourcesDescriptions[d] = configObject.dataSources[d].description;
+  }
+  return {dataSources: dataSources, dataSourcesDescriptions: dataSourcesDescriptions};
 }
 
 /**
@@ -389,9 +393,11 @@ function listOfDataSourcesFromConfigObject(configObject) {
 async function generateSchema(ontology, configObject) {
   database = new DatabaseInterface();
   var { classList, inputClassList, filterClassList, classesURIs, propertiesURIs } = await createClassList(ontology);
-  const listOfDataSources = listOfDataSourcesFromConfigObject(configObject);
-  var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs, listOfDataSources);
-  var mutationType = createMutationType(classList, inputClassList, listOfDataSources);
+  const values = listOfDataSourcesFromConfigObject(configObject);
+  const listOfDataSources = values.dataSources;
+  const dataSourcesDescriptions = values.dataSourcesDescriptions;
+  var queryType = createQueryType(classList, filterClassList, classesURIs, propertiesURIs, listOfDataSources, dataSourcesDescriptions);
+  var mutationType = createMutationType(classList, inputClassList, listOfDataSources, dataSourcesDescriptions);
   return new graphql.GraphQLSchema({ query: queryType, mutation: mutationType });
 }
 
