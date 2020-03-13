@@ -77,7 +77,7 @@ async function init(app, index) {
 }
 
 async function customInit(app, index, req) {
-    let newEndpointData = await staple({string: String(req.body.value)});
+    let newEndpointData = await staple(String(req.body.value), {dataSources: {default: "memory",  memory: {type: "memory"}}});
     let schema = newEndpointData.schema;
 
     if (newEndpointData["Error"]) {
