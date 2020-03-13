@@ -1,7 +1,7 @@
 {
-  "name": "staple-api",
+  "name": "staple-api-playground",
   "version": "1.0.0",
-  "description": "Staple API - a structured data API",
+  "description": "Staple API Playground",
   "main": "index.js",
   "dependencies": {
     "apollo-server-express": "^2.6.8",
@@ -14,7 +14,7 @@
     "graphy": "^3.2.2",
     "jsonld": "^1.6.2",
     "mongodb": "^3.3.0-beta2",
-    "staple-api": "^1.0.8",
+    "staple-api": "1.0.24",
     "uuid": "^3.3.3",
     "validator": "^11.0.0",
     "winston": "^3.2.1",
