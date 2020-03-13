@@ -24,7 +24,7 @@ async function Demo() {
         rdfs:comment "A person" ;
         rdfs:subClassOf example:Agent .
     # properties ( -> GraphQL fields )
-    example:name a rdf:Property ;
+    example:name a rdf:Property, owl:FunctionalProperty ;
         rdfs:comment "Name of the agent" ;
         schema:domainIncludes example:Agent ;
         schema:rangeIncludes xsd:string .
@@ -44,18 +44,22 @@ async function Demo() {
         rdfs:comment "An employee of an organization" ;
         schema:domainIncludes example:Organization ;
         schema:rangeIncludes example:Person .
-    example:customerOf a rdf:Property, owl:FunctionalProperty  ;
+    example:customerOf a rdf:Property  ;
         rdfs:comment "An organization this agent is a customer of" ;
         schema:domainIncludes example:Agent ;
         schema:rangeIncludes example:Organization .`,
         {
             dataSources: {
                 default: "sparql",
+                mem: {
+                    type: "memory",
+                    description: "memory testing"
+                },
                 sparql: {
                     type: "sparql",
                     url: "http://localhost:3030/staple/sparql",
                     updateUrl: "http://localhost:3030/staple/update",
-                    // graphName: "http://example.com/test"}
+                    graphName: "http://test/staple1"
                 }
             }}
         // {

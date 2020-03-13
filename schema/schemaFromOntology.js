@@ -78,6 +78,7 @@ async function createClassList(ontology /*example file*/) {
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
 
   const singleProperties = functionalProperties.map(f => removeNamespace(f));
+
   //if functional property then single
 
   //list of all classes as uris
@@ -116,39 +117,19 @@ async function createClassList(ontology /*example file*/) {
       var inputRanges = ranges.map(r => "Input" + removeNamespace(r));
 
       for (var r in ranges) {
-        if (singleProperties.indexOf(nameOfProperty) < 0){
-          if (graphQLScalarTypes[ranges[r]]) {
-            //here shold be list types
-            let orig = ranges[r]
-            ranges[r] = graphQLScalarTypes[ranges[r]];
-            inputRanges[r] = graphQLScalarTypes[orig]
-          }
-        }else{
-          if (graphQLScalarTypes[ranges[r]]) {
-            ranges[r] = graphQLScalarTypes[ranges[r]];
-            // console.log(ranges[r])
-
-            inputRanges[r] = graphQLScalarTypes[ranges[r]];
-            // console.log(inputRanges[r])
-
-          }
+        if (graphQLScalarTypes[ranges[r]]) {
+          let orig = ranges[r]
+          ranges[r] = graphQLScalarTypes[ranges[r]];
+          inputRanges[r] = graphQLScalarTypes[orig]
         }
       }
       var classComment = database.getObjs(domains[domainIter], "http://www.w3.org/2000/01/rdf-schema#comment");
 
-      if (singleProperties.indexOf(nameOfProperty) < 0){
-        //here list types
-        classList[[domainName]]["fields"][nameOfProperty] = { "type": [ranges], "description": comments };
-        classList[[domainName]]["description"] = classComment;
-        inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
-        filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
-      }else{
-        //here single values
-        classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments };
-        classList[[domainName]]["description"] = classComment;
-        inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments };
-        filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
-      }
+      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments, "isList": !singleProperties.includes(nameOfProperty) };
+      classList[[domainName]]["description"] = classComment;
+      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments, "isList": !singleProperties.includes(nameOfProperty) };
+      filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments, "isList": !singleProperties.includes(nameOfProperty) };
+      
     }
   }
 
@@ -224,16 +205,31 @@ function getFieldsQuery(object) {
     for (let fieldName in object.fields) {
       let fieldType = object.fields[fieldName]["type"];
       if (graphQLScalarTypes[fieldType]) {
-        fields[fieldName] = {
-          type: graphQLScalarTypes[fieldType],
-          description: String(object.fields[fieldName]["description"]),
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
+            description: String(object.fields[fieldName]["description"]),
+          };
+        } else {
+          fields[fieldName] = {
+            type: graphQLScalarTypes[fieldType],
+            description: String(object.fields[fieldName]["description"]),
+          };
+        }
       } else {
-        fields[fieldName] = {
-          type: gqlObjects[fieldType],
-          description: String(object.fields[fieldName]["description"]),
-          args: { "source": { type: graphql.GraphQLList(dataSourceEnum) } }
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(gqlObjects[fieldType]),
+            description: String(object.fields[fieldName]["description"]),
+            args: { "source": { type: graphql.GraphQLList(dataSourceEnum) } }
+          };
+        } else {
+          fields[fieldName] = {
+            type: gqlObjects[fieldType],
+            description: String(object.fields[fieldName]["description"]),
+            args: { "source": { type: graphql.GraphQLList(dataSourceEnum) } }
+          };
+        }
       }
     }
     return fields;
@@ -249,15 +245,29 @@ function filterGetFields(object) {
     for (let fieldName in object.fields) {
       let fieldType = object.fields[fieldName]["type"];
       if (graphQLScalarTypes[fieldType]) {
-        fields[fieldName] = {
-          type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
+            description: String(object.fields[fieldName]["description"])
+          };
+        } else {
+          fields[fieldName] = {
+            type: graphQLScalarTypes[fieldType],
+            description: String(object.fields[fieldName]["description"])
+          };
+        }
       } else {
-        fields[fieldName] = {
-          type: graphql.GraphQLList(graphql.GraphQLID),
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) { 
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLID),
+            description: String(object.fields[fieldName]["description"])
+          };
+        } else {
+          fields[fieldName] = {
+            type: graphql.GraphQLID,
+            description: String(object.fields[fieldName]["description"])
+          };
+        }
       }
     }
     return fields;
@@ -321,11 +331,11 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   }
 
   for (var className in classList) {
-    gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
+    gqlObjects[className] = new graphql.GraphQLObjectType({
       name: className,
       description: String(classList[className].description),
       fields: getFieldsQuery(classList[className])
-    }));
+    });
     gqlObjects["Filter" + className] = new graphql.GraphQLInputObjectType({
       name: "Filter" + className,
       description: String(classList[className].description),
@@ -346,15 +356,29 @@ function getFieldsMutation(object) {
     for (let fieldName in object.fields) {
       let fieldType = object.fields[fieldName]["type"];
       if (graphQLScalarTypes[fieldType]) {
-        fields[fieldName] = {
-          type: graphQLScalarTypes[fieldType],
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
+            description: String(object.fields[fieldName]["description"])
+          };
+        } else {
+          fields[fieldName] = {
+            type: graphQLScalarTypes[fieldType],
+            description: String(object.fields[fieldName]["description"])
+          };
+        }
       } else {
-        fields[fieldName] = {
-          type: graphql.GraphQLList(graphql.GraphQLID),
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName] = {
+            type: graphql.GraphQLList(graphql.GraphQLID),
+            description: String(object.fields[fieldName]["description"])
+          };
+        } else {
+          fields[fieldName] = {
+            type: graphql.GraphQLID,
+            description: String(object.fields[fieldName]["description"])
+          };
+        }
       }
     }
     return fields;
