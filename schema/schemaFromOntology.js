@@ -77,6 +77,8 @@ async function createClassList(ontology /*example file*/) {
   const propertiesRangeIncludes = database.getAllSubs("http://schema.org/rangeIncludes");
   const functionalProperties = database.getInstances("http://www.w3.org/2002/07/owl#FunctionalProperty");
 
+  const singleProperties = functionalProperties.map(f => removeNamespace(f));
+
   //list of all classes as uris
 
   let classesURIs = [...new Set([...classes, ...subClasses, ...superClasses, ...domainIncludes, ...rangeIncludes, ...rangeIncludes])];
@@ -118,10 +120,10 @@ async function createClassList(ontology /*example file*/) {
         }
       }
       var classComment = database.getObjs(domains[domainIter], "http://www.w3.org/2000/01/rdf-schema#comment");
-      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments };
+      classList[[domainName]]["fields"][nameOfProperty] = { "type": ranges, "description": comments, "isList": !singleProperties.includes(nameOfProperty) };
       classList[[domainName]]["description"] = classComment;
-      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments };
-      filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": [inputRanges], "description": comments };
+      inputClassList[["Input" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments, "isList": !singleProperties.includes(nameOfProperty) };
+      filterClassList[["Filter" + domainName]]["fields"][nameOfProperty] = { "type": inputRanges, "description": comments, "isList": !singleProperties.includes(nameOfProperty) };
     }
   }
 
@@ -195,18 +197,23 @@ function getFieldsQuery(object) {
     };
 
     for (let fieldName in object.fields) {
+      fields[fieldName] = {
+        description: String(object.fields[fieldName]["description"])
+      };
       let fieldType = object.fields[fieldName]["type"];
       if (graphQLScalarTypes[fieldType]) {
-        fields[fieldName] = {
-          type: graphQLScalarTypes[fieldType],
-          description: String(object.fields[fieldName]["description"]),
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName].type = graphql.GraphQLList(graphQLScalarTypes[fieldType])
+        } else {
+          fields[fieldName].type = graphQLScalarTypes[fieldType]
+        }
       } else {
-        fields[fieldName] = {
-          type: gqlObjects[fieldType],
-          description: String(object.fields[fieldName]["description"]),
-          args: { "source": { type: graphql.GraphQLList(dataSourceEnum) } }
-        };
+        fields[fieldName].args = { "source": { type: graphql.GraphQLList(dataSourceEnum) } }
+        if (object.fields[fieldName].isList) {
+          fields[fieldName].type = graphql.GraphQLList(gqlObjects[fieldType])
+        } else {
+          fields[fieldName].type = gqlObjects[fieldType]
+        }
       }
     }
     return fields;
@@ -220,17 +227,22 @@ function filterGetFields(object) {
     };
 
     for (let fieldName in object.fields) {
+      fields[fieldName] = {
+        description: String(object.fields[fieldName]["description"])
+      };
       let fieldType = object.fields[fieldName]["type"];
       if (graphQLScalarTypes[fieldType]) {
-        fields[fieldName] = {
-          type: graphql.GraphQLList(graphQLScalarTypes[fieldType]),
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName].type = graphql.GraphQLList(graphQLScalarTypes[fieldType])
+        } else {
+          fields[fieldName].type = graphQLScalarTypes[fieldType]
+        }
       } else {
-        fields[fieldName] = {
-          type: graphql.GraphQLList(graphql.GraphQLID),
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) { 
+          fields[fieldName].type = graphql.GraphQLList(graphql.GraphQLID)
+        } else {
+          fields[fieldName].type = graphql.GraphQLID
+        }
       }
     }
     return fields;
@@ -294,17 +306,17 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
   }
 
   for (var className in classList) {
-    gqlObjects[className] = graphql.GraphQLList(new graphql.GraphQLObjectType({
+    gqlObjects[className] = new graphql.GraphQLObjectType({
       name: className,
       description: String(classList[className].description),
       fields: getFieldsQuery(classList[className])
-    }));
+    });
     gqlObjects["Filter" + className] = new graphql.GraphQLInputObjectType({
       name: "Filter" + className,
       description: String(classList[className].description),
       fields: filterGetFields(filterClassList["Filter" + className])
     });
-    queryType.fields[className] = { type: gqlObjects[className], description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt, description: "The number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned." }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false, description: "Include indirect instances of this type" }, "filter": { type: gqlObjects["Filter" + className], description: "Filters the selected results based on specified field values"}, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: defaultSourceValue,
+    queryType.fields[className] = { type: graphql.GraphQLList(gqlObjects[className]), description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt, description: "The number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned." }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false, description: "Include indirect instances of this type" }, "filter": { type: gqlObjects["Filter" + className], description: "Filters the selected results based on specified field values"}, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: defaultSourceValue,
     } } };
   }
   queryType = new graphql.GraphQLObjectType(queryType);
@@ -317,17 +329,22 @@ function getFieldsMutation(object) {
       "_id": { type: graphql.GraphQLNonNull(graphql.GraphQLID), description: "The unique identifier of the object" },
     };
     for (let fieldName in object.fields) {
+      fields[fieldName] = {
+        description: String(object.fields[fieldName]["description"])
+      };
       let fieldType = object.fields[fieldName]["type"];
       if (graphQLScalarTypes[fieldType]) {
-        fields[fieldName] = {
-          type: graphQLScalarTypes[fieldType],
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName].type = graphql.GraphQLList(graphQLScalarTypes[fieldType])
+        } else {
+          fields[fieldName].type = graphQLScalarTypes[fieldType]
+        }
       } else {
-        fields[fieldName] = {
-          type: graphql.GraphQLList(graphql.GraphQLID),
-          description: String(object.fields[fieldName]["description"])
-        };
+        if (object.fields[fieldName].isList) {
+          fields[fieldName].type = graphql.GraphQLList(graphql.GraphQLID)
+        } else {
+          fields[fieldName].type = graphql.GraphQLID
+        }
       }
     }
     return fields;
