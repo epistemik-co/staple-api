@@ -33,58 +33,67 @@ class SparqlAdapter {
         let _type = type;
         let query = "";
         let graphName = this.configFile.graphName;
+        let limit =` limit 10 offset ${10 * page - 10}`;
         if (inferred) {
             let typeForQuery;
             if (page !== undefined) {
-                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } limit 10 offset ${10 * page - 10}}  ?x ?y ?z .`;
+                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } ?x ?y ?z .`;
             } else {
                 typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } }  ?x ?y ?z .`;
             }
             if (filters) {
                 if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select * where { ${filters.join(" ")} ${typeForQuery}} }`;
                 } else {
-                    query = `construct {?x ?y ?z} where {{select ?x where { ${filters.join(" ")} ${typeForQuery}}`;
+                    query = `construct {?x ?y ?z} where {{select * where { ${filters.join(" ")} ${typeForQuery}}`;
                 }
             } else {
                 if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> { {select ?x where { ${typeForQuery}}}`;
+                    query = `construct {?x ?y ?z} where { graph <${graphName}> { {select ?x where { ${typeForQuery}} }`;
                 } else {
-                    query = `construct {?x ?y ?z} where { {select?x where { ${typeForQuery}}`;
+                    query = `construct {?x ?y ?z} where { {select * where { ${typeForQuery}} `;
                 }
             }
         }
         else {
             let typeForQuery;
             if (page !== undefined) {
-                typeForQuery = `?x a <${_type}> . }limit 10 offset ${10 * page - 10} } ?x ?y ?z .`;
+                typeForQuery = `?x a <${_type}> . ?x ?y ?z . } ${limit}`;
             } else {
-                typeForQuery = `?x a <${_type}> . } } ?x ?y ?z .`;
+                typeForQuery = `?x a <${_type}> .  ?x ?y ?z .`;
             }
             if (filters) {
                 if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${filters.join(" ")} ${typeForQuery}}}`;
+                    query = `construct {?x ?y ?z} where { select * where { ${filters.join(" ")} ${typeForQuery}}}`;
                 } else {
-                    query = `construct {?x ?y ?z} where {{select ?x where { ${filters.join(" ")} ${typeForQuery}}`;
+                    query = `construct {?x ?y ?z} where {{select * where { ${filters.join(" ")} ${typeForQuery}}`;
+                }
+            }
+            else if (page !== undefined) {
+                if (graphName) {
+                    query = `construct {?x ?y ?z} where {select * where { ${typeForQuery} }`;
+                } else {
+                    query = `construct {?x ?y ?z} where {{select * where { ${typeForQuery}}`;
                 }
             } else {
                 if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select ?x where { ${typeForQuery}}}`;
+                    query = `construct {?x ?y ?z} where {select * where { ${typeForQuery}} }`;
                 } else {
-                    query = `construct {?x ?y ?z} where {{select ?x where { ${typeForQuery}}`;
+                    query = `construct {?x ?y ?z} where {{select * where { ${typeForQuery}}`;
                 }
             }
         }
-
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
-        const url = this.configFile.url + "?query=" + query;
+        const url = this.configFile.graphName + "?query=" + encodeURIComponent(query);
+       // logger.info(query);
         let response = undefined;
         try {
-            response = await fetch(url, { method: "GET", headers: headers }).then(res => res.text());
-
+            response = await fetch(url, { method: "GET", headers: headers,
+            redirect: 'follow' })  .then(response => response.text());
         } catch (err) {
             throw Error("Could not fetch data from SPARQL");
         }
+        
         try {
             if (!(response.includes("error"))) {
                 await database.insertRDF(response);
