@@ -22,11 +22,11 @@ class MemoryDatabase {
 
     }
 
-    async loadCoreQueryDataFromDB(database, type, page = undefined, selection = undefined, inferred = false, tree = undefined) {
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selection = undefined, inferred = false, tree = undefined,limit) {
         // search selectionSet for core objects load them
         let fieldName = selection.name.value;
         let fieldData = tree[fieldName];
-
+        logger.info(`Test lssssssssssssssssimit oK: ${limit}`);
         if (fieldName === undefined) {
             logger.error("Could not find type of object");
             return undefined;
