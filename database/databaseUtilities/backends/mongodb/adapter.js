@@ -21,9 +21,10 @@ class MongodbAdapter {
      * @param {JSON} filter
      */
 
-    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, filter) {
+    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, source,filter,limit) {
         const fieldName = selectionSet.name.value;
         let subTypes = tree[fieldName]["subTypes"];
+       // logger.info(`Test limit oK: ${limit}`);
         subTypes = subTypes.map(s => this.removeNamespace(s));
         let query = this.preparefilters(database, selectionSet, tree, filter);
         if (this.client === undefined) {
