@@ -70,12 +70,12 @@ class Database {
      * @param {JSON} filter 
      */
 
-    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource, filter) {
+    async loadCoreQueryDataFromDB(type, page = undefined, selectionSet = undefined, inferred = false, tree = undefined, source = this.defaultDetasource, filter ,limit) {
         logger.info("loadCoreQueryDataFromDB was called in database/database");
         logger.debug(`with arguments : type: ${type} page: ${page} selectionSet: ${JSON.stringify(selectionSet)} inferred: ${inferred} `);
         this.dbCallCounter = this.dbCallCounter + 1;
         if (this.adapter) {
-            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, source, filter);
+            await this.adapter.loadCoreQueryDataFromDB(this, type, page, selectionSet, inferred, tree, source, filter,limit);
         }
 
     }
@@ -326,11 +326,11 @@ class Database {
     // Query data Retrieval Algorithm ---------------------------------------------------------------------------
     // return 10 ids of the core objects
 
-    async loadQueryData(queryInfo, uri, page, inferred, tree, source = this.defaultDetasource, filter) {
+    async loadQueryData(queryInfo, uri, page, inferred, tree, source = this.defaultDetasource, filter,limit) {
         if (source === undefined) {
             source = this.defaultDetasource;
         }
-        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source, source);
+        return dataRetrievalAlgorithm.loadQueryData(this, queryInfo, uri, page, inferred, tree, filter, source, limit);
     }
 
 }
