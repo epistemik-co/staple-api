@@ -322,6 +322,8 @@ function createQueryType(classList, filterClassList, classesURIs, propertiesURIs
 
     queryType.fields[className] = { type: graphql.GraphQLList(gqlObjects[className]), description: "Get objects of type: " + className, args: { "page": { type: graphql.GraphQLInt, description: "The number of results page to be returned by the query. A page consists of 10 results. If no page argument is provided all matching results are returned." }, "inferred": { type: graphql.GraphQLBoolean, defaultValue: false, description: "Include indirect instances of this type" }, "filter": { type: gqlObjects["Filter" + className], description: "Filters the selected results based on specified field values"}, "source": { type: graphql.GraphQLList(dataSourceEnum), description: "Selected data sources", defaultValue: defaultSourceValue} , "limit": { type: graphql.GraphQLInt, description: "Get limited elements of the object" }
      
+
+
     } }; 
     
   }
