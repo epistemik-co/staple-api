@@ -1,299 +1,291 @@
+
+const dataset_tree = require("graphy").util.dataset.tree;
+const factory = require("@graphy/core.data.factory");
+// const databaseUtilities = require("../../database utilities/dataManagementUtilities/dataManagementUtilities"); 
 const logger = require("../../../../config/winston");
+const databaseUtilities = require("./Utilities");
 const jsonld = require("jsonld");
-const fetch = require("node-fetch");
 
-class SparqlAdapter {
-    constructor(configFile) {
-        this.configFile = configFile;
-    }
+// IN URI OR LITERAL -> OUT -> Literal or URI or Quad or Boolean
+class MemoryDatabase {
+    constructor(schemaMapping) {
+        this.schemaMapping = schemaMapping;
 
-    /**
-     * 
-     * Load Core Query Data From DB
-     * 
-     * @param {graphy} database - in-memory cache for results - graphy
-     * @param {string} type uri
-     * @param {int} page
-     * @param {JSON} selectionSet
-     * @param {boolean} inferred
-     * @param {JSON} tree
-     */
+        this.database = dataset_tree();
+        this.stapleDataType = "http://staple-api.org/datamodel/type";
 
-    async loadCoreQueryDataFromDB(database, type, page, selectionSet = undefined, inferred = false, tree = undefined, filter) {
-        logger.info("loadCoreQueryDataFromDB in sparql was called");
-        const fieldName = selectionSet.name.value;
-        let subTypes = tree[fieldName]["subTypes"];
-        subTypes = subTypes.map(t => (`<${t}>`)).join(", ");
-        const filters = this.preparefilters(database, selectionSet, tree, filter);
-        const headers = {
-            "Content-Type": "application/sparql-query",
-            "Accept": "application/n-triples"
-        };
+        this.flatJsons = [];
+        this.dbCallCounter = 0;
 
-        let _type = type;
-        let query = "";
-        let graphName = this.configFile.graphName;
-        let limit =` limit 10 offset ${10 * page - 10}`;
-        if (inferred) {
-            let typeForQuery;
-            if (page !== undefined) {
-                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } ?x ?y ?z .`;
-            } else {
-                typeForQuery = `?x a ?type . filter (?type in (${subTypes})) } }  ?x ?y ?z .`;
-            }
-            if (filters) {
-                if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> {{select * where { ${filters.join(" ")} ${typeForQuery}} }`;
-                } else {
-                    query = `construct {?x ?y ?z} where {{select * where { ${filters.join(" ")} ${typeForQuery}}`;
-                }
-            } else {
-                if (graphName) {
-                    query = `construct {?x ?y ?z} where { graph <${graphName}> { {select ?x where { ${typeForQuery}} }`;
-                } else {
-                    query = `construct {?x ?y ?z} where { {select * where { ${typeForQuery}} `;
-                }
-            }
-        }
-        else {
-            let typeForQuery;
-            if (page !== undefined) {
-                typeForQuery = `?x a <${_type}> . ?x ?y ?z . } ${limit}`;
-            } else {
-                typeForQuery = `?x a <${_type}> .  ?x ?y ?z .`;
-            }
-            if (filters) {
-                if (graphName) {
-                    query = `construct {?x ?y ?z} where { select * where { ${filters.join(" ")} ${typeForQuery}}}`;
-                } else {
-                    query = `construct {?x ?y ?z} where {{select * where { ${filters.join(" ")} ${typeForQuery}}`;
-                }
-            }
-            else if (page !== undefined) {
-                if (graphName) {
-                    query = `construct {?x ?y ?z} where {select * where { ${typeForQuery} }`;
-                } else {
-                    query = `construct {?x ?y ?z} where {{select * where { ${typeForQuery}}`;
-                }
-            } else {
-                if (graphName) {
-                    query = `construct {?x ?y ?z} where {select * where { ${typeForQuery}} }`;
-                } else {
-                    query = `construct {?x ?y ?z} where {{select * where { ${typeForQuery}}`;
-                }
-            }
-        }
-        logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
-        const url = this.configFile.graphName + "?query=" + encodeURIComponent(query);
-       // logger.info(query);
-        let response = undefined;
-        try {
-            response = await fetch(url, { method: "GET", headers: headers,
-            redirect: 'follow' })  .then(response => response.text());
-        } catch (err) {
-            throw Error("Could not fetch data from SPARQL");
-        }
-        
-        try {
-            if (!(response.includes("error"))) {
-                await database.insertRDF(response);
-            }
-        } catch (err) {
-            throw Error("Could not insert RDF into graphy");
-        }
+        // this.loadFakeData();
+        logger.log("info", "Database is ready to use");
 
     }
 
-    /**
-     * Load child objects by URIs
-     * @param {graphy} database - cache for results - graphy
-     * @param {string[]} sub - list of child uris
-     * @param {} selection
-     * @param {JSON} tree
-     * @param {} parentName type of parent
-     */
-
-    async loadChildObjectsByUris(database, sub, /*selection, tree, parentName*/) {
-        const headers = {
-            "Content-Type": "application/sparql-query",
-            "Accept": "application/n-triples"
-        };
-        let query = "";
-        let values = sub.map(s => ("<" + s + ">"));
-        values = values.join(" ");
-        let graphName = this.configFile.graphName;
-        if (graphName) {
-            query = `construct {?x ?y ?z} where { graph <${graphName}> { values ?x { ${values} } ?x ?y ?z}}`;
-        } else {
-            query = `construct {?x ?y ?z} where { values ?x { ${values} } ?x ?y ?z}`;
-        }
-        logger.debug(`loadChildObjectsByUris: SPARQL query: ${query}`);
-        const url = this.configFile.url + "?query=" + query;
-        logger.debug(`url for fetch: ${url}`);
-        try {
-            const response = await fetch(url, { method: "GET", headers: headers }).then(res => res.text());
-            await database.insertRDF(response);
-        } catch (err) {
-            throw Error("Could not insert RDF in graphy");
-        }
-    }
-
-    /**
-     * 
-     * push Object to backend is used when PUT mutation is called
-     * 
-     * @param  {graphy} database - cache for results
-     * @param {JSON} input -  object to be PUT
-     */
-
-    async pushObjectToBackend(database, input) {
-        let ID = input._id;
-        const removeRes = await this.removeObject(database, [ID]);
-        let graphName = this.configFile.graphName;
-        const headers = {
-            "Content-Type": "application/sparql-update",
-        };
-        if (removeRes){
-        logger.info("pushObjectToBackend in sparql was called");
-
-        input["@context"] = database.schemaMapping["@context2"];
-        const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
-        logger.debug(`pushObjectToBackend: RDF: ${rdf}`);
-        let insert = "";
-        if (graphName) {
-            insert = `insert data { graph <${graphName}> { ${rdf}}}`;
-        } else {
-            insert = `insert data { ${rdf} }`;
-        }
-
-        try {
-            await fetch(this.configFile.updateUrl, { method: "POST", headers: headers, body: insert }).then(res => res.text());
-            return true;
-        } catch (err) {
-            throw Error("Could not push object to SPARQL");
-        }}
-    }
-
-    /**
-     * remove Object is called when DELETE muattion is called
-     * @param {graphy} database - cache for results
-     * @param {string[]} list of uris to be deleted
-     */
-
-    async removeObject(database, objectIDs) {
-        let graphName = this.configFile.graphName;
-        const headers = {
-            "Content-Type": "application/sparql-update",
-        };
-
-        logger.info("removeObject in sparql was called");
-        logger.debug(`removeObject: objectIDs: ${objectIDs}`);
-        let values = objectIDs.map(id => ("<" + id + ">"));
-        values = values.join(" ");
-        let deleteQuery = "";
-        if (graphName) {
-            deleteQuery = `delete {graph <${graphName}> {?x ?y ?z}} where { graph <${graphName}> {values ?x {${values}} ?x ?y ?z .}}`;
-        } else {
-            deleteQuery = `delete {?x ?y ?z} where { values ?x {${values}} ?x ?y ?z .}`;
-        }
-        logger.debug(`removeObject: deleteQuery: ${deleteQuery}`);
-        const url = this.configFile.updateUrl;
-        try {
-            await fetch(url, { method: "POST", headers: headers, body: deleteQuery }).then(res => res.text());
-            return true;
-        } catch (err) {
-            throw Error("Could not remove object from SPARQL");
-        }
-    }
-
-    /**
-     * is Uri
-     * @param  {string} str - stringto check if matches URI regex
-     * @returns boolean
-     */
-
-    isURI(str) {
-        var urlRegex = /\w+:(\/?\/?)[^\s]+/gm;
-        var url = new RegExp(urlRegex, "i");
-        return str.length < 2083 && url.test(str);
-    }
-
-    /**
-     * Prepare filters
-     * @param  {graphy} database - cache for results
-     * @param {} selection
-     * @param {JSON} tree
-     * @returns {string} filters
-     */
-
-    preparefilters(database, selection, tree) {
-        logger.debug(JSON.stringify(selection));
+    async loadCoreQueryDataFromDB(database, type, page = undefined, selection = undefined, inferred = false, tree = undefined,limit) {
+        // search selectionSet for core objects load them
         let fieldName = selection.name.value;
-        logger.debug(`preparefilters: ${fieldName}`);
-
         let fieldData = tree[fieldName];
-        logger.debug(`preparefilters: ${fieldData}`);
-
-        if (fieldData === undefined) {
-            return {};
+        logger.info(`Test lssssssssssssssssimit oK: ${limit}`);
+        if (fieldName === undefined) {
+            logger.error("Could not find type of object");
+            return undefined;
         }
 
-        let filters = [];
+        // all ids
+        const subTypes = tree[fieldName]["subTypes"];
+        let ids = await this.getSubjectsByType(type, subTypes, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", inferred, page);
 
+        // filter
+        if (fieldData) {
+            ids = this.preparefilters(ids, fieldData, selection);
+        }
+
+        // Add to graphy 
+        for (let sub of ids) {
+            sub = factory.namedNode(sub);
+
+            const temp = this.database.match(sub, null, null);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                database.database.add(x.value);
+                x = itr.next();
+            }
+        }
+        // console.log(util.inspect(selection, false, null, true));
+
+        return;
+    }
+
+    preparefilters(ids, fieldData, selection) {
+        let newIds = ids;
         for (let argument of selection.arguments) {
-            if (argument.value.fields) {
+            if (argument.name.value === "filter") {
                 for (let filterField of argument.value.fields) {
+                    logger.debug("OBJECT");
+                    logger.debug(filterField);
+                    logger.debug("\n\n");
                     if (fieldData.data[filterField.name.value] !== undefined) {
+                        logger.debug("ADD TO THE FILTER QUERY");
+                        logger.debug(fieldData.data[filterField.name.value]);
                         let uri = fieldData.data[filterField.name.value].uri;
-                        let variableForQuery = filterField.name.value;
                         let value = filterField.value;
-                        let filterString = "";
+
+                        if (value.kind === "ListValue") {
+                            value = value.values.map(x => x.value.toString());
+                        }
+                        else {
+                            value = [value.value.toString()];
+                        }
+
                         if (uri === "@id") {
-                            value = value.value.toString();
-                            if (this.isURI(value)) {
-                                value.replace("\"", "");
-                                value = `<${value}>`;
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value}))`;
-                            } else {
-                                value = `"${value}"`;
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (str(?${variableForQuery}) in (${value}))`;
-                            }
-                            filterString = `values ?x {${value}}`;
-                            filters.push(filterString);
-                        } else {
-                            if (value.kind === "ListValue") {
-                                value = value.values.map(x => (this.isURI(x.value.toString()) ?
-                                    `<${x.value.toString()}>` : `"${x.value.toString()}"`));
-                                value = value.join(", ");
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value})) .`;
-                                filters.push(filterString);
-                            } else if (value.kind === "IntValue" || value.kind === "FloatValue" || value.kind === "BooleanValue") {
-                                filterString = `?x <${uri}> ?${variableForQuery} . filter (?${variableForQuery} in (${value.value.toString()})) .`;
-                                filters.push(filterString);
-                            } else {
-                                value = [value.value.toString()];
-                                if (this.isURI(value)) {
-                                    value = `<${value}>`;
-                                } else {
-                                    value = `"${value}"`;
+                            logger.debug(value);
+                            newIds = newIds.filter(x => value.includes(x));
+                        }
+                        else {
+                            // value or child id?
+                            logger.debug(value);
+                            logger.debug(uri);
+                            newIds = newIds.filter(x => {
+                                let propValue = this.getSingleLiteral(x, uri);
+                                logger.debug(propValue);
+                                if (value.includes(propValue.value)) {
+                                    return true;
                                 }
-                                filterString = `?x <${uri}> ${value} .`;
-                                filters.push(filterString);
-                            }
+                                return false;
+                            });
                         }
                     }
                     else {
-                        logger.debug("SKIP");
+                        console.log("SKIP");
                     }
                 }
             }
         }
-        logger.debug(`prepareFilters: filters: ${JSON.stringify(filters)}`);
-        if (Object.keys(filters).length === 0) {
+        return newIds;
+    }
+
+    async loadChildObjectsByUris(database, sub, selection /*, tree, parentName*/) {
+        // search selectionSet for core objects load them
+        let fieldName = selection.name.value;
+
+        if (fieldName === undefined) {
+            logger.error("Could not find type of object");
             return undefined;
         }
-        return filters;
+
+        for (let subject of sub) {
+            subject = factory.namedNode(subject);
+            const temp = this.database.match(subject, null, null);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) { 
+                database.database.add(x.value);
+                x = itr.next();
+            }
+        }
+
+        return;
     }
+
+    async loadObjectsByUris(database, sub) {
+        // search selectionSet for core objects load them
+
+        for (let subject of sub) {
+            subject = factory.namedNode(subject);
+            const temp = this.database.match(subject, null, null);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                database.database.add(x.value);
+                x = itr.next();
+            }
+        }
+
+        return;
+    }
+
+    async pushObjectToBackend(database, input) {
+        let objectID = input["_id"];
+        this.deleteID(objectID);
+        input["@context"] = database.schemaMapping["@context2"];
+        const rdf = await jsonld.toRDF(input, { format: "application/n-quads" });
+        await this.insertRDF(rdf);
+        return;
+    }
+
+
+    async removeObject(database, objectIDs) {
+        for (var id of objectIDs) {
+            this.deleteID(id);
+        }
+        return true;
+    }
+
+    
+    create(sub, pred, obj, gra = null) {
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+        if (typeof (obj) !== "object") {
+            obj = factory.namedNode(obj);
+        }
+        gra = factory.namedNode(gra);
+
+        let quad = factory.quad(sub, pred, obj, gra);
+        this.database.add(quad);
+        return true;
+    }
+
+    // returns array of uri - Core Query
+    async getSubjectsByType(type, subTypes, predicate, inferred = false, page = undefined) {
+        type = factory.namedNode(type);
+        let i = 0;
+
+        predicate = factory.namedNode(predicate);
+        let data = [];
+
+        if (inferred) {
+            for (let subType of subTypes) {
+                type.value = subType;
+                let temp = this.database.match(null, predicate, type);
+                var itr = temp.quads();
+                var x = itr.next();
+                while (!x.done) {
+                    i++;
+                    if (page) {
+                        if (i > (page - 1) * 10) {
+                            data.push(x.value.subject.value);
+                        }
+                        if (i + 1 > page * 10) {
+                            break;
+                        }
+                    }
+                    else {
+                        data.push(x.value.subject.value);
+                    }
+                    x = itr.next();
+                }
+            }
+        } else {
+            let temp = this.database.match(null, predicate, type);
+            var itr = temp.quads();
+            var x = itr.next();
+            while (!x.done) {
+                i++;
+                if (page) {
+                    if (i > (page - 1) * 10) {
+                        data.push(x.value.subject.value);
+                    }
+                    if (i + 1 > page * 10) {
+                        break;
+                    }
+                }
+                else {
+                    data.push(x.value.subject.value);
+                }
+                x = itr.next();
+            }
+        }
+        return data;
+    }
+
+    getSingleLiteral(sub, pred) {
+        sub = factory.namedNode(sub);
+        pred = factory.namedNode(pred);
+
+        const temp = this.database.match(sub, pred, null);
+        var itr = temp.quads();
+        var x = itr.next();
+
+        if (x.value === undefined) {
+            return null;
+        }
+
+        return x.value.object;
+    }
+
+
+    async insertRDF(rdf) {
+        await databaseUtilities.insertRDFPromise(this.database, rdf);
+        databaseUtilities.updateInference(this);
+    }
+
+    async removeRDF(rdf, ID) {
+        await databaseUtilities.removeRDFPromise(this.database, ID, rdf);
+        databaseUtilities.updateInference(this);
+    }
+
+    // returns all quads
+    getAllQuads() {
+        const temp = this.database.match(null, null, null);
+        let data = [];
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            data.push(x.value);
+            x = itr.next();
+        }
+        return data;
+    }
+
+    // returns boolean 
+    deleteID(id) {
+        id = factory.namedNode(id);
+
+        let removed = false;
+        var temp = this.database.match(id, null, null);
+        var itr = temp.quads();
+        var x = itr.next();
+        while (!x.done) {
+            this.database.delete(x.value);
+            removed = true;
+            x = itr.next();
+        }
+        return removed;
+    }
+
+
 }
 
-module.exports = SparqlAdapter;
+module.exports = MemoryDatabase;
