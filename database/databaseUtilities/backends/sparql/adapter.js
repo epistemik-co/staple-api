@@ -77,7 +77,7 @@ class SparqlAdapter {
         }
 
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
-        const url = this.configFile.url + "?query=" + encodeURIComponent(equery);
+        const url = this.configFile.url + "?query=" + encodeURIComponent(query);
         let response = undefined;
         try {
             response = await fetch(url, { method: "GET", headers: headers }).then(res => res.text());
