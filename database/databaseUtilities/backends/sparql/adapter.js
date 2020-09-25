@@ -77,17 +77,19 @@ class SparqlAdapter {
         }
 
         logger.debug(`loadCoreQueryDataFromDB SPARQL query: ${query}`);
-        const url = this.configFile.url + "?query=" + query;
+        const url = this.configFile.url + "?query=" + encodeURIComponent(equery);
         let response = undefined;
         try {
             response = await fetch(url, { method: "GET", headers: headers }).then(res => res.text());
-
         } catch (err) {
             throw Error("Could not fetch data from SPARQL");
         }
         try {
             if (!(response.includes("error"))) {
                 await database.insertRDF(response);
+            } else {
+                logger.error("Failed to query endpoint.")
+                logger.debug("Error response: ${response}")
             }
         } catch (err) {
             throw Error("Could not insert RDF into graphy");
