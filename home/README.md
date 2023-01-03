@@ -51,11 +51,6 @@ While data in such storages constitutes pieces of the same knowledge graph, it i
 !> **Note**: *This project is at very early stages of development* -->
 
 
-## Playground
-
-?> A live playground is available at: [http://playground.staple-api.org](http://playground.staple-api.org).
-
-
 ## GitHub
 
 ?> The GitHub repository is available at: [https://github.com/epistemik-co/staple-api](https://github.com/epistemik-co/staple-api).
