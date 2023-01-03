@@ -61,7 +61,7 @@ While data in such storages constitutes pieces of the same knowledge graph, it i
 
 ## License
 
-?> This software has been created by [EPISTEMIK](http://epistemik.co) and is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
+?> This software has been created by [EPISTEMIK](https://www.linkedin.com/company/epistemik) and is available under the [MIT license](https://github.com/epistemik-co/staple-api/blob/master/LICENSE).
 
 ## Technology 
 
@@ -76,4 +76,4 @@ While data in such storages constitutes pieces of the same knowledge graph, it i
 
 For open technical issues and questions please create a GitHub issue in this repository. 
 
-?> All inquiries can also be sent to [staple-api@epistemik.co](staple-api@epistemik.co).
+?> All inquiries can also be sent to [szymon@klarman.me](szymon@klarman.me).
